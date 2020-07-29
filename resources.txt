@@ -1,0 +1,5 @@
+Fit a smooth landscape
+https://github.com/shwilks/ablandscapes
+
+# Create a map from HI data
+https://github.com/acorg/Racmacs
