@@ -41,9 +41,17 @@ plot_one_pid <- function(data, key) {
       clip = "off", ylim = c(5, max(data$titre)),
       xlim = c(min(data$x_position), max(data$x_position))
     ) +
+    labs(caption = paste(key$pid, key$group, key$sex, key$age, "years")) +
+    geom_text(
+      aes(
+        label = if_else(clade == "(Missing)", "", clade),
+        y = 5, x = x_position
+      ),
+      angle = 90, hjust = 0, col = "gray40", alpha = 0.5,
+      inherit.aes = FALSE
+    ) +
     geom_line() +
-    geom_point() +
-    labs(caption = paste(key$pid, key$group, key$sex, key$age, "years"))
+    geom_point()
   attr(plot, "name") <- paste(key$pid)
   plot
 }
@@ -61,18 +69,22 @@ save_pdf <- function(plot, name, dir = ".", width = 20, height = 15) {
 
 # Script ======================================================================
 
-hi <- read_data("hi") %>%
-  # Each pid should have one virus label per x_position
-  group_by(pid, virus_year) %>%
+# HI data
+hi <- read_data("hi")
+
+# Each pid should have one virus label per x_position
+hi_mod <- hi %>%
+  # Arrange by year
+  group_by(virus_year) %>%
   mutate(
     x_position =
       virus_year + (map_int(virus, ~ which(.x == unique(virus))) - 1) /
-        length(unique(virus))
+        length(unique(virus)),
   ) %>%
   ungroup()
 
-indiv_hi_plots <- hi %>%
-  filter(pid == "HIA15611") %>%
+indiv_hi_plots <- hi_mod %>%
+  # filter(pid == "HIA15611") %>%
   group_by(pid, group, sex, age) %>%
   group_map(plot_one_pid)
 

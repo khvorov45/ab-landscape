@@ -50,7 +50,10 @@ viruses <- select(
   viruses_raw,
   virus = Virus_Name, virus_n = VirusN, virus_year = Year, clade = Clade
 ) %>%
-  mutate(virus_year = as.integer(virus_year))
+  mutate(
+    virus_year = as.integer(virus_year),
+    clade = replace_na(clade, "(Missing)")
+  )
 participants <- select(
   samples_raw,
   pid = PID, group = `Case/Control`, sex = Sex, age = Age
