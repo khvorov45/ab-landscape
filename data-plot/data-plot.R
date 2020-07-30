@@ -62,7 +62,7 @@ save_pdf <- function(plot, name, dir = ".", width = 20, height = 15) {
 # Script ======================================================================
 
 hi <- read_data("hi") %>%
-  # Each pid should have one virus label per year
+  # Each pid should have one virus label per x_position
   group_by(pid, virus_year) %>%
   mutate(
     x_position =
