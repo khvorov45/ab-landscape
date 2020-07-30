@@ -48,7 +48,7 @@ hi <- select(
 )
 viruses <- select(
   viruses_raw,
-  virus = Virus_Name, virus_n = VirusN, virus_year = Year
+  virus = Virus_Name, virus_n = VirusN, virus_year = Year, clade = Clade
 ) %>%
   mutate(virus_year = as.integer(virus_year))
 participants <- select(
