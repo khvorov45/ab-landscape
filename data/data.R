@@ -51,6 +51,11 @@ viruses <- select(
   virus = Virus_Name, virus_n = VirusN, virus_year = Year
 ) %>%
   mutate(virus_year = as.integer(virus_year))
+participants <- select(
+  samples_raw,
+  pid = PID, group = `Case/Control`, sex = Sex, age = Age
+) %>%
+  distinct(pid, .keep_all = TRUE)
 
 # HI results
 
@@ -73,9 +78,14 @@ hi_no_virname <- select(hi, -virus)
 setdiff(viruses$virus_n, hi$virus_n)
 setdiff(hi$virus_n, viruses$virus_n)
 
+# See if pid's match
+setdiff(sera$pid, participants$pid) # KK38 is Annette, exclude that
+setdiff(participants$pid, sera$pid)
+
 # Join the relevant bits of HI data
 hi_full <- inner_join(hi_no_virname, sera, by = "sample") %>%
   inner_join(viruses, by = "virus_n") %>%
+  inner_join(participants, by = "pid") %>%
   filter(!str_detect(sample, "KK38")) # Because Annette's
 
 save_csv(hi_full, "hi")

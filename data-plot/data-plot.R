@@ -34,10 +34,16 @@ plot_one_pid <- function(data, key) {
     scale_y_log10("Titre", breaks = 5 * 2^(0:10)) +
     scale_x_continuous(
       "Virus",
-      breaks = virus_names$year_shifted, labels = virus_names$virus
+      breaks = virus_names$year_shifted, labels = virus_names$virus,
+      expand = c(0, 0.5)
+    ) +
+    coord_cartesian(
+      clip = "off", ylim = c(5, max(data$titre)),
+      xlim = c(min(data$year_shifted), max(data$year_shifted))
     ) +
     geom_line() +
-    geom_point()
+    geom_point() +
+    labs(caption = paste(key$pid, key$group, key$sex, key$age, "years"))
   attr(plot, "name") <- paste(key$pid)
   plot
 }
@@ -56,13 +62,18 @@ save_pdf <- function(plot, name, dir = ".", width = 20, height = 15) {
 # Script ======================================================================
 
 hi <- read_data("hi") %>%
-  # Each pid at each timepoint should have one virus label
-  group_by(pid, timepoint, virus_year) %>%
-  mutate(year_shifted = virus_year + ((row_number() - 1) / n())) %>%
+  # Each pid should have one virus label per year
+  group_by(pid, virus_year) %>%
+  mutate(
+    year_shifted =
+      virus_year + (map_int(virus, ~ which(.x == unique(virus))) - 1) /
+        length(unique(virus))
+  ) %>%
   ungroup()
 
 indiv_hi_plots <- hi %>%
-  group_by(pid) %>%
+  # filter(pid == "HIA15611") %>%
+  group_by(pid, group, sex, age) %>%
   group_map(plot_one_pid)
 
 walk(
