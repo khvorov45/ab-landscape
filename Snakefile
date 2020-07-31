@@ -26,7 +26,8 @@ rule data_plot:
         "data/read_data.R",
         "data-plot/data-plot.R"
     output:
-        directory("data-plot/indiv-hi")
+        directory("data-plot/indiv-hi"),
+        directory("data-plot/indiv-hi-alt")
     shell:
         "Rscript data-plot/data-plot.R"
 
