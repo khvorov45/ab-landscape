@@ -47,7 +47,7 @@ plot_one_pid <- function(data, key) {
         label = if_else(clade == "(Missing)", "", clade),
         y = 5, x = x_position
       ),
-      angle = 90, hjust = 0, col = "gray40", alpha = 0.5,
+      angle = 90, hjust = 0, col = "gray40", alpha = 0.5, size = 3,
       inherit.aes = FALSE
     ) +
     geom_line() +
