@@ -13,9 +13,11 @@ rule data:
         "data-raw/Obj1_Sample_info.xlsx",
         "data-raw/VirusDiln_BT.xlsx",
         "data-raw/Viruses.xlsx",
+        "data-raw/HI-annette-extra.csv",
         "data/data.R"
     output:
-        "data/hi.csv"
+        "data/hi.csv",
+        "data/hi-annette-extra.csv"
     shell:
         "Rscript data/data.R"
 
@@ -27,7 +29,9 @@ rule data_plot:
         "data-plot/data-plot.R"
     output:
         directory("data-plot/indiv-hi"),
-        directory("data-plot/indiv-hi-alt")
+        directory("data-plot/indiv-hi-annette-extra"),
+        directory("data-plot/indiv-hi-alt"),
+        directory("data-plot/indiv-hi-alt-annette-extra")
     shell:
         "Rscript data-plot/data-plot.R"
 

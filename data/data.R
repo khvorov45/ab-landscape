@@ -31,7 +31,7 @@ save_csv <- function(data, name) {
 
 # Script ======================================================================
 
-# The raw data
+# The raw Israel data ---------------------------------------------------------
 
 viruses_raw <- read_raw("Viruses")
 dilutions_raw <- read_raw("VirusDiln_BT")
@@ -58,7 +58,8 @@ participants <- select(
   samples_raw,
   pid = PID, group = `Case/Control`, sex = Sex, age = Age
 ) %>%
-  distinct(pid, .keep_all = TRUE)
+  distinct(pid, .keep_all = TRUE) %>%
+  mutate(age_lab = paste("Age:", age))
 
 # HI results
 
@@ -92,3 +93,32 @@ hi_full <- inner_join(hi_no_virname, sera, by = "sample") %>%
   filter(!str_detect(sample, "KK38")) # Because Annette's
 
 save_csv(hi_full, "hi")
+
+# The extra dataset Annette gave me -------------------------------------------
+
+hi_annette_extra <- read_csv(
+  file.path(data_raw_dir, "HI-annette-extra.csv"),
+  col_types = cols_only(
+    Subject_ID = col_character(),
+    time = col_integer(),
+    Titer = col_integer(),
+    Year = col_integer(),
+    Short_Name = col_character(),
+    Clade = col_character(),
+    prior_H3 = col_integer(),
+    DoBS = col_date()
+  )
+) %>%
+  rename(
+    pid = Subject_ID, timepoint = time, titre = Titer,
+    virus_year = Year, virus = Short_Name, clade = Clade, prior_h3 = prior_H3,
+    dob = DoBS
+  ) %>%
+  mutate(
+    pid = str_replace(pid, "/", "-"),
+    clade = replace_na(clade, "(Missing)"),
+    prior_h3_lab = recode(prior_h3, "0" = "Prior H3: No", "1" = "Prior H3: Yes")
+  ) %>%
+  filter(timepoint %in% 1:6)
+
+save_csv(hi_annette_extra, "hi-annette-extra")

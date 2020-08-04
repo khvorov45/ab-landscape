@@ -41,7 +41,7 @@ plot_one_pid <- function(data, key) {
       clip = "off", ylim = c(5, max(data$titre)),
       xlim = c(min(data$x_position), max(data$x_position))
     ) +
-    labs(caption = paste(key$pid, key$group, key$sex, key$age, "years")) +
+    labs(caption = pmap(key, ~ paste(...))) +
     geom_text(
       aes(
         label = if_else(clade == "(Missing)", "", clade),
@@ -76,79 +76,112 @@ remap_range <- function(range, output_start, output_end) {
       (max(range) - min(range))) * (range - min(range))
 }
 
+x_positions_by_year <- function(hi) {
+  hi %>%
+    # Arrange by year
+    group_by(virus_year) %>%
+    mutate(
+      x_position =
+        virus_year + (map_int(virus, ~ which(.x == unique(virus))) - 1) /
+          length(unique(virus)),
+    ) %>%
+    ungroup()
+}
+
+x_positions_clade_year <- function(hi) {
+  hi_mod <- x_positions_by_year(hi)
+  clade_postions <- gen_clade_positions(hi)
+  # Work out the position of viruses within clades
+  # Use the temporal x_position because it's unique for each virus
+  hi_mod %>%
+    group_by(clade) %>%
+    mutate(
+      rel_position = remap_range(x_position, 0.12, 0.88)
+    ) %>%
+    ungroup() %>%
+    inner_join(clade_postions, by = "clade") %>%
+    mutate(
+      x_position = clade_start + rel_position * clade_len
+    )
+}
+
+gen_clade_positions <- function(hi) {
+  hi %>%
+    group_by(clade) %>%
+    summarise(
+      start_year = min(virus_year),
+      n_viruses = length(unique(virus)),
+      .groups = "drop"
+    ) %>%
+    group_by(start_year) %>%
+    # Arrange by year, make sure the starting positions are unique
+    mutate(
+      x_position =
+        start_year + (map_int(clade, ~ which(.x == unique(clade))) - 1) /
+          length(unique(clade)),
+    ) %>%
+    ungroup() %>%
+    # Stretch the length of clades with more viruses than time to next clade
+    arrange(x_position) %>%
+    mutate(
+      next_x = lead(x_position, default = Inf),
+      diff = pmax(0, n_viruses - (next_x - x_position)),
+      x_position_mod = x_position + lag(cumsum(diff), default = 0),
+      next_x_mod = lead(x_position_mod, default = Inf),
+      clade_len = next_x_mod - x_position_mod,
+      clade_len = ifelse(clade_len == Inf, n_viruses, clade_len)
+    ) %>%
+    select(clade, clade_start = x_position_mod, clade_len)
+}
+
 # Script ======================================================================
 
 # HI data
 hi <- read_data("hi")
+hi_annette_extra <- read_data("hi-annette-extra")
 
 # Each pid should have one virus label per x_position
-hi_mod <- hi %>%
-  # Arrange by year
-  group_by(virus_year) %>%
-  mutate(
-    x_position =
-      virus_year + (map_int(virus, ~ which(.x == unique(virus))) - 1) /
-        length(unique(virus)),
-  ) %>%
-  ungroup()
+hi_mod <- x_positions_by_year(hi)
+hi_annette_extra_mod <- x_positions_by_year(hi_annette_extra)
 
+# Individual plots with a simple year-based x-axis
 indiv_hi_plots <- hi_mod %>%
   # filter(pid == "HIA15611") %>%
-  group_by(pid, group, sex, age) %>%
+  group_by(pid, group, sex, age_lab) %>%
+  group_map(plot_one_pid)
+
+indiv_hi_plots_annette_extra <- hi_annette_extra_mod %>%
+  # filter(pid == first(pid)) %>%
+  group_by(pid, prior_h3_lab) %>%
   group_map(plot_one_pid)
 
 walk(
   indiv_hi_plots, ~ save_pdf(.x, attr(.x, "name"), "indiv-hi", 45, 15)
 )
+walk(
+  indiv_hi_plots_annette_extra,
+  ~ save_pdf(.x, attr(.x, "name"), "indiv-hi-annette-extra", 45, 15)
+)
 
 # A diffrent x-axis
 
-# Work out starting positions for clades
-clade_postions <- hi %>%
-  group_by(clade) %>%
-  summarise(
-    start_year = min(virus_year),
-    n_viruses = length(unique(virus)),
-    .groups = "drop"
-  ) %>%
-  group_by(start_year) %>%
-  # Arrange by year, make sure the starting positions are unique
-  mutate(
-    x_position =
-      start_year + (map_int(clade, ~ which(.x == unique(clade))) - 1) /
-        length(unique(clade)),
-  ) %>%
-  ungroup() %>%
-  # Stretch the length of clades with more viruses than time to next clade
-  arrange(x_position) %>%
-  mutate(
-    next_x = lead(x_position, default = Inf),
-    diff = pmax(0, n_viruses - (next_x - x_position)),
-    x_position_mod = x_position + lag(cumsum(diff), default = 0),
-    next_x_mod = lead(x_position_mod, default = Inf),
-    clade_len = next_x_mod - x_position_mod,
-    clade_len = ifelse(clade_len == Inf, n_viruses, clade_len)
-  ) %>%
-  select(clade, clade_start = x_position_mod, clade_len)
-
-# Work out the position of viruses within clades
-# Use the temporal x_position because it's unique for each virus
-hi_mod_alt <- hi_mod %>%
-  group_by(clade) %>%
-  mutate(
-    rel_position = remap_range(x_position, 0.12, 0.88)
-  ) %>%
-  ungroup() %>%
-  inner_join(clade_postions, by = "clade") %>%
-  mutate(
-    x_position = clade_start + rel_position * clade_len
-  )
+hi_mod_alt <- x_positions_clade_year(hi)
+hi_mod_alt_annette_extra <- x_positions_clade_year(hi_annette_extra)
 
 indiv_hi_plots_alt <- hi_mod_alt %>%
   # filter(pid == "HIA15611") %>%
-  group_by(pid, group, sex, age) %>%
+  group_by(pid, group, sex, age_lab) %>%
+  group_map(plot_one_pid)
+
+indiv_hi_plots_alt_annette_extra <- hi_mod_alt_annette_extra %>%
+  # filter(pid == first(pid)) %>%
+  group_by(pid, dob, prior_h3_lab) %>%
   group_map(plot_one_pid)
 
 walk(
   indiv_hi_plots_alt, ~ save_pdf(.x, attr(.x, "name"), "indiv-hi-alt", 45, 15)
+)
+walk(
+  indiv_hi_plots_alt_annette_extra,
+  ~ save_pdf(.x, attr(.x, "name"), "indiv-hi-alt-annette-extra", 45, 15)
 )
