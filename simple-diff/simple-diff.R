@@ -40,7 +40,11 @@ diffs <- aucs %>%
 
 # Compare the differences
 test_res <- with(diffs, {
-  agricolae::Median.test(logtitre_mid_diff, group)
+  wilcox.test(
+    logtitre_mid_diff[group == "Case"],
+    logtitre_mid_diff[group == "Control"],
+    exact = TRUE, conf.int = TRUE
+  )
 })
 
 # Plot the differences
@@ -57,7 +61,7 @@ diffs_plot <- diffs %>%
   geom_jitter(width = 0.05, height = 0) +
   geom_text(aes(label = pid_outlier), hjust = 1, nudge_x = -0.05) +
   labs(
-    caption = paste0("median test p=", signif(test_res$statistics["p.chisq"], 3))
+    caption = paste0("Mann-Whitney test p=", signif(test_res$p.value, 3))
   )
 
 save_pdf(diffs_plot, "simple-diff", width = 10, height = 10)

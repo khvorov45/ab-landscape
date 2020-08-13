@@ -35,7 +35,19 @@ rule data_plot:
     shell:
         "Rscript data-plot/data-plot.R"
 
+rule simple_diff:
+    input:
+        ".deps-installed",
+        "data/hi.csv",
+        "data/read_data.R",
+        "simple-diff/simple-diff.R"
+    output:
+        "simple-diff/simple-diff.pdf"
+    shell:
+        "Rscript simple-diff/simple-diff.R"
+
 rule all:
     input:
         rules.data.output,
-        rules.data_plot.output
+        rules.data_plot.output,
+        rules.simple_diff.output
