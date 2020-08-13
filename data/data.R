@@ -75,8 +75,15 @@ setdiff(hi$virus, viruses$virus) # %>% write_lines("in-hi-not-in-viruses.txt")
 equally_unique("virus", "virus_n", hi)
 equally_unique("virus", "virus_n", viruses)
 
+# Extra variables for HI results
+hi_extra <- hi %>%
+  mutate(
+    logtitre = log(titre),
+    logtitre_mid = if_else(titre == 5L, logtitre, logtitre + log(2) / 2)
+  )
+
 # Trust viruses for names
-hi_no_virname <- select(hi, -virus)
+hi_no_virname <- select(hi_extra, -virus)
 
 # See if virus numbers match
 setdiff(viruses$virus_n, hi$virus_n)
