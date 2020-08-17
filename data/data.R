@@ -112,7 +112,7 @@ hi_2 <- read_raw("Obj2_timecourse")
 hi_2_final <- hi_2 %>%
   select(
     pid = PID, sex = Sex, age = Age, virus_year = Year, virus = Short_name,
-    clade = cluster,
+    cluster,
     contains("time"),
   ) %>%
   pivot_longer(
@@ -122,7 +122,13 @@ hi_2_final <- hi_2 %>%
   mutate(
     titre = as.integer(round(2^titre, 0)),
     logtitre = log(titre),
-    logtitre_mid = if_else(titre == 5L, logtitre, logtitre + log(2) / 2)
+    logtitre_mid = if_else(titre == 5L, logtitre, logtitre + log(2) / 2),
+    timepoint = str_replace(timepoint, "^time\\s?(\\d)\\.L2HI$", "\\1") %>%
+      as.integer(),
+    age_lab = paste("Age:", age),
+    clade = paste("cluster", cluster),
+    study_year = ceiling(timepoint / 3),
+    study_year_lab = paste("Study year:", study_year)
   )
 
 save_csv(hi_2_final, "hi-obj2")

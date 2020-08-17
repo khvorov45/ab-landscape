@@ -1,6 +1,9 @@
-cat("Plot the data")
+cat("plot the data\n")
 
 library(tidyverse)
+library(furrr)
+
+plan(multiprocess)
 
 data_dir <- "data"
 data_plot_dir <- "data-plot"
@@ -9,7 +12,7 @@ data_plot_dir <- "data-plot"
 
 source(file.path(data_dir, "read_data.R"))
 
-plot_one_pid <- function(data, key) {
+plot_one_pid <- function(data, key, name_gen = function(key) paste(key$pid)) {
   virus_names <- data %>%
     group_by(virus) %>%
     summarise(x_position = unique(x_position), .groups = "drop")
@@ -52,7 +55,7 @@ plot_one_pid <- function(data, key) {
     ) +
     geom_line() +
     geom_point()
-  attr(plot, "name") <- paste(key$pid)
+  attr(plot, "name") <- name_gen(key)
   plot
 }
 
@@ -64,6 +67,14 @@ save_pdf <- function(plot, name, dir = ".", width = 20, height = 15) {
     width = width,
     height = height,
     units = "cm"
+  )
+}
+
+save_pdfs <- function(plots, dir) {
+  plotdir <- file.path(data_plot_dir, dir)
+  if (!dir.exists(plotdir)) dir.create(plotdir)
+  future_map(
+    plots, ~ save_pdf(.x, attr(.x, "name"), dir, 45, 15)
   )
 }
 
@@ -139,10 +150,12 @@ gen_clade_positions <- function(hi) {
 # HI data
 hi <- read_data("hi")
 hi_annette_extra <- read_data("hi-annette-extra")
+hi_2 <- read_data("hi-obj2")
 
 # Each pid should have one virus label per x_position
 hi_mod <- x_positions_by_year(hi)
 hi_annette_extra_mod <- x_positions_by_year(hi_annette_extra)
+hi_2_mod <- x_positions_by_year(hi_2)
 
 # Individual plots with a simple year-based x-axis
 indiv_hi_plots <- hi_mod %>%
@@ -155,18 +168,23 @@ indiv_hi_plots_annette_extra <- hi_annette_extra_mod %>%
   group_by(pid, prior_h3_lab) %>%
   group_map(plot_one_pid)
 
-walk(
-  indiv_hi_plots, ~ save_pdf(.x, attr(.x, "name"), "indiv-hi", 45, 15)
-)
-walk(
-  indiv_hi_plots_annette_extra,
-  ~ save_pdf(.x, attr(.x, "name"), "indiv-hi-annette-extra", 45, 15)
-)
+indiv_hi_plots_hi_2 <- hi_2_mod %>%
+  # filter(pid == first(pid)) %>%
+  group_by(pid, study_year, study_year_lab, sex, age_lab) %>%
+  group_map(
+    plot_one_pid,
+    name_gen = function(key) paste(key$pid, key$study_year, sep = "-")
+  )
+
+save_pdfs(indiv_hi_plots, "indiv-hi")
+save_pdfs(indiv_hi_plots_annette_extra, "indiv-hi-annette-extra")
+save_pdfs(indiv_hi_plots_hi_2, "indiv-hi-2")
 
 # A diffrent x-axis
 
 hi_mod_alt <- x_positions_clade_year(hi)
 hi_mod_alt_annette_extra <- x_positions_clade_year(hi_annette_extra)
+hi_2_mod_alt <- x_positions_clade_year(hi_2)
 
 indiv_hi_plots_alt <- hi_mod_alt %>%
   # filter(pid == "HIA15611") %>%
@@ -178,10 +196,14 @@ indiv_hi_plots_alt_annette_extra <- hi_mod_alt_annette_extra %>%
   group_by(pid, dob, prior_h3_lab) %>%
   group_map(plot_one_pid)
 
-walk(
-  indiv_hi_plots_alt, ~ save_pdf(.x, attr(.x, "name"), "indiv-hi-alt", 45, 15)
-)
-walk(
-  indiv_hi_plots_alt_annette_extra,
-  ~ save_pdf(.x, attr(.x, "name"), "indiv-hi-alt-annette-extra", 45, 15)
-)
+indiv_hi_2_plots_alt <- hi_2_mod_alt %>%
+  # filter(pid == first(pid)) %>%
+  group_by(pid, study_year, study_year_lab, sex, age_lab) %>%
+  group_map(
+    plot_one_pid,
+    name_gen = function(key) paste(key$pid, key$study_year, sep = "-")
+  )
+
+save_pdfs(indiv_hi_plots_alt, "indiv-hi-alt")
+save_pdfs(indiv_hi_plots_alt_annette_extra, "indiv-hi-alt-annette-extra")
+save_pdfs(indiv_hi_2_plots_alt, "indiv-hi-2-alt")

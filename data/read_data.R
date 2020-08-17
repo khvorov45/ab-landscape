@@ -4,7 +4,8 @@ read_data <- function(name) {
     col_types = cols(
       titre = col_integer(),
       timepoint = col_integer(),
-      virus_year = col_integer()
+      virus_year = col_integer(),
+      clade = col_character()
     )
   )
 }

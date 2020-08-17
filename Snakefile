@@ -14,7 +14,7 @@ rule data:
         "data-raw/VirusDiln_BT.xlsx",
         "data-raw/Viruses.xlsx",
         "data-raw/HI-annette-extra.csv",
-        "data-raw/Obj2_timecource.xlsx",
+        "data-raw/Obj2_timecourse.xlsx",
         "data-raw/HI_long.csv",
         "data/data.R"
     output:
@@ -34,8 +34,10 @@ rule data_plot:
     output:
         directory("data-plot/indiv-hi"),
         directory("data-plot/indiv-hi-annette-extra"),
+        directory("data-plot/indiv-hi-2"),
         directory("data-plot/indiv-hi-alt"),
-        directory("data-plot/indiv-hi-alt-annette-extra")
+        directory("data-plot/indiv-hi-alt-annette-extra"),
+        directory("data-plot/indiv-hi-2-alt")
     shell:
         "Rscript data-plot/data-plot.R"
 
