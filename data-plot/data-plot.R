@@ -177,7 +177,7 @@ indiv_hi_plots_hi_2 <- hi_2_mod %>%
   )
 indiv_hi_plots_rmh_hcw <- rmh_hcw_mod %>%
   # filter(pid == first(pid)) %>%
-  group_by(pid, freq_lab, sex, age_lab) %>%
+  group_by(pid, group, sex, age_lab) %>%
   group_map(plot_one_pid)
 
 save_pdfs(indiv_hi_plots, "indiv-hi")
@@ -209,7 +209,7 @@ indiv_hi_2_plots_alt <- hi_2_mod_alt %>%
   )
 indiv_rmh_hcw_plots_alt <- rmh_hcw_mod_alt %>%
   # filter(pid == first(pid)) %>%
-  group_by(pid, freq_lab, sex, age_lab) %>%
+  group_by(pid, group, sex, age_lab) %>%
   group_map(plot_one_pid)
 
 save_pdfs(indiv_hi_plots_alt, "indiv-hi-alt")

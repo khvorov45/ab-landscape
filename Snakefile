@@ -50,10 +50,12 @@ rule simple_diff:
     input:
         ".deps-installed",
         "data/hi.csv",
+        "data/hi-rmh-hcw.csv",
         "data/read_data.R",
         "simple-diff/simple-diff.R"
     output:
-        "simple-diff/simple-diff.pdf"
+        "simple-diff/simple-diff.pdf",
+        "simple-diff/simple-diff-rmh-hcw.pdf"
     shell:
         "Rscript simple-diff/simple-diff.R"
 

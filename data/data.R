@@ -63,7 +63,12 @@ participants <- select(
   pid = PID, group = `Case/Control`, sex = Sex, age = Age
 ) %>%
   distinct(pid, .keep_all = TRUE) %>%
-  mutate(age_lab = paste("Age:", age))
+  mutate(
+    age_lab = paste("Age:", age),
+    # It'd be good to know actual dates of birth
+    year_of_birth = floor(2019.5 - age),
+    group = recode(group, "Case" = "Infrequent", "Control" = "Frequent")
+  )
 
 # HI results
 
@@ -169,16 +174,21 @@ hi_rmh_hcw <- read_raw_csv("HI_long", col_types = cols())
 hi_rmh_hcw_reduced <- hi_rmh_hcw %>%
   mutate(
     virus_year = lubridate::year(IsolDate),
-    freq = as.integer(Vacc5Yn > 3)
+    group = case_when(
+      Vacc5Yn >= 3 ~ "Frequent",
+      Vacc5Yn == 2 ~ "Moderate",
+      Vacc5Yn <= 1 ~ "Infrequent"
+    ),
+    year_of_birth = lubridate::year(dob)
   ) %>%
   select(
-    pid = PID, timepoint = TimeN, virus = Short_Name, clade = Clade, virus_year,
-    titre = Titer, freq,
+    pid = PID, timepoint = TimeN, virus = Short_Name, clade = Clade,
+    year_of_birth, virus_year,
+    titre = Titer, group,
     age = Age, sex
   ) %>%
   mutate(
     age_lab = paste("Age:", age),
-    freq_lab = paste("Frequent:", freq),
     logtitre = log(titre),
     logtitre_mid = if_else(titre == 5, logtitre, logtitre + log(2) / 2)
   )
