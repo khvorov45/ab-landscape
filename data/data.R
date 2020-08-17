@@ -11,6 +11,10 @@ read_raw <- function(name, ...) {
   readxl::read_excel(file.path(data_raw_dir, paste0(name, ".xlsx")), ...)
 }
 
+read_raw_csv <- function(name, ...) {
+  read_csv(file.path(data_raw_dir, paste0(name, ".csv")), ...)
+}
+
 equally_unique <- function(name1, name2, data) {
   # Alignment
   cond1 <- data %>%
@@ -129,3 +133,24 @@ hi_annette_extra <- read_csv(
   filter(timepoint %in% 1:6)
 
 save_csv(hi_annette_extra, "hi-annette-extra")
+
+# HCW study -------------------------------------------------------------------
+
+hi_rmh_hcw <- read_raw_csv("HI_long", col_types = cols())
+
+hi_rmh_hcw_reduced <- hi_rmh_hcw %>%
+  mutate(
+    virus_year = lubridate::year(IsolDate),
+    freq = as.integer(Vacc5Yn > 3)
+  ) %>%
+  select(
+    pid = PID, timepoint = TimeN, virus = Short_Name, clade = Clade, virus_year,
+    titre = Titer, freq,
+    age = Age, sex
+  ) %>%
+  mutate(
+    logtitre = log(titre),
+    logtitre_mid = if_else(titre == 5, logtitre, logtitre + log(2) / 2)
+  )
+
+save_csv(hi_rmh_hcw_reduced, "hi-rmh-hcw")

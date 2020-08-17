@@ -14,9 +14,12 @@ rule data:
         "data-raw/VirusDiln_BT.xlsx",
         "data-raw/Viruses.xlsx",
         "data-raw/HI-annette-extra.csv",
+        "data-raw/Obj2_timecource.xlsx",
+        "data-raw/HI_long.csv",
         "data/data.R"
     output:
         "data/hi.csv",
+        "data/hi-rmh-hcw.csv",
         "data/hi-annette-extra.csv"
     shell:
         "Rscript data/data.R"
