@@ -19,6 +19,7 @@ rule data:
         "data/data.R"
     output:
         "data/hi.csv",
+        "data/hi-obj2.csv",
         "data/hi-rmh-hcw.csv",
         "data/hi-annette-extra.csv"
     shell:

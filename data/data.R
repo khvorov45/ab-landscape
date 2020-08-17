@@ -105,6 +105,28 @@ hi_full <- inner_join(hi_no_virname, sera, by = "sample") %>%
 
 save_csv(hi_full, "hi")
 
+# Israel objective 2
+
+hi_2 <- read_raw("Obj2_timecourse")
+
+hi_2_final <- hi_2 %>%
+  select(
+    pid = PID, sex = Sex, age = Age, virus_year = Year, virus = Short_name,
+    clade = cluster,
+    contains("time"),
+  ) %>%
+  pivot_longer(
+    contains("time"),
+    names_to = "timepoint", values_to = "titre"
+  ) %>%
+  mutate(
+    titre = as.integer(round(2^titre, 0)),
+    logtitre = log(titre),
+    logtitre_mid = if_else(titre == 5L, logtitre, logtitre + log(2) / 2)
+  )
+
+save_csv(hi_2_final, "hi-obj2")
+
 # The extra dataset Annette gave me -------------------------------------------
 
 hi_annette_extra <- read_csv(
@@ -134,7 +156,7 @@ hi_annette_extra <- read_csv(
 
 save_csv(hi_annette_extra, "hi-annette-extra")
 
-# HCW study -------------------------------------------------------------------
+# RMH HCW study ---------------------------------------------------------------
 
 hi_rmh_hcw <- read_raw_csv("HI_long", col_types = cols())
 
