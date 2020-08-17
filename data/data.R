@@ -177,6 +177,8 @@ hi_rmh_hcw_reduced <- hi_rmh_hcw %>%
     age = Age, sex
   ) %>%
   mutate(
+    age_lab = paste("Age:", age),
+    freq_lab = paste("Frequent:", freq),
     logtitre = log(titre),
     logtitre_mid = if_else(titre == 5, logtitre, logtitre + log(2) / 2)
   )

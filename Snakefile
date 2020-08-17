@@ -28,16 +28,21 @@ rule data:
 rule data_plot:
     input:
         ".deps-installed",
-        "data/hi.csv",
         "data/read_data.R",
+        "data/hi.csv",
+        "data/hi-obj2.csv",
+        "data/hi-rmh-hcw.csv",
+        "data/hi-annette-extra.csv",
         "data-plot/data-plot.R"
     output:
         directory("data-plot/indiv-hi"),
         directory("data-plot/indiv-hi-annette-extra"),
         directory("data-plot/indiv-hi-2"),
+        directory("data-plot/indiv-hi-rmh-hcw"),
         directory("data-plot/indiv-hi-alt"),
         directory("data-plot/indiv-hi-alt-annette-extra"),
-        directory("data-plot/indiv-hi-2-alt")
+        directory("data-plot/indiv-hi-2-alt"),
+        directory("data-plot/indiv-hi-rmh-hcw-alt")
     shell:
         "Rscript data-plot/data-plot.R"
 

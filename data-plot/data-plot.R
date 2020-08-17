@@ -151,23 +151,23 @@ gen_clade_positions <- function(hi) {
 hi <- read_data("hi")
 hi_annette_extra <- read_data("hi-annette-extra")
 hi_2 <- read_data("hi-obj2")
+rmh_hcw <- read_data("hi-rmh-hcw")
 
 # Each pid should have one virus label per x_position
 hi_mod <- x_positions_by_year(hi)
 hi_annette_extra_mod <- x_positions_by_year(hi_annette_extra)
 hi_2_mod <- x_positions_by_year(hi_2)
+rmh_hcw_mod <- x_positions_by_year(rmh_hcw)
 
 # Individual plots with a simple year-based x-axis
 indiv_hi_plots <- hi_mod %>%
   # filter(pid == "HIA15611") %>%
   group_by(pid, group, sex, age_lab) %>%
   group_map(plot_one_pid)
-
 indiv_hi_plots_annette_extra <- hi_annette_extra_mod %>%
   # filter(pid == first(pid)) %>%
   group_by(pid, prior_h3_lab) %>%
   group_map(plot_one_pid)
-
 indiv_hi_plots_hi_2 <- hi_2_mod %>%
   # filter(pid == first(pid)) %>%
   group_by(pid, study_year, study_year_lab, sex, age_lab) %>%
@@ -175,27 +175,31 @@ indiv_hi_plots_hi_2 <- hi_2_mod %>%
     plot_one_pid,
     name_gen = function(key) paste(key$pid, key$study_year, sep = "-")
   )
+indiv_hi_plots_rmh_hcw <- rmh_hcw_mod %>%
+  # filter(pid == first(pid)) %>%
+  group_by(pid, freq_lab, sex, age_lab) %>%
+  group_map(plot_one_pid)
 
 save_pdfs(indiv_hi_plots, "indiv-hi")
 save_pdfs(indiv_hi_plots_annette_extra, "indiv-hi-annette-extra")
 save_pdfs(indiv_hi_plots_hi_2, "indiv-hi-2")
+save_pdfs(indiv_hi_plots_rmh_hcw, "indiv-hi-rmh-hcw")
 
-# A diffrent x-axis
+# A different x-axis
 
 hi_mod_alt <- x_positions_clade_year(hi)
 hi_mod_alt_annette_extra <- x_positions_clade_year(hi_annette_extra)
 hi_2_mod_alt <- x_positions_clade_year(hi_2)
+rmh_hcw_mod_alt <- x_positions_clade_year(rmh_hcw)
 
 indiv_hi_plots_alt <- hi_mod_alt %>%
   # filter(pid == "HIA15611") %>%
   group_by(pid, group, sex, age_lab) %>%
   group_map(plot_one_pid)
-
 indiv_hi_plots_alt_annette_extra <- hi_mod_alt_annette_extra %>%
   # filter(pid == first(pid)) %>%
   group_by(pid, dob, prior_h3_lab) %>%
   group_map(plot_one_pid)
-
 indiv_hi_2_plots_alt <- hi_2_mod_alt %>%
   # filter(pid == first(pid)) %>%
   group_by(pid, study_year, study_year_lab, sex, age_lab) %>%
@@ -203,7 +207,12 @@ indiv_hi_2_plots_alt <- hi_2_mod_alt %>%
     plot_one_pid,
     name_gen = function(key) paste(key$pid, key$study_year, sep = "-")
   )
+indiv_rmh_hcw_plots_alt <- rmh_hcw_mod_alt %>%
+  # filter(pid == first(pid)) %>%
+  group_by(pid, freq_lab, sex, age_lab) %>%
+  group_map(plot_one_pid)
 
 save_pdfs(indiv_hi_plots_alt, "indiv-hi-alt")
 save_pdfs(indiv_hi_plots_alt_annette_extra, "indiv-hi-alt-annette-extra")
 save_pdfs(indiv_hi_2_plots_alt, "indiv-hi-2-alt")
+save_pdfs(indiv_rmh_hcw_plots_alt, "indiv-hi-rmh-hcw-alt")
