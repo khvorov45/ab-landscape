@@ -202,11 +202,9 @@ indiv_hi_plots_alt_annette_extra <- hi_mod_alt_annette_extra %>%
   group_map(plot_one_pid)
 indiv_hi_2_plots_alt <- hi_2_mod_alt %>%
   # filter(pid == first(pid)) %>%
-  group_by(pid, study_year, study_year_lab, sex, age_lab) %>%
-  group_map(
-    plot_one_pid,
-    name_gen = function(key) paste(key$pid, key$study_year, sep = "-")
-  )
+  group_by(pid, sex, age_lab) %>%
+  group_map(plot_one_pid) %>%
+  map(function(x) x + facet_wrap(~study_year_lab, ncol = 1))
 indiv_rmh_hcw_plots_alt <- rmh_hcw_mod_alt %>%
   # filter(pid == first(pid)) %>%
   group_by(pid, group, sex, age_lab) %>%
@@ -214,5 +212,5 @@ indiv_rmh_hcw_plots_alt <- rmh_hcw_mod_alt %>%
 
 save_pdfs(indiv_hi_plots_alt, "indiv-hi-alt")
 save_pdfs(indiv_hi_plots_alt_annette_extra, "indiv-hi-alt-annette-extra")
-save_pdfs(indiv_hi_2_plots_alt, "indiv-hi-2-alt")
+save_pdfs(indiv_hi_2_plots_alt, "indiv-hi-2-alt", 45, 45)
 save_pdfs(indiv_rmh_hcw_plots_alt, "indiv-hi-rmh-hcw-alt")
