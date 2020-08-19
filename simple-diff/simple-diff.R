@@ -62,9 +62,9 @@ plot_diffs <- function(diffs) {
     )
 }
 
-save_pdf <- function(plot, name, ...) {
+save_plot <- function(plot, name, ext = "pdf", ...) {
   ggdark::ggsave_dark(
-    file.path(simple_diff_dir, paste0(name, ".pdf")), plot,
+    file.path(simple_diff_dir, paste0(name, ".", ext)), plot,
     units = "cm", ...
   )
 }
@@ -86,5 +86,6 @@ rmh_hcw_diffs <- calc_diffs(rmh_hcw_aucs)
 hi_diffs_plot <- plot_diffs(hi_diffs)
 rmh_hcw_diffs_plot <- plot_diffs(rmh_hcw_diffs)
 
-save_pdf(hi_diffs_plot, "simple-diff", width = 10, height = 10)
-save_pdf(rmh_hcw_diffs_plot, "simple-diff-rmh-hcw", width = 10, height = 10)
+save_plot(hi_diffs_plot, "simple-diff", width = 10, height = 10)
+save_plot(hi_diffs_plot, "simple-diff", ext = "png", width = 10, height = 10)
+save_plot(rmh_hcw_diffs_plot, "simple-diff-rmh-hcw", width = 10, height = 10)

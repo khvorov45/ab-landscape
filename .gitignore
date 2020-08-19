@@ -3,3 +3,4 @@
 .snakemake*
 .deps-installed
 *.pdf
+*.png
