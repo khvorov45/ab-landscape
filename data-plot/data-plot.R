@@ -29,7 +29,8 @@ plot_one_pid <- function(data, key, name_gen = function(key) paste(key$pid)) {
       axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
       legend.position = "bottom",
       legend.box.spacing = unit(0, "null"),
-      panel.grid.minor = element_blank()
+      panel.grid.minor = element_blank(),
+      strip.background = element_blank()
     ) +
     scale_color_discrete("Timepoint") +
     scale_shape_discrete("Timepoint") +
@@ -59,7 +60,7 @@ plot_one_pid <- function(data, key, name_gen = function(key) paste(key$pid)) {
   plot
 }
 
-save_pdf <- function(plot, name, dir = ".", width = 20, height = 15) {
+save_pdf <- function(plot, name, dir = ".", width = 45, height = 15) {
   plotdir <- file.path(data_plot_dir, dir)
   if (!dir.exists(plotdir)) dir.create(plotdir)
   ggdark::ggsave_dark(
@@ -70,12 +71,13 @@ save_pdf <- function(plot, name, dir = ".", width = 20, height = 15) {
   )
 }
 
-save_pdfs <- function(plots, dir) {
+save_pdfs <- function(plots, dir, width = 45, height = 15) {
   plotdir <- file.path(data_plot_dir, dir)
   if (!dir.exists(plotdir)) dir.create(plotdir)
   future_map(
-    plots, ~ save_pdf(.x, attr(.x, "name"), dir, 45, 15)
+    plots, ~ save_pdf(.x, attr(.x, "name"), dir, width, height)
   )
+  invisible(NULL)
 }
 
 remap_range <- function(range, output_start, output_end) {
@@ -170,11 +172,9 @@ indiv_hi_plots_annette_extra <- hi_annette_extra_mod %>%
   group_map(plot_one_pid)
 indiv_hi_plots_hi_2 <- hi_2_mod %>%
   # filter(pid == first(pid)) %>%
-  group_by(pid, study_year, study_year_lab, sex, age_lab) %>%
-  group_map(
-    plot_one_pid,
-    name_gen = function(key) paste(key$pid, key$study_year, sep = "-")
-  )
+  group_by(pid, sex, age_lab) %>%
+  group_map(plot_one_pid) %>%
+  map(function(x) x + facet_wrap(~study_year_lab, ncol = 1))
 indiv_hi_plots_rmh_hcw <- rmh_hcw_mod %>%
   # filter(pid == first(pid)) %>%
   group_by(pid, group, sex, age_lab) %>%
@@ -182,7 +182,7 @@ indiv_hi_plots_rmh_hcw <- rmh_hcw_mod %>%
 
 save_pdfs(indiv_hi_plots, "indiv-hi")
 save_pdfs(indiv_hi_plots_annette_extra, "indiv-hi-annette-extra")
-save_pdfs(indiv_hi_plots_hi_2, "indiv-hi-2")
+save_pdfs(indiv_hi_plots_hi_2, "indiv-hi-2", 45, 45)
 save_pdfs(indiv_hi_plots_rmh_hcw, "indiv-hi-rmh-hcw")
 
 # A different x-axis

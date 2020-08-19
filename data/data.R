@@ -110,7 +110,7 @@ hi_full <- inner_join(hi_no_virname, sera, by = "sample") %>%
 
 save_csv(hi_full, "hi")
 
-# Israel objective 2
+# Israel objective 2 ----------------------------------------------------------
 
 hi_2 <- read_raw("Obj2_timecourse")
 
@@ -122,17 +122,19 @@ hi_2_final <- hi_2 %>%
   ) %>%
   pivot_longer(
     contains("time"),
-    names_to = "timepoint", values_to = "titre"
+    names_to = "timepoint_global", values_to = "titre"
   ) %>%
   mutate(
     titre = as.integer(round(2^titre, 0)),
     logtitre = log(titre),
     logtitre_mid = if_else(titre == 5L, logtitre, logtitre + log(2) / 2),
-    timepoint = str_replace(timepoint, "^time\\s?(\\d)\\.L2HI$", "\\1") %>%
-      as.integer(),
+    timepoint_global = str_replace(
+      timepoint_global, "^time\\s?(\\d)\\.L2HI$", "\\1"
+    ) %>% as.integer(),
+    timepoint = ((timepoint_global - 1) %% 3) + 1,
     age_lab = paste("Age:", age),
     clade = paste("cluster", cluster),
-    study_year = ceiling(timepoint / 3),
+    study_year = ceiling(timepoint_global / 3),
     study_year_lab = paste("Study year:", study_year)
   )
 
