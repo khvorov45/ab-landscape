@@ -211,6 +211,6 @@ indiv_rmh_hcw_plots_alt <- rmh_hcw_mod_alt %>%
   group_map(plot_one_pid)
 
 save_pdfs(indiv_hi_plots_alt, "indiv-hi-alt", 42, 15)
-save_pdfs(indiv_hi_plots_alt_hanam, "indiv-hi-alt-hanam", 35, 13)
+save_pdfs(indiv_hi_plots_alt_hanam, "indiv-hi-hanam-alt", 35, 13)
 save_pdfs(indiv_hi_2_plots_alt, "indiv-hi-2-alt", 45, 45)
 save_pdfs(indiv_rmh_hcw_plots_alt, "indiv-hi-rmh-hcw-alt")

@@ -40,7 +40,7 @@ rule data_plot:
         directory("data-plot/indiv-hi-2"),
         directory("data-plot/indiv-hi-rmh-hcw"),
         directory("data-plot/indiv-hi-alt"),
-        directory("data-plot/indiv-hi-alt-hanam"),
+        directory("data-plot/indiv-hi-hanam-alt"),
         directory("data-plot/indiv-hi-2-alt"),
         directory("data-plot/indiv-hi-rmh-hcw-alt")
     shell:
