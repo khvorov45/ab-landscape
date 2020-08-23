@@ -60,22 +60,30 @@ plot_one_pid <- function(data, key, name_gen = function(key) paste(key$pid)) {
   plot
 }
 
-save_pdf <- function(plot, name, dir = ".", width = 45, height = 15) {
+save_pdf <- function(plot,
+                     name,
+                     dir = ".",
+                     width = 45, height = 15, device = "pdf",
+                     ...) {
   plotdir <- file.path(data_plot_dir, dir)
   if (!dir.exists(plotdir)) dir.create(plotdir)
   ggdark::ggsave_dark(
-    file.path(data_plot_dir, dir, paste0(name, ".pdf")), plot,
+    file.path(data_plot_dir, dir, paste0(name, ".", device)), plot,
     width = width,
     height = height,
-    units = "cm"
+    units = "cm",
+    ...
   )
 }
 
-save_pdfs <- function(plots, dir, width = 45, height = 15) {
+save_pdfs <- function(plots, dir,
+                      width = 45, height = 15,
+                      device = "pdf",
+                      ...) {
   plotdir <- file.path(data_plot_dir, dir)
   if (!dir.exists(plotdir)) dir.create(plotdir)
   future_map(
-    plots, ~ save_pdf(.x, attr(.x, "name"), dir, width, height)
+    plots, ~ save_pdf(.x, attr(.x, "name"), dir, width, height, device)
   )
   invisible(NULL)
 }
@@ -147,6 +155,17 @@ gen_clade_positions <- function(hi) {
     select(clade, clade_start = x_position_mod, clade_len)
 }
 
+make_bg_transparent <- function(plot) {
+  plot +
+    theme(
+      panel.background = element_rect(fill = "transparent"),
+      plot.background = element_rect(fill = "transparent", color = NA),
+      legend.background = element_rect(fill = "transparent"),
+      legend.box.background = element_rect(fill = "transparent"),
+      legend.key = element_rect(fill = "transparent", colour = NA)
+    )
+}
+
 # Script ======================================================================
 
 # HI data
@@ -182,6 +201,7 @@ indiv_hi_plots_rmh_hcw <- rmh_hcw_mod %>%
 
 save_pdfs(indiv_hi_plots, "indiv-hi", 42, 15)
 save_pdfs(indiv_hi_plots_hanam, "indiv-hi-hanam", 35, 13)
+save_pdfs(indiv_hi_plots_hanam, "indiv-hi-hanam-tiff", 35, 13, "tiff")
 save_pdfs(indiv_hi_plots_hi_2, "indiv-hi-2", 45, 45)
 save_pdfs(indiv_hi_plots_rmh_hcw, "indiv-hi-rmh-hcw")
 
@@ -212,5 +232,6 @@ indiv_rmh_hcw_plots_alt <- rmh_hcw_mod_alt %>%
 
 save_pdfs(indiv_hi_plots_alt, "indiv-hi-alt", 42, 15)
 save_pdfs(indiv_hi_plots_alt_hanam, "indiv-hi-hanam-alt", 35, 13)
+save_pdfs(indiv_hi_plots_alt_hanam, "indiv-hi-hanam-alt-tiff", 35, 13, "tiff")
 save_pdfs(indiv_hi_2_plots_alt, "indiv-hi-2-alt", 45, 45)
 save_pdfs(indiv_rmh_hcw_plots_alt, "indiv-hi-rmh-hcw-alt")

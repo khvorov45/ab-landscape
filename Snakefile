@@ -37,10 +37,12 @@ rule data_plot:
     output:
         directory("data-plot/indiv-hi"),
         directory("data-plot/indiv-hi-hanam"),
+        directory("data-plot/indiv-hi-hanam-tiff"),
         directory("data-plot/indiv-hi-2"),
         directory("data-plot/indiv-hi-rmh-hcw"),
         directory("data-plot/indiv-hi-alt"),
         directory("data-plot/indiv-hi-hanam-alt"),
+        directory("data-plot/indiv-hi-hanam-alt-tiff"),
         directory("data-plot/indiv-hi-2-alt"),
         directory("data-plot/indiv-hi-rmh-hcw-alt")
     shell:
