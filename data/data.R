@@ -149,15 +149,15 @@ hi_hanam <- read_csv(
     time = col_integer(),
     Titer = col_integer(),
     Year = col_integer(),
-    Short_Name = col_character(),
     Clade = col_character(),
     prior_H3 = col_integer(),
-    DoBS = col_date()
+    DoBS = col_date(),
+    Virus_Abbrv = col_character()
   )
 ) %>%
   rename(
     pid = Subject_ID, timepoint = time, titre = Titer,
-    virus_year = Year, virus = Short_Name, clade = Clade, prior_h3 = prior_H3,
+    virus_year = Year, virus = Virus_Abbrv, clade = Clade, prior_h3 = prior_H3,
     dob = DoBS
   ) %>%
   mutate(
