@@ -165,7 +165,11 @@ hi_hanam <- read_csv(
     clade = replace_na(clade, "(Missing)"),
     prior_h3_lab = recode(prior_h3, "0" = "Prior H3: No", "1" = "Prior H3: Yes")
   ) %>%
-  filter(timepoint %in% 1:6)
+  filter(
+    timepoint %in% 1:6,
+    # Exclude all egg-grown except HK14e
+    str_detect(virus, "e$", negate = TRUE) | virus == "HK14e"
+  )
 
 save_csv(hi_hanam, "hi-hanam")
 
