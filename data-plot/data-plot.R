@@ -180,8 +180,8 @@ indiv_hi_plots_rmh_hcw <- rmh_hcw_mod %>%
   group_by(pid, group, sex, age_lab) %>%
   group_map(plot_one_pid)
 
-save_pdfs(indiv_hi_plots, "indiv-hi")
-save_pdfs(indiv_hi_plots_hanam, "indiv-hi-hanam")
+save_pdfs(indiv_hi_plots, "indiv-hi", 42, 15)
+save_pdfs(indiv_hi_plots_hanam, "indiv-hi-hanam", 35, 13)
 save_pdfs(indiv_hi_plots_hi_2, "indiv-hi-2", 45, 45)
 save_pdfs(indiv_hi_plots_rmh_hcw, "indiv-hi-rmh-hcw")
 
@@ -210,7 +210,7 @@ indiv_rmh_hcw_plots_alt <- rmh_hcw_mod_alt %>%
   group_by(pid, group, sex, age_lab) %>%
   group_map(plot_one_pid)
 
-save_pdfs(indiv_hi_plots_alt, "indiv-hi-alt")
-save_pdfs(indiv_hi_plots_alt_hanam, "indiv-hi-alt-hanam")
+save_pdfs(indiv_hi_plots_alt, "indiv-hi-alt", 42, 15)
+save_pdfs(indiv_hi_plots_alt_hanam, "indiv-hi-alt-hanam", 35, 13)
 save_pdfs(indiv_hi_2_plots_alt, "indiv-hi-2-alt", 45, 45)
 save_pdfs(indiv_rmh_hcw_plots_alt, "indiv-hi-rmh-hcw-alt")
