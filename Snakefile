@@ -13,7 +13,7 @@ rule data:
         "data-raw/Obj1_Sample_info.xlsx",
         "data-raw/VirusDiln_BT.xlsx",
         "data-raw/Viruses.xlsx",
-        "data-raw/HI-annette-extra.csv",
+        "data-raw/HI_hanam.csv",
         "data-raw/Obj2_timecourse.xlsx",
         "data-raw/HI_long.csv",
         "data/data.R"
@@ -21,7 +21,7 @@ rule data:
         "data/hi.csv",
         "data/hi-obj2.csv",
         "data/hi-rmh-hcw.csv",
-        "data/hi-annette-extra.csv"
+        "data/hi-hanam.csv"
     shell:
         "Rscript data/data.R"
 
@@ -32,15 +32,15 @@ rule data_plot:
         "data/hi.csv",
         "data/hi-obj2.csv",
         "data/hi-rmh-hcw.csv",
-        "data/hi-annette-extra.csv",
+        "data/hi-hanam.csv",
         "data-plot/data-plot.R"
     output:
         directory("data-plot/indiv-hi"),
-        directory("data-plot/indiv-hi-annette-extra"),
+        directory("data-plot/indiv-hi-hanam"),
         directory("data-plot/indiv-hi-2"),
         directory("data-plot/indiv-hi-rmh-hcw"),
         directory("data-plot/indiv-hi-alt"),
-        directory("data-plot/indiv-hi-alt-annette-extra"),
+        directory("data-plot/indiv-hi-alt-hanam"),
         directory("data-plot/indiv-hi-2-alt"),
         directory("data-plot/indiv-hi-rmh-hcw-alt")
     shell:

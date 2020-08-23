@@ -140,10 +140,10 @@ hi_2_final <- hi_2 %>%
 
 save_csv(hi_2_final, "hi-obj2")
 
-# The extra dataset Annette gave me -------------------------------------------
+# The Hanam dataset Annette gave me -------------------------------------------
 
-hi_annette_extra <- read_csv(
-  file.path(data_raw_dir, "HI-annette-extra.csv"),
+hi_hanam <- read_csv(
+  file.path(data_raw_dir, "HI_hanam.csv"),
   col_types = cols_only(
     Subject_ID = col_character(),
     time = col_integer(),
@@ -167,7 +167,7 @@ hi_annette_extra <- read_csv(
   ) %>%
   filter(timepoint %in% 1:6)
 
-save_csv(hi_annette_extra, "hi-annette-extra")
+save_csv(hi_hanam, "hi-hanam")
 
 # RMH HCW study ---------------------------------------------------------------
 
