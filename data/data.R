@@ -163,12 +163,23 @@ hi_hanam <- read_csv(
   mutate(
     pid = str_replace(pid, "/", "-"),
     clade = replace_na(clade, "(Missing)"),
-    prior_h3_lab = recode(prior_h3, "0" = "Prior H3: No", "1" = "Prior H3: Yes")
+    prior_h3_lab = recode(
+      prior_h3,
+      "0" = "Prior H3: No", "1" = "Prior H3: Yes"
+    ),
   ) %>%
   filter(
     timepoint %in% 1:6,
     # Exclude all egg-grown except HK14e
     str_detect(virus, "e$", negate = TRUE) | virus == "HK14e"
+  ) %>%
+  mutate(
+    # Recode timepoint
+    timepoint_num = timepoint,
+    timepoint = recode(
+      timepoint_num,
+      "1" = "BL", "2" = "d4", "3" = "d7", "4" = "d14", "5" = "d21", "6" = "d280"
+    )
   )
 
 save_csv(hi_hanam, "hi-hanam")
