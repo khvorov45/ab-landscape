@@ -58,6 +58,7 @@ rule simple_diff:
     output:
         "simple-diff/simple-diff.pdf",
         "simple-diff/simple-diff.png",
+        "simple-diff/simple-diff-hanam.pdf",
         "simple-diff/simple-diff-rmh-hcw.pdf"
     shell:
         "Rscript simple-diff/simple-diff.R"

@@ -12,7 +12,7 @@ source(file.path(data_dir, "read_data.R"))
 calc_auc <- function(hi) {
   hi %>%
     # Remove the viruses that circulated before birth
-    filter(virus_year >= year_of_birth) %>%
+    filter(virus_year >= year_of_birth, !is.na(logtitre_mid)) %>%
     # Make sure the is one measurement per individual per timepoint
     # per virus year
     group_by(pid, group, year_of_birth, timepoint, virus_year) %>%
@@ -34,7 +34,7 @@ calc_diffs <- function(aucs) {
     select(pid, group, logtitre_mid_diff)
 }
 
-plot_diffs <- function(diffs) {
+plot_diffs <- function(diffs, ylab = "Normalised difference b/w T1 & T2") {
   unique_groups <- unique(diffs$group)
   test_res <- with(diffs, {
     wilcox.test(
@@ -54,7 +54,7 @@ plot_diffs <- function(diffs) {
     ggplot(aes(group, logtitre_mid_diff)) +
     ggdark::dark_theme_bw(verbose = FALSE) +
     xlab("Group") +
-    ylab("Normalised difference b/w T1 & T2") +
+    ylab(ylab) +
     geom_jitter(width = 0.05, height = 0) +
     geom_text(aes(label = pid_outlier), hjust = 1, nudge_x = -0.05) +
     labs(
@@ -73,19 +73,34 @@ save_plot <- function(plot, name, ext = "pdf", ...) {
 
 hi <- read_data("hi")
 rmh_hcw <- read_data("hi-rmh-hcw") %>% filter(group != "Moderate")
+hanam <- read_data("hi-hanam") %>%
+  filter(virus_year >= 2000) %>%
+  mutate(group = prior_h3_lab) %>%
+  filter(timepoint %in% c("BL", "d14")) %>%
+  mutate(
+    timepoint = recode(timepoint, "BL" = "1", "d14" = "2") %>%
+      as.character() %>%
+      as.numeric()
+  )
 
 # Work out area under curve with midpoints
 hi_aucs <- calc_auc(hi)
 rmh_hcw_aucs <- calc_auc(rmh_hcw)
+hanam_aucs <- calc_auc(hanam)
 
 # Differences between timepoints 1 and 2
 hi_diffs <- calc_diffs(hi_aucs)
 rmh_hcw_diffs <- calc_diffs(rmh_hcw_aucs)
+hanam_diffs <- calc_diffs(hanam_aucs)
 
 # Plot the differences
 hi_diffs_plot <- plot_diffs(hi_diffs)
 rmh_hcw_diffs_plot <- plot_diffs(rmh_hcw_diffs)
+hanam_diffs_plot <- plot_diffs(
+  hanam_diffs, "Difference b/w BL & d14 for viruses after 2000"
+)
 
 save_plot(hi_diffs_plot, "simple-diff", width = 10, height = 10)
 save_plot(hi_diffs_plot, "simple-diff", ext = "png", width = 10, height = 10)
 save_plot(rmh_hcw_diffs_plot, "simple-diff-rmh-hcw", width = 10, height = 10)
+save_plot(hanam_diffs_plot, "simple-diff-hanam", width = 10, height = 10)

@@ -167,6 +167,9 @@ hi_hanam <- read_csv(
       prior_h3,
       "0" = "Prior H3: No", "1" = "Prior H3: Yes"
     ),
+    year_of_birth = lubridate::year(dob),
+    logtitre = log(titre),
+    logtitre_mid = if_else(titre == 5, logtitre, logtitre + log(2) / 2)
   ) %>%
   filter(
     timepoint %in% 1:6,
