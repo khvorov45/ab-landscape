@@ -67,6 +67,10 @@ plot_diffs <- function(diffs, ylab = "Normalised difference b/w T1 & T2") {
 }
 
 save_plot <- function(plot, name, ext = "pdf", ...) {
+  write_csv(
+    select(plot$data, -pid_outlier),
+    file.path(simple_diff_dir, paste0(name, ".csv"))
+  )
   ggdark::ggsave_dark(
     file.path(simple_diff_dir, paste0(name, ".", ext)), plot,
     units = "cm", ...

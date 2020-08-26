@@ -60,7 +60,11 @@ rule simple_diff:
         "simple-diff/simple-diff.png",
         "simple-diff/simple-diff-hanam.pdf",
         "simple-diff/simple-diff-hanam-d280.pdf",
-        "simple-diff/simple-diff-rmh-hcw.pdf"
+        "simple-diff/simple-diff-rmh-hcw.pdf",
+        "simple-diff/simple-diff.csv",
+        "simple-diff/simple-diff-hanam.csv",
+        "simple-diff/simple-diff-hanam-d280.csv",
+        "simple-diff/simple-diff-rmh-hcw.csv"
     shell:
         "Rscript simple-diff/simple-diff.R"
 
