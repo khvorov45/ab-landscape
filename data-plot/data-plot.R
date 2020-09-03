@@ -168,7 +168,9 @@ make_bg_transparent <- function(plot) {
 }
 
 study_year_lab_facets <- function(x) {
-  x + facet_wrap(~study_year_lab, ncol = 1, strip.position = "right")
+  x +
+    facet_wrap(~study_year_lab, ncol = 1, strip.position = "right") +
+    theme(panel.spacing = unit(0, "null"))
 }
 
 # Script ======================================================================

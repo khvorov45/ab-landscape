@@ -14,7 +14,7 @@ rule data:
         "data-raw/VirusDiln_BT.xlsx",
         "data-raw/Viruses.xlsx",
         "data-raw/HI_hanam.csv",
-        "data-raw/Obj2_timecourse.xlsx",
+        "data-raw/Obj2_timecourse_200904_complete.xlsx",
         "data-raw/HI_long.csv",
         "data/data.R"
     output:

@@ -123,16 +123,17 @@ save_csv(hi_full, "hi")
 
 # Israel objective 2 ----------------------------------------------------------
 
-hi_2 <- read_raw("Obj2_timecourse")
+hi_2 <- read_raw("Obj2_timecourse_200904_complete")
 
 hi_2_final <- hi_2 %>%
   select(
-    pid = PID, sex = Sex, age = Age, virus_year = Year, virus = Short_name,
+    pid = PID, sex = Sex, age = Age, virus_year = Virus_Year,
+    virus = Short_name,
     cluster,
-    contains("time"),
+    contains("L2HI"),
   ) %>%
   pivot_longer(
-    contains("time"),
+    contains("L2HI"),
     names_to = "timepoint_global", values_to = "titre"
   ) %>%
   mutate(
