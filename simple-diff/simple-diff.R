@@ -15,9 +15,9 @@ calc_auc <- function(hi) {
     filter(virus_year >= year_of_birth, !is.na(logtitre_mid)) %>%
     # Make sure the is one measurement per individual per timepoint
     # per virus year
-    group_by(pid, group, year_of_birth, timepoint, virus_year) %>%
+    group_by(pid, group, year_of_birth, timepoint_num, virus_year) %>%
     summarise(logtitre_mid = mean(logtitre_mid), .groups = "drop") %>%
-    group_by(pid, group, year_of_birth, timepoint) %>%
+    group_by(pid, group, year_of_birth, timepoint_num) %>%
     summarise(
       area_under_curve = DescTools::AUC(virus_year, logtitre_mid),
       average_loghimid = area_under_curve / (max(virus_year) - min(virus_year)),
@@ -27,9 +27,9 @@ calc_auc <- function(hi) {
 
 calc_diffs <- function(aucs) {
   aucs %>%
-    filter(timepoint %in% c(1, 2)) %>%
+    filter(timepoint_num %in% c(1, 2)) %>%
     select(-area_under_curve) %>%
-    pivot_wider(names_from = timepoint, values_from = average_loghimid) %>%
+    pivot_wider(names_from = timepoint_num, values_from = average_loghimid) %>%
     mutate(logtitre_mid_diff = `2` - `1`) %>%
     select(pid, group, logtitre_mid_diff)
 }
@@ -66,7 +66,7 @@ plot_diffs <- function(diffs, ylab = "Normalised difference b/w T1 & T2") {
     )
 }
 
-save_plot <- function(plot, name, ext = "pdf", ...) {
+save_plot <- function(plot, name, ext = "png", ...) {
   write_csv(
     select(plot$data, -pid_outlier),
     file.path(simple_diff_dir, paste0(name, ".csv"))
@@ -83,7 +83,7 @@ process_hanam <- function(hanam, t2 = "d14", virus_threshold = 2014) {
     mutate(group = prior_h3_lab) %>%
     filter(timepoint %in% c("BL", t2)) %>%
     mutate(
-      timepoint = if_else(timepoint == "BL", 1, 2) %>%
+      timepoint_num = if_else(timepoint == "BL", 1, 2) %>%
         as.character() %>%
         as.numeric()
     )
@@ -124,7 +124,6 @@ hanam_d280_diffs_plot <- plot_diffs(
 )
 
 save_plot(hi_diffs_plot, "simple-diff", width = 10, height = 10)
-save_plot(hi_diffs_plot, "simple-diff", ext = "png", width = 10, height = 10)
 save_plot(rmh_hcw_diffs_plot, "simple-diff-rmh-hcw", width = 10, height = 10)
 save_plot(hanam_diffs_plot, "simple-diff-hanam", width = 10, height = 10)
 save_plot(

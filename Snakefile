@@ -37,12 +37,10 @@ rule data_plot:
     output:
         directory("data-plot/indiv-hi"),
         directory("data-plot/indiv-hi-hanam"),
-        directory("data-plot/indiv-hi-hanam-tiff"),
         directory("data-plot/indiv-hi-2"),
         directory("data-plot/indiv-hi-rmh-hcw"),
         directory("data-plot/indiv-hi-alt"),
         directory("data-plot/indiv-hi-hanam-alt"),
-        directory("data-plot/indiv-hi-hanam-alt-tiff"),
         directory("data-plot/indiv-hi-2-alt"),
         directory("data-plot/indiv-hi-rmh-hcw-alt")
     shell:
@@ -56,11 +54,10 @@ rule simple_diff:
         "data/read_data.R",
         "simple-diff/simple-diff.R"
     output:
-        "simple-diff/simple-diff.pdf",
         "simple-diff/simple-diff.png",
-        "simple-diff/simple-diff-hanam.pdf",
-        "simple-diff/simple-diff-hanam-d280.pdf",
-        "simple-diff/simple-diff-rmh-hcw.pdf",
+        "simple-diff/simple-diff-hanam.png",
+        "simple-diff/simple-diff-hanam-d280.png",
+        "simple-diff/simple-diff-rmh-hcw.png",
         "simple-diff/simple-diff.csv",
         "simple-diff/simple-diff-hanam.csv",
         "simple-diff/simple-diff-hanam-d280.csv",

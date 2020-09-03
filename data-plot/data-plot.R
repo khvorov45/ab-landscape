@@ -77,10 +77,10 @@ save_pdf <- function(plot,
   )
 }
 
-save_pdfs <- function(plots, dir,
-                      width = 45, height = 15,
-                      device = "pdf",
-                      ...) {
+save_plots <- function(plots, dir,
+                       width = 45, height = 15,
+                       device = "png",
+                       ...) {
   plotdir <- file.path(data_plot_dir, dir)
   if (!dir.exists(plotdir)) dir.create(plotdir)
   future_map(
@@ -167,6 +167,10 @@ make_bg_transparent <- function(plot) {
     )
 }
 
+study_year_lab_facets <- function(x) {
+  x + facet_wrap(~study_year_lab, ncol = 1, strip.position = "right")
+}
+
 # Script ======================================================================
 
 # HI data
@@ -194,17 +198,16 @@ indiv_hi_plots_hi_2 <- hi_2_mod %>%
   # filter(pid == first(pid)) %>%
   group_by(pid, sex, age_lab) %>%
   group_map(plot_one_pid) %>%
-  map(function(x) x + facet_wrap(~study_year_lab, ncol = 1))
+  map(study_year_lab_facets)
 indiv_hi_plots_rmh_hcw <- rmh_hcw_mod %>%
   # filter(pid == first(pid)) %>%
   group_by(pid, group, sex, age_lab) %>%
   group_map(plot_one_pid)
 
-save_pdfs(indiv_hi_plots, "indiv-hi", 42, 15)
-save_pdfs(indiv_hi_plots_hanam, "indiv-hi-hanam", 35, 13)
-save_pdfs(indiv_hi_plots_hanam, "indiv-hi-hanam-tiff", 35, 13, "tiff")
-save_pdfs(indiv_hi_plots_hi_2, "indiv-hi-2", 45, 45)
-save_pdfs(indiv_hi_plots_rmh_hcw, "indiv-hi-rmh-hcw")
+save_plots(indiv_hi_plots, "indiv-hi", 42, 15)
+save_plots(indiv_hi_plots_hanam, "indiv-hi-hanam", 35, 13)
+save_plots(indiv_hi_plots_hi_2, "indiv-hi-2", 45, 45)
+save_plots(indiv_hi_plots_rmh_hcw, "indiv-hi-rmh-hcw")
 
 # A different x-axis
 
@@ -225,14 +228,13 @@ indiv_hi_2_plots_alt <- hi_2_mod_alt %>%
   # filter(pid == first(pid)) %>%
   group_by(pid, sex, age_lab) %>%
   group_map(plot_one_pid) %>%
-  map(function(x) x + facet_wrap(~study_year_lab, ncol = 1))
+  map(study_year_lab_facets)
 indiv_rmh_hcw_plots_alt <- rmh_hcw_mod_alt %>%
   # filter(pid == first(pid)) %>%
   group_by(pid, group, sex, age_lab) %>%
   group_map(plot_one_pid)
 
-save_pdfs(indiv_hi_plots_alt, "indiv-hi-alt", 42, 15)
-save_pdfs(indiv_hi_plots_alt_hanam, "indiv-hi-hanam-alt", 35, 13)
-save_pdfs(indiv_hi_plots_alt_hanam, "indiv-hi-hanam-alt-tiff", 35, 13, "tiff")
-save_pdfs(indiv_hi_2_plots_alt, "indiv-hi-2-alt", 45, 45)
-save_pdfs(indiv_rmh_hcw_plots_alt, "indiv-hi-rmh-hcw-alt")
+save_plots(indiv_hi_plots_alt, "indiv-hi-alt", 42, 15)
+save_plots(indiv_hi_plots_alt_hanam, "indiv-hi-hanam-alt", 35, 13)
+save_plots(indiv_hi_2_plots_alt, "indiv-hi-2-alt", 45, 45)
+save_plots(indiv_rmh_hcw_plots_alt, "indiv-hi-rmh-hcw-alt")
