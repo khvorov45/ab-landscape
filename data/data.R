@@ -147,7 +147,9 @@ hi_2_final <- hi_2 %>%
     age_lab = paste("Age:", age),
     clade = paste("cluster", cluster),
     study_year = ceiling(timepoint_global / 3),
-    study_year_lab = paste("Study year:", study_year)
+    study_year_lab = glue::glue(
+      "Year {study_year} 20{15 + study_year}/{16 + study_year}"
+    )
   )
 
 save_csv(hi_2_final, "hi-obj2")
