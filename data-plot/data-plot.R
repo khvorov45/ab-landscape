@@ -26,7 +26,8 @@ plot_one_pid <- function(data, key, name_gen = function(key) paste(key$pid)) {
     ) +
     ggdark::dark_theme_bw(verbose = FALSE) +
     theme(
-      axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+      axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 9),
+      text = element_text(size = 20),
       legend.position = "bottom",
       legend.box.spacing = unit(0, "null"),
       panel.grid.minor = element_blank(),
