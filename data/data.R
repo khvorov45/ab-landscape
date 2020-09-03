@@ -33,6 +33,13 @@ save_csv <- function(data, name) {
   write_csv(data, file.path(data_dir, paste0(name, ".csv")))
 }
 
+recode_3_timepoints <- function(timepoint_num) {
+  recode(
+    timepoint_num,
+    "1" = "Pre-vax", "2" = "Post-vax", "3" = "Post-season",
+  )
+}
+
 # Script ======================================================================
 
 # The raw Israel data ---------------------------------------------------------
@@ -45,7 +52,11 @@ hi_raw <- read_raw("HI")
 
 # Select the required columns
 
-sera <- select(sera_raw, sample = Sample_ID, pid = PID, timepoint = Timepoint)
+sera <- sera_raw %>%
+  select(sample = Sample_ID, pid = PID, timepoint_num = Timepoint) %>%
+  filter(timepoint_num %in% 1:3) %>%
+  mutate(timepoint = recode_3_timepoints(timepoint_num))
+
 hi <- select(
   hi_raw,
   sample = Sample_ID, virus = Virus, virus_n = VirusN, titre = Titer
@@ -131,7 +142,8 @@ hi_2_final <- hi_2 %>%
     timepoint_global = str_replace(
       timepoint_global, "^time\\s?(\\d)\\.L2HI$", "\\1"
     ) %>% as.integer(),
-    timepoint = ((timepoint_global - 1) %% 3) + 1,
+    timepoint_num = ((timepoint_global - 1) %% 3) + 1,
+    timepoint = recode_3_timepoints(timepoint_num),
     age_lab = paste("Age:", age),
     clade = paste("cluster", cluster),
     study_year = ceiling(timepoint_global / 3),
@@ -202,12 +214,13 @@ hi_rmh_hcw_reduced <- hi_rmh_hcw %>%
     year_of_birth = lubridate::year(dob)
   ) %>%
   select(
-    pid = PID, timepoint = TimeN, virus = Short_Name, clade = Clade,
+    pid = PID, timepoint_num = TimeN, virus = Short_Name, clade = Clade,
     year_of_birth, virus_year,
     titre = Titer, group,
     age = Age, sex
   ) %>%
   mutate(
+    timepoint = recode_3_timepoints(timepoint_num),
     age_lab = paste("Age:", age),
     logtitre = log(titre),
     logtitre_mid = if_else(titre == 5, logtitre, logtitre + log(2) / 2)
