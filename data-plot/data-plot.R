@@ -198,7 +198,7 @@ indiv_hi_plots_hanam <- hi_hanam_mod %>%
   group_map(plot_one_pid)
 indiv_hi_plots_hi_2 <- hi_2_mod %>%
   # filter(pid == first(pid)) %>%
-  group_by(pid, sex, age_lab) %>%
+  group_by(pid, sex, age_lab, n5y_prior_vacc_lab) %>%
   group_map(plot_one_pid) %>%
   map(study_year_lab_facets)
 indiv_hi_plots_rmh_hcw <- rmh_hcw_mod %>%

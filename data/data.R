@@ -128,6 +128,7 @@ hi_2 <- read_raw("Obj2_timecourse_200904_complete")
 hi_2_final <- hi_2 %>%
   select(
     pid = PID, sex = Sex, age = Age, virus_year = Virus_Year,
+    n5y_prior_vacc = n5Y_prior_vacc,
     virus = Short_name,
     cluster,
     contains("L2HI"),
@@ -150,7 +151,8 @@ hi_2_final <- hi_2 %>%
     study_year = ceiling(timepoint_global / 3),
     study_year_lab = glue::glue(
       "Year {study_year} 20{15 + study_year}/{16 + study_year}"
-    )
+    ),
+    n5y_prior_vacc_lab = paste0("Vac in past 5 years: ", n5y_prior_vacc)
   )
 
 save_csv(hi_2_final, "hi-obj2")
