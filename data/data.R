@@ -59,11 +59,11 @@ sera <- sera_raw %>%
 
 hi <- select(
   hi_raw,
-  sample = Sample_ID, virus = Virus, virus_n = VirusN, titre = Titer
+  sample = Sample_ID, virus_n = VirusN, titre = Titer
 )
 viruses <- select(
   viruses_raw,
-  virus = Virus_Name, virus_n = VirusN, virus_year = Year, clade = Clade
+  virus = Short_name, virus_n = VirusN, virus_year = Year, clade = Clade
 ) %>%
   mutate(
     virus_year = as.integer(virus_year),
@@ -87,12 +87,7 @@ participants <- select(
 setdiff(hi$sample, sera$sample)
 setdiff(sera$sample, hi$sample)
 
-# See if virus names match
-setdiff(viruses$virus, hi$virus) # %>% write_lines("in-viruses-not-in-hi.txt")
-setdiff(hi$virus, viruses$virus) # %>% write_lines("in-hi-not-in-viruses.txt")
-
 # See if virus numbers are as unique as names
-equally_unique("virus", "virus_n", hi)
 equally_unique("virus", "virus_n", viruses)
 
 # Extra variables for HI results
@@ -101,9 +96,6 @@ hi_extra <- hi %>%
     logtitre = log(titre),
     logtitre_mid = if_else(titre == 5L, logtitre, logtitre + log(2) / 2)
   )
-
-# Trust viruses for names
-hi_no_virname <- select(hi_extra, -virus)
 
 # See if virus numbers match
 setdiff(viruses$virus_n, hi$virus_n)
