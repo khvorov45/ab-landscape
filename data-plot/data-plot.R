@@ -54,7 +54,16 @@ plot_one_pid <- function(data, key, name_gen = function(key) paste(key$pid)) {
       ),
       angle = 90, hjust = 0, col = "gray40", alpha = 0.5, size = 3,
       inherit.aes = FALSE
-    ) +
+    )
+  if ("vaccine_strain" %in% names(data)) {
+    plot <- plot +
+      geom_vline(
+        aes(xintercept = x_position),
+        data = filter(data, vaccine_strain),
+        alpha = 0.8, col = "blue", lty = "11"
+      )
+  }
+  plot <- plot +
     geom_line() +
     geom_point()
   attr(plot, "name") <- name_gen(key)

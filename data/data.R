@@ -106,10 +106,12 @@ setdiff(sera$pid, participants$pid) # KK38 is Annette, exclude that
 setdiff(participants$pid, sera$pid)
 
 # Join the relevant bits of HI data
-hi_full <- inner_join(hi_no_virname, sera, by = "sample") %>%
+hi_full <- inner_join(hi_extra, sera, by = "sample") %>%
   inner_join(viruses, by = "virus_n") %>%
   inner_join(participants, by = "pid") %>%
-  filter(!str_detect(sample, "KK38")) # Because Annette's
+  filter(!str_detect(sample, "KK38")) %>% # Because Annette's
+  # Vaccine strain
+  mutate(vaccine_strain = virus_n == 40)
 
 save_csv(hi_full, "hi")
 
@@ -119,7 +121,7 @@ hi_2 <- read_raw("Obj2_timecourse_200904_complete")
 
 hi_2_final <- hi_2 %>%
   select(
-    pid = PID, sex = Sex, age = Age, virus_year = Virus_Year,
+    pid = PID, sex = Sex, age = Age, virus_year = Virus_Year, virus_n = VirusN,
     n5y_prior_vacc = n5Y_prior_vacc,
     virus = Short_name,
     cluster,
@@ -144,7 +146,9 @@ hi_2_final <- hi_2 %>%
     study_year_lab = glue::glue(
       "Year {study_year} 20{15 + study_year}/{16 + study_year}"
     ),
-    n5y_prior_vacc_lab = paste0("Vac in past 5 years: ", n5y_prior_vacc)
+    n5y_prior_vacc_lab = paste0("Vac in past 5 years: ", n5y_prior_vacc),
+    vaccine_strain = (virus_n == 5 & study_year %in% c(1, 2)) |
+      (virus_n == 40 & study_year == 3)
   )
 
 save_csv(hi_2_final, "hi-obj2")
