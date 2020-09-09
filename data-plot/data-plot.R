@@ -188,12 +188,27 @@ study_year_lab_facets <- function(x) {
 hi <- read_data("hi")
 hi_hanam <- read_data("hi-hanam")
 hi_2 <- read_data("hi-obj2")
+hi_2_bwyears <- hi_2 %>%
+  filter(timepoint_global %in% c(3, 4, 6, 7)) %>%
+  mutate(
+    study_year_lab = if_else(
+      timepoint_global %in% c(3, 4), "Year 1 2016/17", "Year 2 2017/18"
+    ),
+    timepoint = recode(
+      timepoint,
+      "Pre-vax" = "Pre-vax (next year)",
+      "Post-season" = "Post-season (this year)"
+    ) %>%
+      fct_relevel("Post-season (this year)"),
+    vaccine_strain = virus == "Hkong/4801/14e"
+  )
 rmh_hcw <- read_data("hi-rmh-hcw")
 
 # Each pid should have one virus label per x_position
 hi_mod <- x_positions_by_year(hi)
 hi_hanam_mod <- x_positions_by_year(hi_hanam)
 hi_2_mod <- x_positions_by_year(hi_2)
+hi_2_bwyears_mod <- x_positions_by_year(hi_2_bwyears)
 rmh_hcw_mod <- x_positions_by_year(rmh_hcw)
 
 # Individual plots with a simple year-based x-axis
@@ -210,6 +225,11 @@ indiv_hi_plots_hi_2 <- hi_2_mod %>%
   group_by(pid, sex, age_lab, n5y_prior_vacc_lab) %>%
   group_map(plot_one_pid) %>%
   map(study_year_lab_facets)
+indiv_hi_plots_hi_2_bwyears <- hi_2_bwyears_mod %>%
+  # filter(pid == first(pid)) %>%
+  group_by(pid, sex, age_lab, n5y_prior_vacc_lab) %>%
+  group_map(plot_one_pid) %>%
+  map(study_year_lab_facets)
 indiv_hi_plots_rmh_hcw <- rmh_hcw_mod %>%
   # filter(pid == first(pid)) %>%
   group_by(pid, group, sex, age_lab) %>%
@@ -218,6 +238,7 @@ indiv_hi_plots_rmh_hcw <- rmh_hcw_mod %>%
 save_plots(indiv_hi_plots, "indiv-hi", 42, 15)
 save_plots(indiv_hi_plots_hanam, "indiv-hi-hanam", 35, 13)
 save_plots(indiv_hi_plots_hi_2, "indiv-hi-2", 45, 45)
+save_plots(indiv_hi_plots_hi_2_bwyears, "indiv-hi-2-bwyears", 40, 20)
 save_plots(indiv_hi_plots_rmh_hcw, "indiv-hi-rmh-hcw")
 
 # A different x-axis
@@ -225,6 +246,7 @@ save_plots(indiv_hi_plots_rmh_hcw, "indiv-hi-rmh-hcw")
 hi_mod_alt <- x_positions_clade_year(hi)
 hi_mod_alt_hanam <- x_positions_clade_year(hi_hanam)
 hi_2_mod_alt <- x_positions_clade_year(hi_2)
+hi_2_bwyears_mod_alt <- x_positions_clade_year(hi_2_bwyears)
 rmh_hcw_mod_alt <- x_positions_clade_year(rmh_hcw)
 
 indiv_hi_plots_alt <- hi_mod_alt %>%
@@ -240,6 +262,11 @@ indiv_hi_2_plots_alt <- hi_2_mod_alt %>%
   group_by(pid, sex, age_lab) %>%
   group_map(plot_one_pid) %>%
   map(study_year_lab_facets)
+indiv_hi_2_bwyears_plots_alt <- hi_2_bwyears_mod_alt %>%
+  # filter(pid == first(pid)) %>%
+  group_by(pid, sex, age_lab) %>%
+  group_map(plot_one_pid) %>%
+  map(study_year_lab_facets)
 indiv_rmh_hcw_plots_alt <- rmh_hcw_mod_alt %>%
   # filter(pid == first(pid)) %>%
   group_by(pid, group, sex, age_lab) %>%
@@ -248,4 +275,5 @@ indiv_rmh_hcw_plots_alt <- rmh_hcw_mod_alt %>%
 save_plots(indiv_hi_plots_alt, "indiv-hi-alt", 42, 15)
 save_plots(indiv_hi_plots_alt_hanam, "indiv-hi-hanam-alt", 35, 13)
 save_plots(indiv_hi_2_plots_alt, "indiv-hi-2-alt", 45, 45)
+save_plots(indiv_hi_2_bwyears_plots_alt, "indiv-hi-2-bwyears-alt", 40, 20)
 save_plots(indiv_rmh_hcw_plots_alt, "indiv-hi-rmh-hcw-alt")

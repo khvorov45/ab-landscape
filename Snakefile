@@ -38,10 +38,12 @@ rule data_plot:
         directory("data-plot/indiv-hi"),
         directory("data-plot/indiv-hi-hanam"),
         directory("data-plot/indiv-hi-2"),
+        directory("data-plot/indiv-hi-2-bwyears"),
         directory("data-plot/indiv-hi-rmh-hcw"),
         directory("data-plot/indiv-hi-alt"),
         directory("data-plot/indiv-hi-hanam-alt"),
         directory("data-plot/indiv-hi-2-alt"),
+        directory("data-plot/indiv-hi-2-bwyears-alt"),
         directory("data-plot/indiv-hi-rmh-hcw-alt")
     shell:
         "Rscript data-plot/data-plot.R"

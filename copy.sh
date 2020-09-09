@@ -1,6 +1,9 @@
 rm -rf "/home/khvorova/vidrlwhoflu/Research/BAA 75D301-10-R-67835/Analyses/Objective 2/Israel/indiv-hi-2" "/home/khvorova/vidrlwhoflu/Research/BAA 75D301-10-R-67835/Analyses/Objective 2/Israel/indiv-hi-2-alt"
 cp -R /home/khvorova/Projects/ab-landscape/data-plot/indiv-hi-2 /home/khvorova/Projects/ab-landscape/data-plot/indiv-hi-2-alt "/home/khvorova/vidrlwhoflu/Research/BAA 75D301-10-R-67835/Analyses/Objective 2/Israel"
 
+rm -rf "/home/khvorova/vidrlwhoflu/Research/BAA 75D301-10-R-67835/Analyses/Objective 2/Israel/indiv-hi-2-bwyears" "/home/khvorova/vidrlwhoflu/Research/BAA 75D301-10-R-67835/Analyses/Objective 2/Israel/indiv-hi-2-bwyears-alt"
+cp -R /home/khvorova/Projects/ab-landscape/data-plot/indiv-hi-2-bwyears /home/khvorova/Projects/ab-landscape/data-plot/indiv-hi-2-bwyears-alt "/home/khvorova/vidrlwhoflu/Research/BAA 75D301-10-R-67835/Analyses/Objective 2/Israel"
+
 rm -rf "/home/khvorova/vidrlwhoflu/Research/BAA 75D301-10-R-67835/Analyses/Objective 1/Israel/indiv-hi" "/home/khvorova/vidrlwhoflu/Research/BAA 75D301-10-R-67835/Analyses/Objective 1/Israel/indiv-hi-alt"
 cp -R /home/khvorova/Projects/ab-landscape/data-plot/indiv-hi /home/khvorova/Projects/ab-landscape/data-plot/indiv-hi-alt "/home/khvorova/vidrlwhoflu/Research/BAA 75D301-10-R-67835/Analyses/Objective 1/Israel"
 
