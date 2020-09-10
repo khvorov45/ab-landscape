@@ -119,6 +119,56 @@ save_csv(hi_full, "hi")
 
 hi_2 <- read_raw("Obj2_timecourse_200904_complete")
 
+# Pull blood collection dates
+hi_2_dates <- hi_2 %>%
+  select(contains("Blood_Draw_date"), pid = PID) %>%
+  pivot_longer(
+    contains("Blood_Draw_date"),
+    names_to = "timepoint_global",
+    values_to = "timepoint_date"
+  ) %>%
+  mutate(
+    timepoint_global = str_replace(
+      timepoint_global, "^time\\s?(\\d)\\.Blood_Draw_date$", "\\1"
+    ) %>% as.integer(),
+    timepoint_date = lubridate::as_date(timepoint_date)
+  ) %>%
+  distinct(pid, timepoint_global, timepoint_date) %>%
+  # Make sure there is one blood collection point per id per time
+  mutate(rown = row_number()) %>%
+  group_by(pid, timepoint_global) %>%
+  filter(rown == first(rown)) %>%
+  select(-rown) %>%
+  # Impute the missing dates by looking at the average time b/w timepoints
+  mutate(timepoint_date_imputed = is.na(timepoint_date))
+
+# Need to impute dates sequentially and in both directions
+t_first <- min(hi_2_dates$timepoint_global)
+t_last <- max(hi_2_dates$timepoint_global)
+for (i in c(t_first:t_last, t_last:t_first)) {
+  hi_2_dates <- hi_2_dates %>%
+    group_by(timepoint_global) %>%
+    mutate(
+      timepoint_date = if_else(
+        is.na(timepoint_date),
+        lead(timepoint_date) - mean(
+          lead(timepoint_date) - timepoint_date,
+          na.rm = TRUE
+        ),
+        timepoint_date
+      ),
+      timepoint_date = if_else(
+        is.na(timepoint_date),
+        lag(timepoint_date) + mean(
+          timepoint_date - lag(timepoint_date),
+          na.rm = TRUE
+        ),
+        timepoint_date
+      )
+    ) %>%
+    ungroup()
+}
+
 hi_2_final <- hi_2 %>%
   select(
     pid = PID, sex = Sex, age = Age, virus_year = Virus_Year, virus_n = VirusN,
@@ -147,11 +197,18 @@ hi_2_final <- hi_2 %>%
       "Year {study_year} 20{15 + study_year}/{16 + study_year}"
     ),
     n5y_prior_vacc_lab = paste0("Vac in past 5 years: ", n5y_prior_vacc),
+    # It'd be good to know the actual dob
+    year_of_birth = floor(2019.5 - age),
     vaccine_strain = (virus_n == 5 & study_year %in% c(1, 2)) |
       (virus_n == 40 & study_year == 3)
   )
 
-save_csv(hi_2_final, "hi-obj2")
+hi_2_final_dates <- inner_join(
+  hi_2_final, hi_2_dates,
+  by = c("pid", "timepoint_global")
+)
+
+save_csv(hi_2_final_dates, "hi-obj2")
 
 # The Hanam dataset Annette gave me -------------------------------------------
 
