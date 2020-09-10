@@ -67,8 +67,22 @@ rule simple_diff:
     shell:
         "Rscript simple-diff/simple-diff.R"
 
+rule drop_off:
+    input:
+        ".deps-installed",
+        "data/hi-obj2.csv",
+        "data/read_data.R",
+        "drop-off/drop-off.R"
+    output:
+        "drop-off/spag.png",
+        "drop-off/spag-even.png",
+        "drop-off/spag-facets.png"
+    shell:
+        "Rscript drop-off/drop-off.R"
+
 rule all:
     input:
         rules.data.output,
         rules.data_plot.output,
-        rules.simple_diff.output
+        rules.simple_diff.output,
+        rules.drop_off.output
