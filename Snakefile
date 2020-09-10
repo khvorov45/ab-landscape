@@ -76,7 +76,9 @@ rule drop_off:
     output:
         "drop-off/spag.png",
         "drop-off/spag-even.png",
-        "drop-off/spag-facets.png"
+        "drop-off/spag-facets.png",
+        "drop-off/vac-resp.png",
+        "drop-off/vac-resp.csv"
     shell:
         "Rscript drop-off/drop-off.R"
 
