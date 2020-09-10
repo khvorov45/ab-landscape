@@ -75,6 +75,8 @@ save_plot <- function(plot, name, ...) {
 
 hi_2 <- read_data("hi-obj2")
 
+# Plots -----------------------------------------------------------------------
+
 aucs <- calc_auc(
   hi_2, pid, year_of_birth, timepoint_global, timepoint, timepoint_date,
   timepoint_date_imputed,
@@ -84,5 +86,18 @@ aucs <- calc_auc(
 spag <- plot_spag(aucs)
 save_plot(spag, "spag", width = 15, height = 8)
 
+spag_facets <- spag +
+  facet_wrap(
+    ~study_year_lab,
+    nrow = 1, scales = "free_x"
+  ) +
+  theme(
+    strip.background = element_blank(),
+    panel.spacing = unit(0, "null")
+  )
+save_plot(spag_facets, "spag-facets", width = 20, height = 8)
+
 spag_labs <- plot_spag(aucs, xdate = FALSE)
 save_plot(spag_labs, "spag-even", width = 15, height = 8)
+
+# Quantify response -----------------------------------------------------------
