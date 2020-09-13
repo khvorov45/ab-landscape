@@ -29,7 +29,7 @@ cp /home/khvorova/Projects/ab-landscape/simple-diff/simple-diff.png "/home/khvor
 
 
 rm -rf "$OBJ2/drop-off/*"
-cp "$PROJ/drop-off/spag.png" "$PROJ/drop-off/spag-even.png" "$PROJ/drop-off/spag-facets.png" "$PROJ/drop-off/vac-resp.png" "$PROJ/drop-off/vac-resp.csv" "$OBJ2/drop-off"
+cp "$PROJ/drop-off/spag.png" "$PROJ/drop-off/spag-even.png" "$PROJ/drop-off/spag-facets.png" "$PROJ/drop-off/vac-resp.png" "$PROJ/drop-off/vac-resp.csv" "$PROJ/drop-off/vac-resp-scatter.png" "$PROJ/drop-off/vac-resp-cat.png" "$PROJ/drop-off/vac-resp-vacc.png" "$PROJ/drop-off/vac-resp-age.png" "$OBJ2/drop-off"
 
 rm -rf /home/khvorova/vidrlwhoflu/Research/ab-landscape
 cp -R /home/khvorova/Projects/ab-landscape /home/khvorova/vidrlwhoflu/Research/ab-landscape
