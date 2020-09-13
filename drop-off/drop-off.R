@@ -78,6 +78,53 @@ save_plot <- function(plot, name, ...) {
   )
 }
 
+# Categorise vaccine response
+create_response_categories <- function(resp, tol) {
+  diffs <- na.omit(resp - lag(resp))
+  diffs[abs(diffs) < tol] <- 0
+  if (all(diffs == 0)) {
+    return("No change")
+  }
+  if (any(diffs > 0) & all(diffs >= 0)) {
+    return("Increasing")
+  }
+  if (any(diffs < 0) & all(diffs <= 0)) {
+    return("Decreasing")
+  }
+  "Alternating"
+}
+
+plot_response <- function(data) {
+  data %>%
+    ggplot(aes(study_year, exp(vac_resp), color = pid)) +
+    ggdark::dark_theme_bw(verbose = FALSE) +
+    theme(legend.position = "none") +
+    scale_x_continuous("Study year", breaks = 1:3) +
+    scale_y_log10(
+      "Vaccine response (av. HI t2 / t1 ratio)",
+      breaks = c(0.5, 1, 2, 3, 4, 5)
+    ) +
+    geom_line(alpha = 0.4) +
+    geom_point(alpha = 0.4)
+}
+
+plot_categories <- function(data, var_name, var_lab) {
+  data %>%
+    ggplot(aes(!!rlang::sym(var_name))) +
+    ggdark::dark_theme_bw(verbose = FALSE) +
+    theme(
+      strip.background = element_blank(),
+      panel.grid.minor = element_blank()
+    ) +
+    scale_y_continuous(
+      "Count",
+      expand = expansion(mult = c(0, .1)), breaks = 1:15
+    ) +
+    scale_x_continuous(var_lab) +
+    facet_wrap(~resp_type, nrow = 2) +
+    geom_histogram(binwidth = 1, col = "black")
+}
+
 # Script ======================================================================
 
 hi_2 <- read_data("hi-obj2")
@@ -112,11 +159,11 @@ save_plot(spag_labs, "spag-even", width = 15, height = 8)
 
 # Get the vaccine response
 vac_resp <- aucs %>%
-  group_by(pid, study_year, age, n5y_prior_vacc) %>%
+  group_by(pid, study_year, age, n5y_prior_vacc, study_year_lab) %>%
   summarise(
-    vac_resp =
-      average_loghimid[timepoint_num == 2] -
-        average_loghimid[timepoint_num == 1],
+    postvax = average_loghimid[timepoint_num == 2],
+    prevax = average_loghimid[timepoint_num == 1],
+    vac_resp = postvax - prevax,
     .groups = "drop"
   ) %>%
   ungroup() %>%
@@ -125,22 +172,61 @@ vac_resp <- aucs %>%
 save_data(vac_resp, "vac-resp")
 
 # Plot vaccine response
-vac_resp_plot <- vac_resp %>%
-  ggplot(aes(study_year, exp(vac_resp), color = pid)) +
-  ggdark::dark_theme_bw(verbose = FALSE) +
-  theme(legend.position = "none") +
-  scale_x_continuous("Study year", breaks = 1:3) +
-  scale_y_log10(
-    "Vaccine response (av. HI t2 / t1 ratio)",
-    breaks = c(0.5, 1, 2, 3, 4, 5)
-  ) +
-  geom_line(alpha = 0.4) +
-  geom_point(alpha = 0.4)
+vac_resp_plot <- plot_response(vac_resp)
 
 save_plot(vac_resp_plot, "vac-resp", width = 10, height = 10)
 
+# Scatter for pre/post vax titres
+vac_resp_scatter <- vac_resp %>%
+  ggplot(aes(exp(prevax), exp(postvax))) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(
+    strip.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.spacing = unit(0, "null")
+  ) +
+  scale_x_log10("Pre-vaccination av. titre", breaks = 5 * 2^(0:10)) +
+  scale_y_log10("Post-vaccination av. titre", breaks = 5 * 2^(0:10)) +
+  facet_wrap(~study_year_lab) +
+  geom_point()
+
+save_plot(vac_resp_scatter, "vac-resp-scatter", width = 15, height = 10)
+
 lme4::lmer(
-  vac_resp ~ study_year_cent + n5y_prior_vacc + age + (1 | pid),
+  postvax ~ prevax + study_year_cent + (1 | pid),
   vac_resp
 ) %>%
   summary()
+
+# Categorise response
+
+vac_resp_cat <- vac_resp %>%
+  group_by(pid, age, n5y_prior_vacc) %>%
+  summarise(
+    resp_type = create_response_categories(vac_resp, tol = log(1.2)),
+    .groups = "drop"
+  )
+
+vac_resp_cat %>% count(resp_type)
+
+# Facet response by categories
+
+vac_resp_cat_plot <- vac_resp %>%
+  inner_join(select(vac_resp_cat, pid, resp_type), by = "pid") %>%
+  plot_response() +
+  facet_wrap(~resp_type) +
+  theme(strip.background = element_blank())
+
+save_plot(vac_resp_cat_plot, "vac-resp-cat", width = 10, height = 10)
+
+# Plot age for the categories
+vac_resp_age_plot <- plot_categories(vac_resp_cat, "age", "Age")
+
+save_plot(vac_resp_age_plot, "vac-resp-age", width = 10, height = 10)
+
+# Plot number of previous vaccinations
+vac_resp_vacc_plot <- plot_categories(
+  vac_resp_cat, "n5y_prior_vacc", "Vaccinations in past 5 years"
+)
+
+save_plot(vac_resp_vacc_plot, "vac-resp-vacc", width = 10, height = 10)

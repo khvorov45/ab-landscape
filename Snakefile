@@ -78,6 +78,10 @@ rule drop_off:
         "drop-off/spag-even.png",
         "drop-off/spag-facets.png",
         "drop-off/vac-resp.png",
+        "drop-off/vac-resp-cat.png",
+        "drop-off/vac-resp-age.png",
+        "drop-off/vac-resp-vacc.png",
+        "drop-off/vac-resp-scatter.png",
         "drop-off/vac-resp.csv"
     shell:
         "Rscript drop-off/drop-off.R"
