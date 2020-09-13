@@ -126,14 +126,15 @@ save_data(vac_resp, "vac-resp")
 
 # Plot vaccine response
 vac_resp_plot <- vac_resp %>%
-  ggplot(aes(study_year, exp(vac_resp))) +
+  ggplot(aes(study_year, exp(vac_resp), color = pid)) +
   ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(legend.position = "none") +
   scale_x_continuous("Study year", breaks = 1:3) +
   scale_y_log10(
     "Vaccine response (av. HI t2 / t1 ratio)",
     breaks = c(0.5, 1, 2, 3, 4, 5)
   ) +
-  geom_line(aes(group = pid), alpha = 0.4) +
+  geom_line(alpha = 0.4) +
   geom_point(alpha = 0.4)
 
 save_plot(vac_resp_plot, "vac-resp", width = 10, height = 10)
