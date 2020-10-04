@@ -67,7 +67,8 @@ viruses <- select(
 ) %>%
   mutate(
     virus_year = as.integer(virus_year),
-    clade = replace_na(clade, "(Missing)")
+    clade = replace_na(clade, "(Missing)"),
+    egg = str_detect(virus, "e$")
   )
 participants <- select(
   samples_raw,
