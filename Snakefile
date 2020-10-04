@@ -57,10 +57,14 @@ rule simple_diff:
         "simple-diff/simple-diff.R"
     output:
         "simple-diff/simple-diff.png",
+        "simple-diff/simple-diff-egg-cell.png",
+        "simple-diff/simple-diff-egg-minus-cell.png",
         "simple-diff/simple-diff-hanam.png",
         "simple-diff/simple-diff-hanam-d280.png",
         "simple-diff/simple-diff-rmh-hcw.png",
         "simple-diff/simple-diff.csv",
+        "simple-diff/simple-diff-egg-cell.csv",
+        "simple-diff/simple-diff-egg-minus-cell.csv",
         "simple-diff/simple-diff-hanam.csv",
         "simple-diff/simple-diff-hanam-d280.csv",
         "simple-diff/simple-diff-rmh-hcw.csv"

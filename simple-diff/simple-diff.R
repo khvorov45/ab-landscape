@@ -40,7 +40,7 @@ plot_diffs <- function(diffs, ylab = "Normalised difference b/w T1 & T2") {
     wilcox.test(
       logtitre_mid_diff[group == unique_groups[[1]]],
       logtitre_mid_diff[group == unique_groups[[2]]],
-      exact = TRUE, conf.int = TRUE
+      exact = TRUE
     )
   })
   diffs %>%
@@ -57,10 +57,15 @@ plot_diffs <- function(diffs, ylab = "Normalised difference b/w T1 & T2") {
     ungroup() %>%
     ggplot(aes(group, logtitre_mid_diff)) +
     ggdark::dark_theme_bw(verbose = FALSE) +
+    theme(
+      strip.background = element_blank(),
+      panel.spacing = unit(0, "null")
+    ) +
     xlab("Group") +
     ylab(ylab) +
     geom_jitter(width = 0.05, height = 0) +
-    geom_text(aes(label = pid_outlier), hjust = 1, nudge_x = -0.05) +
+    geom_boxplot(fill = NA, col = "blue", outlier.alpha = 0) +
+    # geom_text(aes(label = pid_outlier), hjust = 1, nudge_x = -0.05) +
     labs(
       caption = paste0("Mann-Whitney test p=", signif(test_res$p.value, 3))
     )
@@ -89,6 +94,15 @@ process_hanam <- function(hanam, t2 = "d14", virus_threshold = 2014) {
     )
 }
 
+egg_cell <- function(data, .f) {
+  aucs_both <- .f(data) %>% mutate(egg = "both")
+  aucs_egg_cell <- data %>%
+    group_by(egg) %>%
+    group_modify(~ .f(.x)) %>%
+    mutate(egg = if_else(egg, "egg", "cell"))
+  bind_rows(aucs_both, aucs_egg_cell)
+}
+
 # Script ======================================================================
 
 hanam_virus_threshold <- 2014
@@ -100,19 +114,40 @@ hanam_d280 <- read_data("hi-hanam") %>%
   process_hanam("d280", hanam_virus_threshold)
 
 # Work out area under curve with midpoints
-hi_aucs <- calc_auc(hi)
+hi_aucs_all_v <- egg_cell(hi, calc_auc) %>% mutate(landscape = "after birth")
+hi_aucs_same_time <- hi %>%
+  filter(virus_year >= min(virus_year[egg])) %>%
+  egg_cell(calc_auc) %>%
+  mutate(landscape = paste0("after ", min(hi$virus_year[hi$egg])))
+hi_aucs <- bind_rows(hi_aucs_all_v, hi_aucs_same_time)
 rmh_hcw_aucs <- calc_auc(rmh_hcw)
 hanam_aucs <- calc_auc(hanam)
 hanam_d280_aucs <- calc_auc(hanam_d280)
 
 # Differences between timepoints 1 and 2
-hi_diffs <- calc_diffs(hi_aucs)
+hi_diffs <- hi_aucs %>%
+  group_by(egg, landscape) %>%
+  group_modify(~ calc_diffs(.x))
 rmh_hcw_diffs <- calc_diffs(rmh_hcw_aucs)
 hanam_diffs <- calc_diffs(hanam_aucs)
 hanam_d280_diffs <- calc_diffs(hanam_d280_aucs)
 
+# Differences b/w egg and cell
+hi_cell_egg_diffs <- hi_diffs %>%
+  group_by(pid, group, landscape) %>%
+  summarise(
+    logtitre_mid_diff =
+      logtitre_mid_diff[egg == "egg"] - logtitre_mid_diff[egg == "cell"],
+    .groups = "drop"
+  )
+
 # Plot the differences
-hi_diffs_plot <- plot_diffs(hi_diffs)
+hi_diffs_plot_egg_cell <- plot_diffs(hi_diffs) +
+  facet_grid(landscape ~ egg) +
+  labs(caption = element_blank())
+hi_diffs_plot <- plot_diffs(
+  filter(hi_diffs, egg == "both", landscape == "after birth")
+)
 rmh_hcw_diffs_plot <- plot_diffs(rmh_hcw_diffs)
 hanam_diffs_plot <- plot_diffs(
   hanam_diffs,
@@ -122,11 +157,26 @@ hanam_d280_diffs_plot <- plot_diffs(
   hanam_d280_diffs,
   paste("Difference b/w BL & d280 for viruses after", hanam_virus_threshold)
 )
+hi_cell_egg_diffs_plot <- plot_diffs(
+  hi_cell_egg_diffs,
+  "Egg response minus cell response"
+) +
+  facet_wrap(~landscape, nrow = 1) +
+  labs(caption = element_blank()) +
+  geom_hline(yintercept = 0)
 
 save_plot(hi_diffs_plot, "simple-diff", width = 10, height = 10)
+save_plot(
+  hi_diffs_plot_egg_cell, "simple-diff-egg-cell",
+  width = 25, height = 15
+)
 save_plot(rmh_hcw_diffs_plot, "simple-diff-rmh-hcw", width = 10, height = 10)
 save_plot(hanam_diffs_plot, "simple-diff-hanam", width = 10, height = 10)
 save_plot(
   hanam_d280_diffs_plot, "simple-diff-hanam-d280",
   width = 10, height = 10
+)
+save_plot(
+  hi_cell_egg_diffs_plot, "simple-diff-egg-minus-cell",
+  width = 15, height = 10
 )
