@@ -266,6 +266,9 @@ hi_rmh_hcw_reduced <- hi_rmh_hcw %>%
   mutate(
     virus_year = lubridate::year(IsolDate),
     group = case_when(
+      PID %in%
+        c("RMH0052", "RMH0072", "RMH0044", "RMH0099", "RMH0117", "RMH0154")
+      ~ "Infected",
       Vacc5Yn >= 3 ~ "Frequent",
       Vacc5Yn == 2 ~ "Moderate",
       Vacc5Yn <= 1 ~ "Infrequent"

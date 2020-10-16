@@ -35,26 +35,7 @@ calc_diffs <- function(aucs) {
 }
 
 plot_diffs <- function(diffs, ylab = "Normalised difference b/w T1 & T2") {
-  unique_groups <- unique(diffs$group)
-  test_res <- with(diffs, {
-    wilcox.test(
-      logtitre_mid_diff[group == unique_groups[[1]]],
-      logtitre_mid_diff[group == unique_groups[[2]]],
-      exact = TRUE
-    )
-  })
   diffs %>%
-    group_by(group) %>%
-    mutate(
-      pid_outlier = if_else(
-        logtitre_mid_diff %in% DescTools::Outlier(
-          logtitre_mid_diff,
-          na.rm = TRUE
-        ),
-        pid, ""
-      )
-    ) %>%
-    ungroup() %>%
     ggplot(aes(group, logtitre_mid_diff)) +
     ggdark::dark_theme_bw(verbose = FALSE) +
     theme(
@@ -64,16 +45,12 @@ plot_diffs <- function(diffs, ylab = "Normalised difference b/w T1 & T2") {
     xlab("Group") +
     ylab(ylab) +
     geom_jitter(width = 0.05, height = 0) +
-    geom_boxplot(fill = NA, col = "blue", outlier.alpha = 0) +
-    # geom_text(aes(label = pid_outlier), hjust = 1, nudge_x = -0.05) +
-    labs(
-      caption = paste0("Mann-Whitney test p=", signif(test_res$p.value, 3))
-    )
+    geom_boxplot(fill = NA, col = "#0e0e2e", outlier.alpha = 0)
 }
 
 save_plot <- function(plot, name, ext = "png", ...) {
   write_csv(
-    select(plot$data, -pid_outlier),
+    select(plot$data),
     file.path(simple_diff_dir, paste0(name, ".csv"))
   )
   ggdark::ggsave_dark(
