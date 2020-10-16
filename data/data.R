@@ -201,7 +201,8 @@ hi_2_final <- hi_2 %>%
     # It'd be good to know the actual dob
     year_of_birth = floor(2019.5 - age),
     vaccine_strain = (virus_n == 5 & study_year %in% c(1, 2)) |
-      (virus_n == 40 & study_year == 3)
+      (virus_n == 40 & study_year == 3),
+    egg = str_detect(virus, "e$")
   )
 
 hi_2_final_dates <- inner_join(
