@@ -25,28 +25,81 @@ rule data:
     shell:
         "Rscript data/data.R"
 
-rule data_plot:
+rule hi:
     input:
         ".deps-installed",
         "data/read_data.R",
+        "data-plot/data-plot.R",
         "data/hi.csv",
-        "data/hi-obj2.csv",
-        "data/hi-rmh-hcw.csv",
-        "data/hi-hanam.csv",
-        "data-plot/data-plot.R"
+        "data-plot/hi.R",
     output:
         directory("data-plot/indiv-hi"),
-        directory("data-plot/indiv-hi-hanam"),
-        directory("data-plot/indiv-hi-2"),
-        directory("data-plot/indiv-hi-2-bwyears"),
-        directory("data-plot/indiv-hi-rmh-hcw"),
         directory("data-plot/indiv-hi-alt"),
-        directory("data-plot/indiv-hi-hanam-alt"),
-        directory("data-plot/indiv-hi-2-alt"),
-        directory("data-plot/indiv-hi-2-bwyears-alt"),
-        directory("data-plot/indiv-hi-rmh-hcw-alt")
     shell:
-        "Rscript data-plot/data-plot.R"
+        "Rscript data-plot/hi.R"
+
+rule hi_2:
+    input:
+        ".deps-installed",
+        "data/read_data.R",
+        "data-plot/data-plot.R",
+        "data/hi-obj2.csv",
+        "data-plot/hi-2.R",
+    output:
+        directory("data-plot/indiv-hi-2"),
+        directory("data-plot/indiv-hi-2-alt"),
+    shell:
+        "Rscript data-plot/hi-2.R"
+
+rule hi_2_bwyears:
+    input:
+        ".deps-installed",
+        "data/read_data.R",
+        "data-plot/data-plot.R",
+        "data/hi-obj2.csv",
+        "data-plot/hi-2-bwyears.R",
+    output:
+        directory("data-plot/indiv-hi-2-bwyears"),
+        directory("data-plot/indiv-hi-2-bwyears-alt"),
+    shell:
+        "Rscript data-plot/hi-2-bwyears.R"
+
+rule hi_hanam:
+    input:
+        ".deps-installed",
+        "data/read_data.R",
+        "data/hi-hanam.csv",
+        "data-plot/data-plot.R",
+        "data-plot/hi-hanam.R",
+    output:
+        directory("data-plot/indiv-hi-hanam"),
+        directory("data-plot/indiv-hi-hanam-alt"),
+    shell:
+        "Rscript data-plot/hi-hanam.R"
+
+rule hi_rmh_hcw:
+    input:
+        ".deps-installed",
+        "data/read_data.R",
+        "data/hi-rmh-hcw.csv",
+        "data-plot/data-plot.R",
+        "data-plot/hi-rmh-hcw.R",
+    output:
+        directory("data-plot/indiv-hi-rmh-hcw"),
+        directory("data-plot/indiv-hi-rmh-hcw-alt"),
+    shell:
+        "Rscript data-plot/hi-rmh-hcw.R"
+
+rule data_plot:
+    input:
+        rules.hi.output,
+        rules.hi_2.output,
+        rules.hi_2_bwyears.output,
+        rules.hi_hanam.output,
+        rules.hi_rmh_hcw.output,
+    output:
+        touch(".plots-created")
+
 
 rule simple_diff:
     input:
