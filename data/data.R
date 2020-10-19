@@ -40,7 +40,27 @@ recode_3_timepoints <- function(timepoint_num) {
   )
 }
 
+year_keep_last_2 <- function(virus_name) {
+  str_replace(virus_name, "/\\d{0,2}(\\d{2}[[:alpha:]]?)$", "/\\1")
+}
+
+standardise_full_virus_name <- function(virus_name) {
+  virus_name %>%
+    tolower() %>%
+    year_keep_last_2()
+}
+
 # Script ======================================================================
+
+# The map ---------------------------------------------------------------------
+
+agmap <- read_raw_csv("miniH3.coords", col_types = cols()) %>%
+  rename(virus_full = Virus, ag_x_coord = X, ag_y_coord = Y) %>%
+  mutate(
+    virus_full = virus_full %>%
+      str_replace_all("_", "/") %>%
+      standardise_full_virus_name()
+  )
 
 # The raw Israel data ---------------------------------------------------------
 
@@ -63,13 +83,16 @@ hi <- select(
 )
 viruses <- select(
   viruses_raw,
+  virus_full = Virus_Name,
   virus = Short_name, virus_n = VirusN, virus_year = Year, clade = Clade
 ) %>%
   mutate(
+    virus_full = standardise_full_virus_name(virus_full),
     virus_year = as.integer(virus_year),
     clade = replace_na(clade, "(Missing)"),
     egg = str_detect(virus, "e$")
-  )
+  ) %>%
+  left_join(agmap, by = "virus_full")
 participants <- select(
   samples_raw,
   pid = PID, group = `Case/Control`, sex = Sex, age = Age
