@@ -12,6 +12,17 @@ data_plot_dir <- "data-plot"
 
 source(file.path(data_dir, "read_data.R"))
 
+minmax <- function(vals, length.out = 50) {
+  seq(min(vals), max(vals), length.out = length.out)
+}
+
+fit_loess <- function(data, to_predict) {
+  loess(logtitre_mid ~ ag_x_coord + ag_y_coord, data, span = 2) %>%
+    predict(to_predict, se = TRUE) %>%
+    as_tibble() %>%
+    bind_cols(to_predict)
+}
+
 # Expects to be used as a function object in group_map
 plot_one_pid <- function(data, key, name_gen = function(key) paste(key$pid)) {
   virus_names <- data %>%
@@ -71,24 +82,63 @@ plot_one_pid <- function(data, key, name_gen = function(key) paste(key$pid)) {
   plot
 }
 
+plot_contour <- function(data, key, name_gen = function(key) paste(key$pid)) {
+  data <- data %>%
+    filter(!is.na(ag_x_coord), !is.na(ag_y_coord))
+  to_predict <- expand.grid(
+    ag_x_coord = minmax(data$ag_x_coord),
+    ag_y_coord = minmax(data$ag_y_coord),
+    KEEP.OUT.ATTRS = FALSE
+  ) %>%
+    as_tibble()
+  plot <- data %>%
+    select(timepoint, ag_x_coord, ag_y_coord, logtitre_mid) %>%
+    group_by(timepoint) %>%
+    group_modify(~ fit_loess(.x, to_predict)) %>%
+    ggplot(aes(ag_x_coord, ag_y_coord)) +
+    ggdark::dark_theme_bw(verbose = FALSE) +
+    theme(strip.background = element_blank()) +
+    scale_fill_continuous(
+      "Titre",
+      type = "viridis", breaks = log(5 * 2^(0:10)), labels = 5 * 2^(0:10)
+    ) +
+    facet_wrap(~timepoint, nrow = 1) +
+    scale_x_continuous("X", expand = expansion()) +
+    scale_y_continuous("Y", expand = expansion()) +
+    labs(caption = pmap(key, ~ paste(...))) +
+    geom_tile(aes(fill = fit)) +
+    geom_point(data = data) +
+    ggrepel::geom_label_repel(
+      data = data,
+      mapping = aes(label = virus), fill = "#ffffff56",
+      size = 2.5
+    ) +
+    ggrepel::geom_label_repel(
+      data = data %>% filter(vaccine_strain),
+      mapping = aes(label = virus), fill = "#ffffff56", color = "blue"
+    )
+  attr(plot, "name") <- name_gen(key)
+  plot
+}
+
 # Returns a list with each entry being a plot by pid
 # Add grouping variables for the caption
-plots_by_pid <- function(data, ...) {
+plots_by_pid <- function(data, ..., .plot_fun = plot_one_pid) {
   data %>%
     # filter(pid == first(pid)) %>%
     group_by(pid, ...) %>%
-    group_map(plot_one_pid)
+    group_map(.plot_fun)
 }
 
 save_plot <- function(plot,
                       name,
-                      dir = ".",
-                      width = 45, height = 15, device = "pdf",
+                      width = 45, height = 15,
+                      device = "pdf",
                       ...) {
-  plotdir <- file.path(data_plot_dir, dir)
-  if (!dir.exists(plotdir)) dir.create(plotdir)
   ggdark::ggsave_dark(
-    file.path(data_plot_dir, dir, paste0(name, ".", device)), plot,
+    paste0(name, ".", device),
+    plot,
+    dark = FALSE,
     width = width,
     height = height,
     units = "cm",
@@ -103,7 +153,8 @@ save_plots <- function(plots, dir,
   plotdir <- file.path(data_plot_dir, dir)
   if (!dir.exists(plotdir)) dir.create(plotdir)
   future_map(
-    plots, ~ save_plot(.x, attr(.x, "name"), dir, width, height, device)
+    plots,
+    ~ save_plot(.x, file.path(plotdir, attr(.x, "name")), width, height, device)
   )
   invisible(NULL)
 }
