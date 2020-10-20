@@ -28,7 +28,16 @@ indiv_plots_alt <- plots_by_pid(
   data_mod_alt, sex, age_lab, n5y_prior_vacc_lab
 ) %>%
   map(study_year_lab_facets)
+# Contour plots
+timepoint_year_grid <- function(plot) {
+  plot +
+    facet_grid(study_year_lab ~ timepoint)
+}
+contour_plots <- data %>%
+  plots_by_pid(sex, age_lab, n5y_prior_vacc_lab, .plot_fun = plot_contour) %>%
+  map(timepoint_year_grid)
 
 # Save
 save_plots(indiv_plots, "indiv-hi-2-bwyears", 42, 20)
 save_plots(indiv_plots_alt, "indiv-hi-2-bwyears-alt", 42, 20)
+save_plots(contour_plots, "indiv-hi-2-bwyears-contour", 18, 14)

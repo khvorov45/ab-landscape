@@ -63,6 +63,7 @@ rule hi_2_bwyears:
     output:
         directory("data-plot/indiv-hi-2-bwyears"),
         directory("data-plot/indiv-hi-2-bwyears-alt"),
+        directory("data-plot/indiv-hi-2-bwyears-contour"),
     shell:
         "Rscript data-plot/hi-2-bwyears.R"
 

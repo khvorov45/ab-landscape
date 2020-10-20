@@ -29,12 +29,14 @@ rm -rf "$OBJ2/Israel/indiv-hi-2" \
     "$OBJ2/Israel/indiv-hi-2-alt" \
     "$OBJ2/Israel/indiv-hi-2-contour" \
     "$OBJ2/Israel/indiv-hi-2-bwyears" \
-    "$OBJ2/Israel/indiv-hi-2-bwyears-alt"
+    "$OBJ2/Israel/indiv-hi-2-bwyears-alt" \
+    "$OBJ2/Israel/indiv-hi-2-bwyears-contour"
 cp -R "$PROJ/data-plot/indiv-hi-2" \
     "$PROJ/data-plot/indiv-hi-2-alt" \
     "$PROJ/data-plot/indiv-hi-2-contour" \
     "$PROJ/data-plot/indiv-hi-2-bwyears" \
     "$PROJ/data-plot/indiv-hi-2-bwyears-alt" \
+    "$PROJ/data-plot/indiv-hi-2-bwyears-contour" \
     "$OBJ2/Israel"
 
 # Drop-off evaluation
