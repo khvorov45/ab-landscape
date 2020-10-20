@@ -49,6 +49,7 @@ rule hi_2:
     output:
         directory("data-plot/indiv-hi-2"),
         directory("data-plot/indiv-hi-2-alt"),
+        directory("data-plot/indiv-hi-2-contour"),
     shell:
         "Rscript data-plot/hi-2.R"
 

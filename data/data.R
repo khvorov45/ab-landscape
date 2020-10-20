@@ -233,7 +233,14 @@ hi_2_final_dates <- inner_join(
   by = c("pid", "timepoint_global")
 )
 
-save_csv(hi_2_final_dates, "hi-obj2")
+# Pull the long virus names from objective 1
+setdiff(viruses$virus, unique(hi_2_final_dates$virus))
+
+hi_2_final_viruses <- hi_2_final_dates %>%
+  inner_join(select(viruses, virus, virus_full), by = "virus") %>%
+  left_join(agmap, by = "virus_full")
+
+save_csv(hi_2_final_viruses, "hi-obj2")
 
 # The Hanam dataset Annette gave me -------------------------------------------
 
