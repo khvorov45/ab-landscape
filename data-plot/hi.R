@@ -18,4 +18,4 @@ contour_plots <- data %>%
 # Save
 save_plots(indiv_plots, "indiv-hi", 42, 15)
 save_plots(indiv_plots_alt, "indiv-hi-alt", 42, 15)
-save_plots(contour_plots, "indiv-hi-countour", 21, 9.5)
+save_plots(contour_plots, "indiv-hi-contour", 21, 9.5)

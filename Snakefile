@@ -35,6 +35,7 @@ rule hi:
     output:
         directory("data-plot/indiv-hi"),
         directory("data-plot/indiv-hi-alt"),
+         directory("data-plot/indiv-hi-contour"),
     shell:
         "Rscript data-plot/hi.R"
 
