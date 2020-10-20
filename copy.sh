@@ -27,10 +27,12 @@ cp $PROJ/simple-diff/simple-diff.png "$OBJ1/Israel/simple-diff.png"
 # HI plots
 rm -rf "$OBJ2/Israel/indiv-hi-2" \
     "$OBJ2/Israel/indiv-hi-2-alt" \
+    "$OBJ2/Israel/indiv-hi-2-contour" \
     "$OBJ2/Israel/indiv-hi-2-bwyears" \
     "$OBJ2/Israel/indiv-hi-2-bwyears-alt"
 cp -R "$PROJ/data-plot/indiv-hi-2" \
     "$PROJ/data-plot/indiv-hi-2-alt" \
+    "$PROJ/data-plot/indiv-hi-2-contour" \
     "$PROJ/data-plot/indiv-hi-2-bwyears" \
     "$PROJ/data-plot/indiv-hi-2-bwyears-alt" \
     "$OBJ2/Israel"
@@ -79,4 +81,4 @@ cp "$PROJ/simple-diff/simple-diff-rmh-hcw.png" \
 # The whole project -----------------------------------------------------------
 
 rm -rf "$SHARED/ab-landscape"
-cp -R $PROJ "$SHARED/ab-landscape"
+rsync -rv "$PROJ" "$SHARED" --exclude "renv/library" --exclude ".snakemake"
