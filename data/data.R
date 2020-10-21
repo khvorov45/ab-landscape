@@ -254,13 +254,14 @@ hi_hanam <- read_csv(
     Clade = col_character(),
     prior_H3 = col_integer(),
     DoBS = col_date(),
-    Virus_Abbrv = col_character()
+    Virus_Abbrv = col_character(),
+    Short_Name = col_character()
   )
 ) %>%
   rename(
     pid = Subject_ID, timepoint = time, titre = Titer,
     virus_year = Year, virus = Virus_Abbrv, clade = Clade, prior_h3 = prior_H3,
-    dob = DoBS
+    dob = DoBS, virus_short = Short_Name
   ) %>%
   mutate(
     pid = str_replace(pid, "/", "-"),
@@ -271,7 +272,16 @@ hi_hanam <- read_csv(
     ),
     year_of_birth = lubridate::year(dob),
     logtitre = log(titre),
-    logtitre_mid = if_else(titre == 5, logtitre, logtitre + log(2) / 2)
+    logtitre_mid = if_else(titre == 5, logtitre, logtitre + log(2) / 2),
+    virus_short = str_replace(virus_short, "_", "") %>%
+      str_replace("HKong", "Hkong") %>%
+      str_replace("Philippine", "Phil") %>%
+      str_replace("NethLand", "Neth") %>%
+      str_replace("Tasmania", "Tas") %>%
+      str_replace("NCastle", "Ncast") %>%
+      str_replace("NCaled", "Ncal") %>%
+      str_replace("Townsville", "T'ville") %>%
+      str_replace("Brisbane", "Bris")
   ) %>%
   filter(
     timepoint %in% 1:6,
@@ -287,7 +297,17 @@ hi_hanam <- read_csv(
     )
   )
 
-save_csv(hi_hanam, "hi-hanam")
+# Attach the virus full name and coordinates
+setdiff(unique(hi_hanam$virus_short), viruses$virus)
+
+hi_hanam_virusmeta <- hi_hanam %>%
+  left_join(
+    select(viruses, virus_short = virus, virus_full),
+    by = "virus_short"
+  ) %>%
+  left_join(agmap, by = "virus_full")
+
+save_csv(hi_hanam_virusmeta, "hi-hanam")
 
 # RMH HCW study ---------------------------------------------------------------
 

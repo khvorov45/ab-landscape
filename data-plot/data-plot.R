@@ -112,11 +112,13 @@ plot_contour <- function(data, key, name_gen = function(key) paste(key$pid)) {
       data = data,
       mapping = aes(label = virus), fill = "#ffffff56",
       size = 2.5
-    ) +
-    ggrepel::geom_label_repel(
+    )
+  if ("vaccine_strain" %in% names(data)) {
+    plot <- plot + ggrepel::geom_label_repel(
       data = data %>% filter(vaccine_strain),
       mapping = aes(label = virus), fill = "#ffffff56", color = "blue"
     )
+  }
   attr(plot, "name") <- name_gen(key)
   plot
 }
@@ -125,7 +127,7 @@ plot_contour <- function(data, key, name_gen = function(key) paste(key$pid)) {
 # Add grouping variables for the caption
 plots_by_pid <- function(data, ..., .plot_fun = plot_one_pid) {
   data %>%
-    # filter(pid == first(pid)) %>%
+    filter(pid == first(pid)) %>%
     group_by(pid, ...) %>%
     group_map(.plot_fun)
 }

@@ -11,6 +11,7 @@ data_mod_alt <- x_positions_clade_year(data)
 indiv_plots <- plots_by_pid(data_mod, prior_h3_lab)
 # Individual plots with a clade-then-year-based x-axis
 indiv_plots_alt <- plots_by_pid(data_mod_alt, prior_h3_lab)
+# Not enough viruses with known coordinates for the contour plots
 
 # Save
 save_plots(indiv_plots, "indiv-hi-hanam", 42, 15)
