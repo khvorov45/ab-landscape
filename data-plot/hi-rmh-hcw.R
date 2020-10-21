@@ -11,6 +11,7 @@ data_mod_alt <- x_positions_clade_year(data)
 indiv_plots <- plots_by_pid(data_mod, group, sex, age_lab)
 # Individual plots with a clade-then-year-based x-axis
 indiv_plots_alt <- plots_by_pid(data_mod_alt, group, sex, age_lab)
+# Not enough viruses with known coordinates for a meaningful fit
 
 # Save
 save_plots(indiv_plots, "indiv-hi-rmh-hcw", 42, 15)

@@ -16,8 +16,8 @@ minmax <- function(vals, length.out = 50) {
   seq(min(vals), max(vals), length.out = length.out)
 }
 
-fit_loess <- function(data, to_predict) {
-  loess(logtitre_mid ~ ag_x_coord + ag_y_coord, data, span = 2) %>%
+fit_loess <- function(data, to_predict, span = 2) {
+  loess(logtitre_mid ~ ag_x_coord + ag_y_coord, data, span = span) %>%
     predict(to_predict, se = TRUE) %>%
     as_tibble() %>%
     bind_cols(to_predict)
@@ -82,7 +82,9 @@ plot_one_pid <- function(data, key, name_gen = function(key) paste(key$pid)) {
   plot
 }
 
-plot_contour <- function(data, key, name_gen = function(key) paste(key$pid)) {
+plot_contour <- function(data, key,
+                         name_gen = function(key) paste(key$pid),
+                         span = 2) {
   data <- data %>%
     filter(!is.na(ag_x_coord), !is.na(ag_y_coord))
   to_predict <- expand.grid(
@@ -94,7 +96,7 @@ plot_contour <- function(data, key, name_gen = function(key) paste(key$pid)) {
   plot <- data %>%
     select(timepoint, ag_x_coord, ag_y_coord, logtitre_mid) %>%
     group_by(timepoint) %>%
-    group_modify(~ fit_loess(.x, to_predict)) %>%
+    group_modify(~ fit_loess(.x, to_predict, span)) %>%
     ggplot(aes(ag_x_coord, ag_y_coord)) +
     ggdark::dark_theme_bw(verbose = FALSE) +
     theme(strip.background = element_blank()) +
@@ -127,7 +129,7 @@ plot_contour <- function(data, key, name_gen = function(key) paste(key$pid)) {
 # Add grouping variables for the caption
 plots_by_pid <- function(data, ..., .plot_fun = plot_one_pid) {
   data %>%
-    filter(pid == first(pid)) %>%
+    # filter(pid == first(pid)) %>%
     group_by(pid, ...) %>%
     group_map(.plot_fun)
 }

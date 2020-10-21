@@ -50,6 +50,20 @@ standardise_full_virus_name <- function(virus_name) {
     year_keep_last_2()
 }
 
+# Convert short names to what's in the viruses table to look up long names to
+# then look up coordinates
+standardise_short_names <- function(names) {
+  str_replace(names, "_", "") %>%
+    str_replace("HKong", "Hkong") %>%
+    str_replace("Philippine", "Phil") %>%
+    str_replace("NethLand", "Neth") %>%
+    str_replace("Tasmania", "Tas") %>%
+    str_replace("NCastle", "Ncast") %>%
+    str_replace("NCaled", "Ncal") %>%
+    str_replace("Townsville", "T'ville") %>%
+    str_replace("Brisbane", "Bris")
+}
+
 # Script ======================================================================
 
 # The map ---------------------------------------------------------------------
@@ -273,15 +287,7 @@ hi_hanam <- read_csv(
     year_of_birth = lubridate::year(dob),
     logtitre = log(titre),
     logtitre_mid = if_else(titre == 5, logtitre, logtitre + log(2) / 2),
-    virus_short = str_replace(virus_short, "_", "") %>%
-      str_replace("HKong", "Hkong") %>%
-      str_replace("Philippine", "Phil") %>%
-      str_replace("NethLand", "Neth") %>%
-      str_replace("Tasmania", "Tas") %>%
-      str_replace("NCastle", "Ncast") %>%
-      str_replace("NCaled", "Ncal") %>%
-      str_replace("Townsville", "T'ville") %>%
-      str_replace("Brisbane", "Bris")
+    virus_short = standardise_short_names(virus_short)
   ) %>%
   filter(
     timepoint %in% 1:6,
@@ -336,7 +342,14 @@ hi_rmh_hcw_reduced <- hi_rmh_hcw %>%
     timepoint = recode_3_timepoints(timepoint_num),
     age_lab = paste("Age:", age),
     logtitre = log(titre),
-    logtitre_mid = if_else(titre == 5, logtitre, logtitre + log(2) / 2)
+    logtitre_mid = if_else(titre == 5, logtitre, logtitre + log(2) / 2),
+    virus = standardise_short_names(virus),
   )
 
-save_csv(hi_rmh_hcw_reduced, "hi-rmh-hcw")
+setdiff(unique(hi_rmh_hcw_reduced$virus), viruses$virus)
+
+hi_rmh_hcw_virusmeta <- hi_rmh_hcw_reduced %>%
+  left_join(select(viruses, virus, virus_full), by = "virus") %>%
+  left_join(agmap, by = "virus_full")
+
+save_csv(hi_rmh_hcw_virusmeta, "hi-rmh-hcw")
