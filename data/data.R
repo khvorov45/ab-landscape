@@ -344,6 +344,7 @@ hi_rmh_hcw_reduced <- hi_rmh_hcw %>%
     logtitre = log(titre),
     logtitre_mid = if_else(titre == 5, logtitre, logtitre + log(2) / 2),
     virus = standardise_short_names(virus),
+    egg = str_detect(virus, "e$"),
   )
 
 setdiff(unique(hi_rmh_hcw_reduced$virus), viruses$virus)
