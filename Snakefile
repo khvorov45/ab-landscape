@@ -146,9 +146,20 @@ rule drop_off:
     shell:
         "Rscript drop-off/drop-off.R"
 
+rule immunogen:
+    input:
+        ".deps-installed",
+        "immunogen/immunogen.R",
+        "data/hi-rmh-hcw.csv"
+    output:
+        "immunogen/rmh.csv",
+    shell:
+        "Rscript immunogen/immunogen.R"
+
 rule all:
     input:
         rules.data.output,
         rules.data_plot.output,
         rules.simple_diff.output,
-        rules.drop_off.output
+        rules.drop_off.output,
+        rules.immunogen.output,
