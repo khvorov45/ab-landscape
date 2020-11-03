@@ -100,8 +100,8 @@ rmh_immun <- rmh %>%
   group_by(virus, egg) %>%
   summarise(
     calc_measures(
-      logtitre_mid[timepoint == "Post-vax"],
-      logtitre_mid[timepoint == "Pre-vax"]
+      logtitre[timepoint == "Post-vax"],
+      logtitre[timepoint == "Pre-vax"]
     ),
     .groups = "drop"
   ) %>%
