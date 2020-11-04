@@ -91,7 +91,7 @@ save_plot <- function(plot, name, ...) {
   )
 }
 
-arrange <- function(...) {
+arrange_plots <- function(...) {
   ggdark::lighten_geoms()
   arr <- ggpubr::ggarrange(...)
   ggdark::darken_geoms()
@@ -157,7 +157,7 @@ plot_egg_cell <- function(pair, data) {
     ) +
     scale_x_log10(breaks = 5 * 2^(0:10)) +
     scale_y_log10(breaks = 5 * 2^(0:10)) +
-    scale_fill_gradient(low = "lightgrey", high = "black") +
+    scale_fill_gradient("Count", low = "lightgrey", high = "black") +
     facet_wrap(~timepoint, nrow = 1) +
     geom_tile(aes(fill = n)) +
     geom_abline(intercept = 0, slope = 1)
@@ -165,7 +165,7 @@ plot_egg_cell <- function(pair, data) {
 
 rmh_egg_cell_plots <- map(rmh_egg_cell_pairs, plot_egg_cell, rmh)
 
-rmh_egg_cell_plots_arr <- arrange(
+rmh_egg_cell_plots_arr <- arrange_plots(
   plotlist = rmh_egg_cell_plots, ncol = 1, common.legend = TRUE
 )
 

@@ -153,6 +153,7 @@ rule immunogen:
         "data/hi-rmh-hcw.csv"
     output:
         "immunogen/rmh.csv",
+        "immunogen/rmh-egg-cell-corr.png",
     shell:
         "Rscript immunogen/immunogen.R"
 
