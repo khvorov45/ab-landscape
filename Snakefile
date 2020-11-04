@@ -154,6 +154,7 @@ rule immunogen:
     output:
         "immunogen/rmh.csv",
         "immunogen/rmh-egg-cell-corr.png",
+         "immunogen/rmh-inf.png",
     shell:
         "Rscript immunogen/immunogen.R"
 

@@ -170,3 +170,30 @@ rmh_egg_cell_plots_arr <- arrange_plots(
 )
 
 save_plot(rmh_egg_cell_plots_arr, "rmh-egg-cell-corr", width = 20, height = 50)
+
+# Look at Singapore titres for the infected
+
+rmh_infected_rel_vir <- rmh %>%
+  filter(
+    virus %in% c("Ncast/30/16", "Sing/16-0019/16e")
+  )
+
+rmh_inf_plot <- rmh_infected_rel_vir %>%
+  ggplot(aes(timepoint, titre, group = pid)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(strip.background = element_blank()) +
+  scale_y_log10("Titre", breaks = 5 * 2^(0:10)) +
+  scale_x_discrete("Timepoint", expand = expansion(mult = 0.2)) +
+  facet_wrap(~virus) +
+  geom_line(alpha = 0.4) +
+  geom_point(alpha = 0.4, shape = 16) +
+  geom_line(
+    data = filter(rmh_infected_rel_vir, infected),
+    color = "red"
+  ) +
+  geom_point(
+    data = filter(rmh_infected_rel_vir, infected),
+    color = "red"
+  )
+
+save_plot(rmh_inf_plot, "rmh-inf", width = 12, height = 7)
