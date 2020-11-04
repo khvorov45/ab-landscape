@@ -82,21 +82,37 @@ save_data <- function(data, name) {
   data
 }
 
+save_plot <- function(plot, name, ...) {
+  ggdark::ggsave_dark(
+    glue::glue("immunogen/{name}.png"),
+    plot,
+    units = "cm",
+    ...
+  )
+}
+
+arrange <- function(...) {
+  ggdark::lighten_geoms()
+  arr <- ggpubr::ggarrange(...)
+  ggdark::darken_geoms()
+  arr
+}
+
 # Script ======================================================================
 
 rmh <- read_data("hi-rmh-hcw")
 
+rmh_egg_cell_pairs <- list(
+  c("Ncast/30/16", "Sing/16-0019/16e"),
+  c("Michigan/15/14", "Hkong/4801/14e"),
+  c("Perth/16/09", "Perth/16/09e"),
+  c("Vic/361/11", "Vic/361/11e"),
+  c("Texas/50/12", "Texas/50/12e"),
+  c("Switz/9715293/13", "Switz/9715293/13e")
+)
+
 rmh_immun <- rmh %>%
-  mutate(virus_temp = str_replace(virus, "e$", "")) %>%
-  # Keep only the viruses that have both egg and cell data
-  group_by(virus_temp) %>%
-  filter(
-    (any(egg) & any(!egg)) |
-      virus %in% c(
-        "Michigan/15/14", "Hkong/4801/14e",
-        "Ncast/30/16", "Sing/16-0019/16e"
-      )
-  ) %>%
+  filter(virus %in% flatten_chr(rmh_egg_cell_pairs)) %>%
   group_by(virus, egg) %>%
   summarise(
     calc_measures(
@@ -118,3 +134,39 @@ rmh_immun %>%
   select(virus, measure, summary) %>%
   pivot_wider(names_from = "measure", values_from = "summary") %>%
   save_data("rmh")
+
+# Plot egg-cell correlation ---------------------------------------------------
+
+plot_egg_cell <- function(pair, data) {
+  cell_q <- rlang::sym(pair[[1]])
+  egg_q <- rlang::sym(pair[[2]])
+  data %>%
+    filter(virus %in% pair) %>%
+    select(pid, timepoint, virus, titre) %>%
+    # So that 20 -> tile from 20 to 40
+    mutate(titre = exp(log(titre) + log(2) / 2)) %>%
+    pivot_wider(names_from = "virus", values_from = "titre") %>%
+    count(timepoint, !!cell_q, !!egg_q) %>%
+    ggplot(aes(!!egg_q, !!cell_q)) +
+    theme_bw() +
+    theme(
+      strip.background = element_blank(),
+      panel.spacing = unit(0, "null"),
+      panel.grid.minor = element_blank(),
+      axis.text.x = element_text(angle = 30, hjust = 1),
+    ) +
+    scale_x_log10(breaks = 5 * 2^(0:10)) +
+    scale_y_log10(breaks = 5 * 2^(0:10)) +
+    scale_fill_gradient(low = "lightgrey", high = "black") +
+    facet_wrap(~timepoint, nrow = 1) +
+    geom_tile(aes(fill = n)) +
+    geom_abline(intercept = 0, slope = 1)
+}
+
+rmh_egg_cell_plots <- map(rmh_egg_cell_pairs, plot_egg_cell, rmh)
+
+rmh_egg_cell_plots_arr <- arrange(
+  plotlist = rmh_egg_cell_plots, ncol = 1, common.legend = TRUE
+)
+
+save_plot(rmh_egg_cell_plots_arr, "rmh-egg-cell-corr", width = 20, height = 50)
