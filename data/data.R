@@ -334,7 +334,7 @@ hi_rmh_hcw_reduced <- hi_rmh_hcw %>%
   select(
     pid = PID, timepoint_num = TimeN, virus = Short_Name, clade = Clade,
     year_of_birth, virus_year,
-    titre = Titer, group,
+    titre = Titer, group, infected,
     age = Age, sex
   ) %>%
   mutate(
