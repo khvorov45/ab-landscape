@@ -80,7 +80,14 @@ cp -R "$PROJ/data-plot/indiv-hi-rmh-hcw" \
 cp "$PROJ/simple-diff/simple-diff-rmh-hcw.png" \
     "$RMH/Analyses/landscape-plots/simple-diff-rmh-hcw.png"
 
+# Immunogenicity
+rm -rf "$RMH/Analyses/immunogen"
+mkdir "$RMH/Analyses/immunogen"
+cp "$PROJ/immunogen/rmh.csv" \
+    "$PROJ/immunogen/rmh-inf.png" \
+    "$PROJ/immunogen/rmh-egg-cell-corr.png" \
+    "$RMH/Analyses/immunogen"
+
 # The whole project -----------------------------------------------------------
 
-rm -rf "$SHARED/ab-landscape"
 rsync -rv "$PROJ" "$SHARED" --exclude "renv/library" --exclude ".snakemake"
