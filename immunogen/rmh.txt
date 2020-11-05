@@ -1,0 +1,29 @@
+Immunogenicity measures for the RMH sample.
+All relate to the post-vax timepoint.
+
+gmt_uncorrected - geometric mean titre.
+gmr_uncorrected - geometric mean rise as compared to the pre-vax timepoint.
+gmt_corrected - geometric mean of corrected post-vax titres
+gmr_corrected - geometric mean of corrected ratios beteween pre-vax and
+post-vax titres
+
+seroprot_uncorrected - proportion with titres above 40 at post-vax
+seroprot_only_below40 - proportion with titres above 40 at post-vax but only
+for those with titres below 40 pre-vax
+
+seroconv - if pre-vax below 10 then post-vax above 40, otherwise at least a
+4-fold increase.
+
+Post-vax titre correction was done like this:
+
+LogTitre (post-vax, corrected) = LogTitre (post-vax) - b * (LogTitre (pre-vax) - log(10))
+
+Where b comes from
+
+LogTitre (post-vax) = a + b * LogTitre (pre-vax)
+
+Ratio of pre-vax/post-vax titres was corrected like this:
+
+Titre (corrected) / 10
+
+Interpretation of corrections: GMT/GMR estimated as if everyone started at 10.
