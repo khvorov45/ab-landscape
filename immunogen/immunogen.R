@@ -158,7 +158,7 @@ plot_egg_cell <- function(pair, data, min_y = NULL, max_y = NULL) {
     scale_x_log10(breaks = 5 * 2^(0:10)) +
     scale_y_log10(breaks = 5 * 2^(0:10)) +
     scale_fill_gradient("Count", low = "lightgrey", high = "black") +
-    facet_wrap(~timepoint, nrow = 1) +
+    facet_wrap(~timepoint, ncol = 1) +
     geom_tile(aes(fill = n)) +
     geom_abline(intercept = 0, slope = 1)
 }
@@ -168,10 +168,10 @@ rmh_egg_cell_plots <- map(
 )
 
 rmh_egg_cell_plots_arr <- arrange_plots(
-  plotlist = rmh_egg_cell_plots, ncol = 1, common.legend = TRUE
+  plotlist = rmh_egg_cell_plots, nrow = 1, common.legend = TRUE
 )
 
-save_plot(rmh_egg_cell_plots_arr, "rmh-egg-cell-corr", width = 20, height = 50)
+save_plot(rmh_egg_cell_plots_arr, "rmh-egg-cell-corr", width = 50, height = 20)
 
 # Look at Singapore titres for the infected
 
