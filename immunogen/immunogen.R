@@ -136,7 +136,7 @@ rmh_immun %>%
 
 # Plot egg-cell correlation ---------------------------------------------------
 
-plot_egg_cell <- function(pair, data) {
+plot_egg_cell <- function(pair, data, min_y = NULL, max_y = NULL) {
   cell_q <- rlang::sym(pair[[1]])
   egg_q <- rlang::sym(pair[[2]])
   data %>%
@@ -154,6 +154,7 @@ plot_egg_cell <- function(pair, data) {
       panel.grid.minor = element_blank(),
       axis.text.x = element_text(angle = 30, hjust = 1),
     ) +
+    coord_cartesian(ylim = c(min_y, max_y)) +
     scale_x_log10(breaks = 5 * 2^(0:10)) +
     scale_y_log10(breaks = 5 * 2^(0:10)) +
     scale_fill_gradient("Count", low = "lightgrey", high = "black") +
@@ -162,7 +163,9 @@ plot_egg_cell <- function(pair, data) {
     geom_abline(intercept = 0, slope = 1)
 }
 
-rmh_egg_cell_plots <- map(rmh_egg_cell_pairs, plot_egg_cell, rmh)
+rmh_egg_cell_plots <- map(
+  rmh_egg_cell_pairs, plot_egg_cell, rmh, min(rmh$titre), max(rmh$titre)
+)
 
 rmh_egg_cell_plots_arr <- arrange_plots(
   plotlist = rmh_egg_cell_plots, ncol = 1, common.legend = TRUE
