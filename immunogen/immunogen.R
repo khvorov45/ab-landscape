@@ -48,7 +48,7 @@ calc_measures <- function(t2, t1) {
     )
   }
   seroprot_uncorrected <- calc_prop(t2 >= log(40), "seroprot_uncorrected")
-  seroporot_only_below40 <- calc_prop(
+  seroprot_only_below40 <- calc_prop(
     t2[t1 < log(40)] >= log(40), "seroprot_only_below40"
   )
   seroconv <- calc_prop(
@@ -72,7 +72,7 @@ calc_measures <- function(t2, t1) {
     gmr_corrected,
     gmt_corrected,
     seroprot_uncorrected,
-    seroporot_only_below40,
+    seroprot_only_below40,
     seroconv,
   )
 }
