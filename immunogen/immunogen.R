@@ -32,7 +32,7 @@ calc_measures <- function(t2, t1) {
   gmt_uncorrected <- calc_mean(t2, "gmt_uncorrected")
 
   calc_prop <- function(bin_success, measure) {
-    f <- function(n) signif(n, 2)
+    f <- function(n) glue::glue("{signif(n * 100, 2)}%")
     n <- length(bin_success)
     success <- sum(bin_success)
     failure <- n - success
@@ -40,8 +40,8 @@ calc_measures <- function(t2, t1) {
       measure = measure,
       n = n,
       point = success / n,
-      low = qbeta(0.025, success + 1, failure + 1),
-      high = qbeta(0.975, success + 1, failure + 1),
+      low = min(qbeta(0.025, success + 1, failure + 1), point),
+      high = max(qbeta(0.975, success + 1, failure + 1), point),
       summary = glue::glue(
         "{f(point)} ({f(low)}, {f(high)}) [{success} / {n}]"
       ),

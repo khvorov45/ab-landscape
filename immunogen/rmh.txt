@@ -11,6 +11,11 @@ seroprot_uncorrected - proportion with titres above 40 at post-vax
 seroprot_only_below40 - proportion with titres above 40 at post-vax but only
 for those with titres below 40 pre-vax
 
+Format:
+
+Mean (95% CI) [count]
+Percentage (95% CI) [success / total]
+
 seroconv - if pre-vax below 10 then post-vax above 40, otherwise at least a
 4-fold increase.
 
