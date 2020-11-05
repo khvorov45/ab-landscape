@@ -105,10 +105,10 @@ rmh <- read_data("hi-rmh-hcw")
 rmh_egg_cell_pairs <- list(
   c("Ncast/30/16", "Sing/16-0019/16e"),
   c("Michigan/15/14", "Hkong/4801/14e"),
-  c("Perth/16/09", "Perth/16/09e"),
-  c("Vic/361/11", "Vic/361/11e"),
+  c("Switz/9715293/13", "Switz/9715293/13e"),
   c("Texas/50/12", "Texas/50/12e"),
-  c("Switz/9715293/13", "Switz/9715293/13e")
+  c("Vic/361/11", "Vic/361/11e"),
+  c("Perth/16/09", "Perth/16/09e")
 )
 
 rmh_immun <- rmh %>%
@@ -124,8 +124,7 @@ rmh_immun <- rmh %>%
   mutate(
     virus = fct_relevel(
       virus,
-      "Michigan/15/14", "Hkong/4801/14e",
-      "Ncast/30/16", "Sing/16-0019/16e"
+      flatten_chr(rmh_egg_cell_pairs)
     )
   ) %>%
   arrange(virus)
