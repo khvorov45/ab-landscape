@@ -1,0 +1,10 @@
+Exponentiated estimates from the model
+
+Logdiff ~ Virus Pair + Timepoint + Random intercept on id
+
+No intercept - each fold-difference for a virus pair is an actual
+fold-difference for the post-vax timepoint.
+
+Format:
+
+estimate (95% CI)
