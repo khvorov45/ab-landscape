@@ -173,6 +173,28 @@ rmh_egg_cell_plots_arr <- arrange_plots(
 
 save_plot(rmh_egg_cell_plots_arr, "rmh-egg-cell-corr", width = 50, height = 20)
 
+# Quantify by how much the not real egg-cell pairs are worse than the real ones
+rmh_egg_cell_diffs <- rmh %>%
+  filter(virus %in% flatten_chr(rmh_egg_cell_pairs)) %>%
+  mutate(
+    pair_index = map_int(
+      virus, function(virus) which(map_lgl(rmh_egg_cell_pairs, ~ virus %in% .x))
+    ),
+    pair_lbl = map_chr(
+      pair_index, ~ paste(rmh_egg_cell_pairs[[.x]], collapse = " vs ")
+    )
+  ) %>%
+  select(pid, timepoint, egg, pair_index, pair_lbl, titre) %>%
+  mutate(egg = if_else(egg, "egg", "cell")) %>%
+  pivot_wider(names_from = "egg", values_from = "titre") %>%
+  filter(!is.na(cell), !is.na(egg)) %>%
+  mutate(logdiff = log(cell / egg))
+
+lme4::lmer(
+  logdiff ~ pair_lbl + timepoint + (1 | pid), rmh_egg_cell_diffs
+) %>%
+  broom.mixed::tidy()
+
 # Look at Singapore titres for the infected
 
 rmh_infected_rel_vir <- rmh %>%
