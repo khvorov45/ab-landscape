@@ -103,12 +103,12 @@ arrange_plots <- function(...) {
 rmh <- read_data("hi-rmh-hcw")
 
 rmh_egg_cell_pairs <- list(
-  c("Ncast/30/16", "Sing/16-0019/16e"),
-  c("Michigan/15/14", "Hkong/4801/14e"),
-  c("Switz/9715293/13", "Switz/9715293/13e"),
-  c("Texas/50/12", "Texas/50/12e"),
+  c("Perth/16/09", "Perth/16/09e"),
   c("Vic/361/11", "Vic/361/11e"),
-  c("Perth/16/09", "Perth/16/09e")
+  c("Texas/50/12", "Texas/50/12e"),
+  c("Switz/9715293/13", "Switz/9715293/13e"),
+  c("Michigan/15/14", "Hkong/4801/14e"),
+  c("Ncast/30/16", "Sing/16-0019/16e")
 )
 
 rmh_immun <- rmh %>%
@@ -133,6 +133,14 @@ rmh_immun %>%
   select(virus, measure, summary) %>%
   pivot_wider(names_from = "measure", values_from = "summary") %>%
   save_data("rmh")
+
+summarise_mean_se <- function(mn, se, .f = function(x) x) {
+  f <- function(x) signif(.f(x), 2)
+  q <- qnorm(0.975)
+  low <- mn - q * se
+  high <- mn + q * se
+  glue::glue("{f(mn)} ({f(low)}, {f(high)})")
+}
 
 # Plot egg-cell correlation ---------------------------------------------------
 
@@ -182,7 +190,8 @@ rmh_egg_cell_diffs <- rmh %>%
     ),
     pair_lbl = map_chr(
       pair_index, ~ paste(rmh_egg_cell_pairs[[.x]], collapse = " vs ")
-    )
+    ) %>%
+      fct_reorder(pair_index)
   ) %>%
   select(pid, timepoint, egg, pair_index, pair_lbl, titre) %>%
   mutate(egg = if_else(egg, "egg", "cell")) %>%
@@ -191,9 +200,18 @@ rmh_egg_cell_diffs <- rmh %>%
   mutate(logdiff = log(cell / egg))
 
 lme4::lmer(
-  logdiff ~ pair_lbl + timepoint + (1 | pid), rmh_egg_cell_diffs
+  logdiff ~ -1 + pair_lbl + timepoint + (1 | pid),
+  mutate(rmh_egg_cell_diffs, timepoint = fct_relevel(timepoint, "Post-vax"))
 ) %>%
-  broom.mixed::tidy()
+  broom.mixed::tidy() %>%
+  filter(effect == "fixed") %>%
+  select(-effect, -group, -statistic) %>%
+  mutate(
+    term = str_replace(term, "pair_lbl|timepoint", ""),
+    `fold-diff cell/egg (95% CI)` = summarise_mean_se(estimate, std.error, exp)
+  ) %>%
+  select(-estimate, -std.error) %>%
+  save_data("egg-vs-cell-estimates")
 
 # Look at Singapore titres for the infected
 
