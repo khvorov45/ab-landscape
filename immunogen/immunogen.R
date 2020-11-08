@@ -232,11 +232,20 @@ rmh_infected_rel_vir <- rmh %>%
   )
 
 rmh_inf_plot <- rmh_infected_rel_vir %>%
-  ggplot(aes(timepoint, titre, group = pid)) +
+  ggplot(aes(timepoint, titre, group = pid, col = infected)) +
   ggdark::dark_theme_bw(verbose = FALSE) +
-  theme(strip.background = element_blank()) +
+  theme(
+    strip.background = element_blank(),
+    legend.position = "bottom",
+    legend.box.spacing = unit(0, "null"),
+  ) +
   scale_y_log10("Titre", breaks = 5 * 2^(0:10)) +
   scale_x_discrete("Timepoint", expand = expansion(mult = 0.2)) +
+  scale_color_manual(
+    "Infection status",
+    values = c("black", "red"), labels = c("Not infected", "Infected"),
+    guide = guide_legend(override.aes = aes(alpha = 1))
+  ) +
   facet_wrap(~virus) +
   geom_line(alpha = 0.4) +
   geom_point(alpha = 0.4, shape = 16) +
