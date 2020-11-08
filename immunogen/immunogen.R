@@ -98,6 +98,14 @@ arrange_plots <- function(...) {
   arr
 }
 
+summarise_mean_se <- function(mn, se, .f = function(x) x) {
+  f <- function(x) signif(.f(x), 2)
+  q <- qnorm(0.975)
+  low <- mn - q * se
+  high <- mn + q * se
+  glue::glue("{f(mn)} ({f(low)}, {f(high)})")
+}
+
 # Script ======================================================================
 
 rmh <- read_data("hi-rmh-hcw")
@@ -133,14 +141,6 @@ rmh_immun %>%
   select(virus, measure, summary) %>%
   pivot_wider(names_from = "measure", values_from = "summary") %>%
   save_data("rmh")
-
-summarise_mean_se <- function(mn, se, .f = function(x) x) {
-  f <- function(x) signif(.f(x), 2)
-  q <- qnorm(0.975)
-  low <- mn - q * se
-  high <- mn + q * se
-  glue::glue("{f(mn)} ({f(low)}, {f(high)})")
-}
 
 # Plot egg-cell correlation ---------------------------------------------------
 
