@@ -119,8 +119,19 @@ rmh_egg_cell_pairs <- list(
   c("Ncast/30/16", "Sing/16-0019/16e")
 )
 
+rmh_virus_groups <- rmh %>%
+  filter(!is.na(logtitre), virus %in% flatten_chr(rmh_egg_cell_pairs[-1])) %>%
+  group_by(pid, egg, timepoint) %>%
+  filter(length(virus) == length(rmh_egg_cell_pairs[-1])) %>%
+  summarise(
+    logtitre = mean(logtitre),
+    virus = paste(virus, collapse = ", "),
+    .groups = "drop"
+  )
+
 rmh_immun <- rmh %>%
   filter(virus %in% flatten_chr(rmh_egg_cell_pairs)) %>%
+  bind_rows(rmh_virus_groups) %>%
   group_by(virus, egg) %>%
   summarise(
     calc_measures(

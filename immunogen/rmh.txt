@@ -1,5 +1,8 @@
 Immunogenicity measures for the RMH sample.
 All relate to the post-vax timepoint.
+Where the "virus" column contains multiple viruses it means that
+each individual's log-titres were averaged across those viruses
+before calculating the measures for the cohort.
 
 gmt_uncorrected - geometric mean titre.
 gmr_uncorrected - geometric mean rise as compared to the pre-vax timepoint.
