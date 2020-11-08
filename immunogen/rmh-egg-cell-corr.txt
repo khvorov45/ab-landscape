@@ -1,0 +1,6 @@
+Correlation of titres for egg-cell virus pairs.
+
+Below the line - cells are worse
+Above the line - cells are better
+
+Colored by the number of individuals.
