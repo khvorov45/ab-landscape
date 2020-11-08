@@ -84,8 +84,13 @@ cp "$PROJ/simple-diff/simple-diff-rmh-hcw.png" \
 rm -rf "$RMH/Analyses/immunogen"
 mkdir "$RMH/Analyses/immunogen"
 cp "$PROJ/immunogen/rmh.csv" \
+    "$PROJ/immunogen/rmh.txt" \
     "$PROJ/immunogen/rmh-inf.png" \
+    "$PROJ/immunogen/rmh-inf.txt" \
     "$PROJ/immunogen/rmh-egg-cell-corr.png" \
+    "$PROJ/immunogen/rmh-egg-cell-corr.txt" \
+    "$PROJ/immunogen/egg-vs-cell-estimates.csv" \
+    "$PROJ/immunogen/egg-vs-cell-estimates.txt" \
     "$RMH/Analyses/immunogen"
 
 # The whole project -----------------------------------------------------------
