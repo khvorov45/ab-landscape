@@ -45,10 +45,11 @@ plot_one_pid <- function(data, key, name_gen = function(key) paste(key$pid)) {
       panel.grid.minor = element_blank(),
       strip.background = element_blank()
     ) +
-    scale_color_discrete("Timepoint") +
+    scale_color_viridis_d("Timepoint") +
     scale_shape_discrete("Timepoint") +
     scale_linetype_discrete("Timepoint") +
-    scale_y_log10("Titre", breaks = 5 * 2^(0:10)) +
+    scale_fill_viridis_d("Timepoint") +
+    scale_y_log10("Titre", breaks = 5 * 2^(0:10), expand = expansion(c(0, 0.1))) +
     scale_x_continuous(
       "Virus",
       breaks = virus_names$x_position, labels = virus_names$virus,
@@ -58,15 +59,7 @@ plot_one_pid <- function(data, key, name_gen = function(key) paste(key$pid)) {
       clip = "off", ylim = c(5, max(data$titre)),
       xlim = c(min(data$x_position), max(data$x_position))
     ) +
-    labs(caption = pmap(key, ~ paste(...))) +
-    geom_text(
-      aes(
-        label = if_else(clade == "(Missing)", "", clade),
-        y = 5, x = x_position
-      ),
-      angle = 90, hjust = 0, col = "gray40", alpha = 0.5, size = 3,
-      inherit.aes = FALSE
-    )
+    labs(caption = pmap(key, ~ paste(...)))
   if ("vaccine_strain" %in% names(data)) {
     plot <- plot +
       geom_vline(
@@ -75,7 +68,20 @@ plot_one_pid <- function(data, key, name_gen = function(key) paste(key$pid)) {
         alpha = 0.8, col = "blue", lty = "11"
       )
   }
+  # Actual geoms
   plot <- plot +
+    geom_ribbon(
+      aes(fill = timepoint, ymax = titre, ymin = 5),
+      position = "identity", alpha = 0.5
+    ) +
+    geom_text(
+      aes(
+        label = if_else(clade == "(Missing)", "", clade),
+        y = 5.1, x = x_position
+      ),
+      angle = 90, hjust = 0, col = "black", alpha = 0.5, size = 3,
+      inherit.aes = FALSE
+    ) +
     geom_line() +
     geom_point()
   attr(plot, "name") <- name_gen(key)
