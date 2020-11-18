@@ -13,7 +13,8 @@ read_data <- function(name) {
       timepoint = col_factor(c("Pre-vax", "Post-vax", "Post-season"))
     ),
     "hi" = list(
-      timepoint = col_factor(c("Pre-vax", "Post-vax", "Post-season"))
+      timepoint = col_factor(c("Pre-vax", "Post-vax", "Post-season")),
+      group = col_factor(c("Frequent", "Infrequent"))
     ),
     "hi-rmh-hcw" = list(
       timepoint = col_factor(c("Pre-vax", "Post-vax", "Post-season")),
