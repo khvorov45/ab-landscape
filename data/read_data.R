@@ -17,7 +17,7 @@ read_data <- function(name) {
     ),
     "hi-rmh-hcw" = list(
       timepoint = col_factor(c("Pre-vax", "Post-vax", "Post-season")),
-      group = col_factor(c("Frequent", "Moderate", "Infrequent", "Infected"))
+      group = col_factor(c("Frequent", "Moderate", "Infrequent"))
     )
   )
   readr::read_csv(
