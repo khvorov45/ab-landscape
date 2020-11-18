@@ -16,15 +16,14 @@ minmax <- function(vals, length.out = 50) {
   seq(min(vals), max(vals), length.out = length.out)
 }
 
-fit_loess <- function(data, to_predict, span = 2) {
-  loess(logtitre_mid ~ ag_x_coord + ag_y_coord, data, span = span) %>%
+fit_loess <- function(data, formula, to_predict, span = 2) {
+  loess(formula, data, span = span) %>%
     predict(to_predict, se = TRUE) %>%
     as_tibble() %>%
     bind_cols(to_predict)
 }
 
-# Expects to be used as a function object in group_map
-plot_one_pid <- function(data, key, name_gen = function(key) paste(key$pid)) {
+plot_lin_landscape <- function(data, key = NULL) {
   virus_names <- data %>%
     group_by(virus) %>%
     summarise(x_position = unique(x_position), .groups = "drop")
@@ -58,8 +57,7 @@ plot_one_pid <- function(data, key, name_gen = function(key) paste(key$pid)) {
     coord_cartesian(
       clip = "off", ylim = c(5, max(data$titre)),
       xlim = c(min(data$x_position), max(data$x_position))
-    ) +
-    labs(caption = pmap(key, ~ paste(...)))
+    )
   if ("vaccine_strain" %in% names(data)) {
     plot <- plot +
       geom_vline(
@@ -84,13 +82,11 @@ plot_one_pid <- function(data, key, name_gen = function(key) paste(key$pid)) {
     ) +
     geom_line() +
     geom_point()
-  attr(plot, "name") <- name_gen(key)
+  attr(plot, "key") <- key
   plot
 }
 
-plot_contour <- function(data, key,
-                         name_gen = function(key) paste(key$pid),
-                         span = 2) {
+plot_contour <- function(data, key = NULL, span = 2) {
   data <- data %>%
     filter(!is.na(ag_x_coord), !is.na(ag_y_coord))
   to_predict <- expand.grid(
@@ -100,9 +96,11 @@ plot_contour <- function(data, key,
   ) %>%
     as_tibble()
   plot <- data %>%
-    select(timepoint, ag_x_coord, ag_y_coord, logtitre_mid) %>%
+    select(timepoint, ag_x_coord, ag_y_coord, titre) %>%
     group_by(timepoint) %>%
-    group_modify(~ fit_loess(.x, to_predict, span)) %>%
+    group_modify(
+      ~ fit_loess(.x, log(titre) ~ ag_x_coord + ag_y_coord, to_predict, span)
+    ) %>%
     ggplot(aes(ag_x_coord, ag_y_coord)) +
     ggdark::dark_theme_bw(verbose = FALSE) +
     theme(strip.background = element_blank()) +
@@ -113,7 +111,6 @@ plot_contour <- function(data, key,
     facet_wrap(~timepoint, nrow = 1) +
     scale_x_continuous("X", expand = expansion()) +
     scale_y_continuous("Y", expand = expansion()) +
-    labs(caption = pmap(key, ~ paste(...))) +
     geom_tile(aes(fill = fit)) +
     geom_point(data = data) +
     ggrepel::geom_label_repel(
@@ -127,44 +124,47 @@ plot_contour <- function(data, key,
       mapping = aes(label = virus), fill = "#ffffff56", color = "blue"
     )
   }
-  attr(plot, "name") <- name_gen(key)
+  attr(plot, "key") <- key
   plot
 }
 
 # Returns a list with each entry being a plot by pid
 # Add grouping variables for the caption
-plots_by_pid <- function(data, ..., .plot_fun = plot_one_pid) {
-  data %>%
+plots_by_pid <- function(data, ..., .plot_fun = plot_lin_landscape) {
+  plots <- data %>%
     # filter(pid == first(pid)) %>%
     group_by(pid, ...) %>%
-    group_map(.plot_fun)
+    group_map(.plot_fun) %>%
+    map(add_key_lbls)
+  names(plots) <- map_chr(plots, ~ attr(.x, "key")$pid)
+  plots
 }
 
-save_plot <- function(plot,
-                      name,
-                      width = 45, height = 15,
-                      device = "pdf",
-                      ...) {
+# Plot is expected to have a tibble "key"
+# attribute which will be added onto the caption
+add_key_lbls <- function(plot) {
+  plot +
+    labs(caption = pmap_chr(attr(plot, "key"), paste))
+}
+
+save_plot <- function(plot, name, ...) {
   ggdark::ggsave_dark(
-    paste0(name, ".", device),
+    paste0(name, ".png"),
     plot,
     dark = FALSE,
-    width = width,
-    height = height,
     units = "cm",
     ...
   )
 }
 
-save_plots <- function(plots, dir,
-                       width = 45, height = 15,
-                       device = "png",
-                       ...) {
+# Save multiple plots in a named list
+save_plots <- function(plots, dir, ...) {
+  args <- list(...)
   plotdir <- file.path(data_plot_dir, dir)
   if (!dir.exists(plotdir)) dir.create(plotdir)
-  future_map(
+  future_imap(
     plots,
-    ~ save_plot(.x, file.path(plotdir, attr(.x, "name")), width, height, device)
+    ~ do.call(save_plot, c(list(.x, file.path(plotdir, .y)), args))
   )
   invisible(NULL)
 }

@@ -16,6 +16,6 @@ contour_plots <- data %>%
   plots_by_pid(group, sex, age_lab, .plot_fun = plot_contour)
 
 # Save
-save_plots(indiv_plots, "indiv-hi", 42, 15)
-save_plots(indiv_plots_alt, "indiv-hi-alt", 42, 15)
-save_plots(contour_plots, "indiv-hi-contour", 21, 9.5)
+save_plots(indiv_plots, "indiv-hi", width = 42, height = 15)
+save_plots(indiv_plots_alt, "indiv-hi-alt", width = 42, height = 15)
+save_plots(contour_plots, "indiv-hi-contour", width = 21, height = 9.5)

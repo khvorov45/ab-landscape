@@ -14,5 +14,5 @@ indiv_plots_alt <- plots_by_pid(data_mod_alt, prior_h3_lab)
 # Not enough viruses with known coordinates for the contour plots
 
 # Save
-save_plots(indiv_plots, "indiv-hi-hanam", 42, 15)
-save_plots(indiv_plots_alt, "indiv-hi-hanam-alt", 42, 15)
+save_plots(indiv_plots, "indiv-hi-hanam", width = 42, height = 15)
+save_plots(indiv_plots_alt, "indiv-hi-hanam-alt", width = 42, height = 15)

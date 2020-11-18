@@ -93,6 +93,24 @@ rule hi_rmh_hcw:
     shell:
         "Rscript data-plot/hi-rmh-hcw.R"
 
+rule averaged:
+    input:
+        ".deps-installed",
+        "data/read_data.R",
+        "data/hi-rmh-hcw.csv",
+        "data/hi.csv",
+        "data-plot/data-plot.R",
+        "data-plot/averaged.R",
+    output:
+        "data-plot/averaged-hi.png",
+        "data-plot/averaged-hi-alt.png",
+        "data-plot/averaged-hi-contour.png",
+        "data-plot/averaged-rmh.png",
+        "data-plot/averaged-rmh-alt.png",
+        "data-plot/averaged-rmh-contour.png",
+    shell:
+        "Rscript data-plot/averaged.R"
+
 rule data_plot:
     input:
         rules.hi.output,
@@ -100,6 +118,7 @@ rule data_plot:
         rules.hi_2_bwyears.output,
         rules.hi_hanam.output,
         rules.hi_rmh_hcw.output,
+        rules.averaged.output,
     output:
         touch(".plots-created")
 

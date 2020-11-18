@@ -38,6 +38,6 @@ contour_plots <- data %>%
   map(timepoint_year_grid)
 
 # Save
-save_plots(indiv_plots, "indiv-hi-2-bwyears", 42, 20)
-save_plots(indiv_plots_alt, "indiv-hi-2-bwyears-alt", 42, 20)
-save_plots(contour_plots, "indiv-hi-2-bwyears-contour", 18, 14)
+save_plots(indiv_plots, "indiv-hi-2-bwyears", width = 42, height = 20)
+save_plots(indiv_plots_alt, "indiv-hi-2-bwyears-alt", width = 42, height = 20)
+save_plots(contour_plots, "indiv-hi-2-bwyears-contour", width = 18, height = 14)

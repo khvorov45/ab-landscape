@@ -14,5 +14,5 @@ indiv_plots_alt <- plots_by_pid(data_mod_alt, group, sex, age_lab)
 # Not enough viruses with known coordinates for a meaningful fit
 
 # Save
-save_plots(indiv_plots, "indiv-hi-rmh-hcw", 42, 15)
-save_plots(indiv_plots_alt, "indiv-hi-rmh-hcw-alt", 42, 15)
+save_plots(indiv_plots, "indiv-hi-rmh-hcw", width = 42, height = 15)
+save_plots(indiv_plots_alt, "indiv-hi-rmh-hcw-alt", width = 42, height = 15)
