@@ -47,7 +47,11 @@ year_keep_last_2 <- function(virus_name) {
 standardise_full_virus_name <- function(virus_name) {
   virus_name %>%
     tolower() %>%
-    year_keep_last_2()
+    year_keep_last_2() %>%
+    str_replace("hongkong", "hong kong") %>%
+    str_replace("infimh16/0019", "16-0019") %>%
+    str_replace("/switz/", "/switzerland/") %>%
+    str_replace("new castle", "newcastle")
 }
 
 # Convert short names to what's in the viruses table to look up long names to
@@ -107,6 +111,11 @@ viruses <- select(
     egg = str_detect(virus, "e$")
   ) %>%
   left_join(agmap, by = "virus_full")
+
+# Check which viruses aren't on the map
+setdiff(viruses$virus_full, agmap$virus_full)
+setdiff(agmap$virus_full, viruses$virus_full)
+
 participants <- select(
   samples_raw,
   pid = PID, group = `Case/Control`, sex = Sex, age = Age
