@@ -18,6 +18,13 @@ cp -R "$PROJ/data-plot/indiv-hi" \
     "$PROJ/data-plot/indiv-hi-alt" \
     "$PROJ/data-plot/indiv-hi-contour" \
     "$OBJ1/Israel"
+rm -rf "$OBJ1/Israel/averaged/*"
+cp "$PROJ/data-plot/averaged-hi.png" \
+    "$PROJ/data-plot/averaged-hi-alt.png" \
+    "$PROJ/data-plot/averaged-hi-contour.png" \
+    "$PROJ/data-plot/averaged-hi-2.png" \
+    "$PROJ/data-plot/averaged-hi-2-alt.png" \
+    "$OBJ1/Israel/averaged"
 
 # Differences
 cp $PROJ/simple-diff/simple-diff.png "$OBJ1/Israel/simple-diff.png"
@@ -75,6 +82,14 @@ rm -rf "$RMH/Analyses/landscape-plots/indiv-hi-rmh-hcw" \
 cp -R "$PROJ/data-plot/indiv-hi-rmh-hcw" \
     "$PROJ/data-plot/indiv-hi-rmh-hcw-alt" \
     "$RMH/Analyses/landscape-plots"
+
+rm -rf "$RMH/Analyses/landscape-plots/averaged/*"
+cp "$PROJ/data-plot/averaged-rmh.png" \
+    "$PROJ/data-plot/averaged-rmh-alt.png" \
+    "$PROJ/data-plot/averaged-rmh-contour.png" \
+    "$PROJ/data-plot/averaged-rmh-2.png" \
+    "$PROJ/data-plot/averaged-rmh-2-alt.png" \
+    "$RMH/Analyses/landscape-plots/averaged"
 
 # Differences
 cp "$PROJ/simple-diff/simple-diff-rmh-hcw.png" \
