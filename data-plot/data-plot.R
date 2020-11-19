@@ -76,7 +76,7 @@ plot_lin_landscape <- function(data,
   plot <- plot +
     geom_ribbon(
       aes(fill = !!group_var_q, ymax = titre, ymin = 5),
-      position = "identity", alpha = 0.5
+      position = "identity", alpha = 1
     ) +
     geom_text(
       aes(
