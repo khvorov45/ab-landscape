@@ -23,16 +23,22 @@ fit_loess <- function(data, formula, to_predict, span = 2) {
     bind_cols(to_predict)
 }
 
-plot_lin_landscape <- function(data, key = NULL) {
+plot_lin_landscape <- function(data,
+                               key = NULL,
+                               group_var = timepoint,
+                               group_var_lab = "Timepoint") {
+  group_var_q <- enquo(group_var)
   virus_names <- data %>%
     group_by(virus) %>%
     summarise(x_position = unique(x_position), .groups = "drop")
+
   plot <- data %>%
     ggplot(
-      aes(x_position, titre,
-        col = as.factor(timepoint),
-        shape = as.factor(timepoint),
-        linetype = as.factor(timepoint)
+      aes(
+        x_position, titre,
+        col = !!group_var_q,
+        shape = !!group_var_q,
+        linetype = !!group_var_q
       )
     ) +
     ggdark::dark_theme_bw(verbose = FALSE) +
@@ -44,10 +50,10 @@ plot_lin_landscape <- function(data, key = NULL) {
       panel.grid.minor = element_blank(),
       strip.background = element_blank()
     ) +
-    scale_color_viridis_d("Timepoint") +
-    scale_shape_discrete("Timepoint") +
-    scale_linetype_discrete("Timepoint") +
-    scale_fill_viridis_d("Timepoint") +
+    scale_color_viridis_d(group_var_lab) +
+    scale_shape_discrete(group_var_lab) +
+    scale_linetype_discrete(group_var_lab) +
+    scale_fill_viridis_d(group_var_lab) +
     scale_y_log10("Titre", breaks = 5 * 2^(0:10), expand = expansion(c(0, 0.1))) +
     scale_x_continuous(
       "Virus",
@@ -69,7 +75,7 @@ plot_lin_landscape <- function(data, key = NULL) {
   # Actual geoms
   plot <- plot +
     geom_ribbon(
-      aes(fill = timepoint, ymax = titre, ymin = 5),
+      aes(fill = !!group_var_q, ymax = titre, ymin = 5),
       position = "identity", alpha = 0.5
     ) +
     geom_text(

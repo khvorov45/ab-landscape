@@ -21,7 +21,6 @@ data_summ <- map(data, function(data) {
     summarise(titre = mean(log(titre)) %>% exp(), .groups = "drop")
 })
 
-
 # X positions for the linear landscape
 data_mod <- map(data_summ, x_positions_by_year)
 data_mod_alt <- map(data_summ, x_positions_clade_year)
@@ -39,8 +38,22 @@ lin_alt <- data_mod_alt %>%
   map(plot_lin_landscape) %>%
   map(add_facets)
 
-save_plot_averaged <- function(plot, name, suff = "", ...) {
-  heights <- c("rmh" = 30, "hi" = 20)
+add_facets_2 <- function(plot) {
+  plot +
+    facet_wrap(~timepoint, ncol = 1)
+}
+lin_2 <- data_mod %>%
+  map(plot_lin_landscape, group_var = group, group_var_lab = "Group") %>%
+  map(add_facets_2)
+lin_2_alt <- data_mod_alt %>%
+  map(plot_lin_landscape, group_var = group, group_var_lab = "Group") %>%
+  map(add_facets_2)
+
+save_plot_averaged <- function(plot,
+                               name,
+                               suff = "",
+                               heights = c("rmh" = 30, "hi" = 20),
+                               ...) {
   save_plot(
     plot,
     glue::glue("data-plot/averaged-{name}{suff}"),
@@ -51,6 +64,15 @@ save_plot_averaged <- function(plot, name, suff = "", ...) {
 }
 iwalk(lin, save_plot_averaged)
 iwalk(lin_alt, save_plot_averaged, suff = "-alt")
+iwalk(
+  lin_2, save_plot_averaged,
+  suff = "-2", heights = c("rmh" = 30, "hi" = 30)
+)
+iwalk(
+  lin_2_alt, save_plot_averaged,
+  suff = "-2-alt",
+  heights = c("rmh" = 30, "hi" = 30)
+)
 
 # Contours
 add_cont_facets <- function(plot) {

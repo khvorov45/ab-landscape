@@ -108,6 +108,10 @@ rule averaged:
         "data-plot/averaged-rmh.png",
         "data-plot/averaged-rmh-alt.png",
         "data-plot/averaged-rmh-contour.png",
+        "data-plot/averaged-hi-2.png",
+        "data-plot/averaged-hi-2-alt.png",
+        "data-plot/averaged-rmh-2.png",
+        "data-plot/averaged-rmh-2-alt.png",
     shell:
         "Rscript data-plot/averaged.R"
 
