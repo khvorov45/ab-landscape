@@ -77,7 +77,7 @@ save_data <- function(data, name) {
 # The map ---------------------------------------------------------------------
 
 agmap <- read_raw_csv("miniH3.coords", col_types = cols()) %>%
-  rename(virus_full = Virus, ag_x_coord = X, ag_y_coord = Y) %>%
+  rename(virus_full = Virus, virus_x_coord = X, virus_y_coord = Y) %>%
   mutate(
     virus_full = virus_full %>%
       str_replace_all("_", "/") %>%
