@@ -68,6 +68,10 @@ standardise_short_names <- function(names) {
     str_replace("Brisbane", "Bris")
 }
 
+save_data <- function(data, name) {
+  write_csv(data, glue::glue("data/{name}.csv"))
+}
+
 # Script ======================================================================
 
 # The map ---------------------------------------------------------------------
@@ -79,6 +83,8 @@ agmap <- read_raw_csv("miniH3.coords", col_types = cols()) %>%
       str_replace_all("_", "/") %>%
       standardise_full_virus_name()
   )
+
+save_data(agmap, "map")
 
 # The raw Israel data ---------------------------------------------------------
 
