@@ -6,3 +6,8 @@
 *.png
 *.tiff
 .plots-created
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.synctex.gz
