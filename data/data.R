@@ -86,7 +86,7 @@ agmap <- read_raw_csv("miniH3.coords", col_types = cols()) %>%
 
 save_data(agmap, "map")
 
-# The raw Israel data ---------------------------------------------------------
+# The raw CDC Israel data -----------------------------------------------------
 
 viruses_raw <- read_raw("Viruses")
 dilutions_raw <- read_raw("VirusDiln_BT")
