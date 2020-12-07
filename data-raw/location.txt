@@ -1,7 +1,19 @@
+# cdc-obj1
+
 Research/BAA 75D301-10-R-67835/Data/Objective 1
 
-HI_hanam was emailed
+# cdc-obj2
+
+Research/BAA 75D301-10-R-67835/Data/Objective 2/Base Data Tables
+
+# Hanam
+
+HI_hanam was emailed by Annette
+
+# RMH
 
 Research/2016.003 RMH HCW Study/Analyses/Landscapes/HI_long.csv
 
-Research/BAA 75D301-10-R-67835/Data/Objective 2/Obj2_timecourse_200904_complete.xlsx
+# The map
+
+minH3.coords.csv was emailed by Ryan
