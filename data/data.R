@@ -256,7 +256,8 @@ cdc_hi_obj2 <- cdc_hi_obj2_raw %>%
   ) %>%
   mutate(
     timepoint = recode(
-      timepoint, "1" = "prevax", "2" = "postvax", "3" = "postseas"
+      timepoint,
+      "1" = "prevax", "2" = "postvax", "3" = "postseas"
     )
   ) %>%
   filter(!is.na(titre))
