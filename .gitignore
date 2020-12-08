@@ -11,3 +11,4 @@
 *.fls
 *.log
 *.synctex.gz
+*~lock.*
