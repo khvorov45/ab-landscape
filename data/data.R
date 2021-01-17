@@ -316,11 +316,11 @@ hi_hanam <- read_csv(
   )
 
 # Attach the virus full name and coordinates
-setdiff(unique(hi_hanam$virus_short), viruses$virus)
+setdiff(unique(hi_hanam$virus_short), cdc_viruses_obj1$virus_short)
 
 hi_hanam_virusmeta <- hi_hanam %>%
   left_join(
-    select(viruses, virus_short = virus, virus_full),
+    select(cdc_viruses_obj1, virus_short, virus_full),
     by = "virus_short"
   ) %>%
   left_join(agmap, by = "virus_full")
@@ -358,10 +358,13 @@ hi_rmh_hcw_reduced <- hi_rmh_hcw %>%
     egg = str_detect(virus, "e$"),
   )
 
-setdiff(unique(hi_rmh_hcw_reduced$virus), viruses$virus)
+setdiff(unique(hi_rmh_hcw_reduced$virus), cdc_viruses_obj1$virus_short)
 
 hi_rmh_hcw_virusmeta <- hi_rmh_hcw_reduced %>%
-  left_join(select(viruses, virus, virus_full), by = "virus") %>%
+  left_join(
+    select(cdc_viruses_obj1, virus = virus_short, virus_full),
+    by = "virus"
+  ) %>%
   left_join(agmap, by = "virus_full")
 
 save_csv(hi_rmh_hcw_virusmeta, "hi-rmh-hcw")
