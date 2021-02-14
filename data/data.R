@@ -250,6 +250,13 @@ cdc_hi_obj1 %>%
 
 save_data(cdc_hi_obj1, "cdc-hi-obj1")
 
+cdc_hi_change <- cdc_hi_obj1 %>%
+  filter(timepoint %in% c("prevax", "postvax")) %>%
+  pivot_wider(names_from = timepoint, values_from = titre) %>%
+  mutate(ratio = postvax / prevax)
+
+save_data(cdc_hi_change, "cdc-hi-change-obj1")
+
 # HI for objective 2
 
 cdc_hi_obj2_raw <- read_raw("cdc-obj2/HIresult", guess_max = 1e5)
