@@ -49,17 +49,27 @@ summarise_binary <- function(bin_vec, return_everything = FALSE) {
   summ
 }
 
-summarise_logmean <- function(titres) {
+summarise_logmean <- function(titres, out = "string") {
   titres <- na.omit(titres)
   logtitres <- log(titres)
   logmn <- mean(logtitres)
   logse <- sd(logtitres) / sqrt(length(titres))
   q <- qnorm(0.975)
-  glue::glue(
-    "{format_decimal(exp(logmn))} ",
-    "({format_decimal(exp(logmn - q * logse))}, ",
-    "{format_decimal(exp(logmn + q * logse))})",
-  )
+  loglow <- logmn - q * logse
+  loghigh <- logmn + q * logse
+  mn <- exp(logmn)
+  low <- exp(loglow)
+  high <- exp(loghigh)
+  if (out == "string") {
+    glue::glue(
+      "{format_decimal(mn)} ",
+      "({format_decimal(low)}, ",
+      "{format_decimal(high)})",
+    )
+  }
+  else {
+    tibble(logmn, logse, loglow, loghigh, mn, low, high)
+  }
 }
 
 summarise_count <- function(count) {
@@ -119,7 +129,12 @@ cdc_participant_obj1 %>%
   ) %>%
   save_table("cdc-participant-summary")
 
-cdc_hi_obj1 <- read_data("cdc-hi-obj1")
+label_cdc_timepoints <- as_labeller(
+  c("prevax" = "Pre-Vax", "postvax" = "Post-Vax", "postseas" = "Post-Season")
+)
+
+cdc_hi_obj1 <- read_data("cdc-hi-obj1") %>%
+  inner_join(cdc_participant_obj1, by = "pid")
 
 # Titre plot - the usual stuff, variable at prevax, rises at postvax, stays
 # the same/drops slightly to postseas.
@@ -141,3 +156,34 @@ cdc_hi_obj1 %>%
   scale_x_discrete("Timepoint", expand = expansion(0.1)) +
   geom_point(alpha = 0.5, shape = 18) +
   geom_line(alpha = 0.5)
+
+# Timepoint GMT's
+cdc_obj1_timepoint_gmts <- cdc_hi_obj1 %>%
+  group_by(timepoint, virus, group) %>%
+  summarise(summarise_logmean(titre, out = "tibble"), .groups = "drop") %>%
+  ggplot(aes(virus, mn, color = group, shape = group)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(
+    legend.position = "bottom",
+    legend.box.spacing = unit(0, "null"),
+    strip.placement = "right",
+    panel.spacing = unit(0, "null"),
+    strip.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(angle = -45, hjust = 0),
+    plot.margin = margin(10, 40, 10, 10)
+  ) +
+  facet_wrap(~timepoint, ncol = 1, strip.position = "right", labeller = label_cdc_timepoints) +
+  scale_y_log10("GMT (95% CI)") +
+  scale_x_discrete("Virus") +
+  scale_color_discrete("Group") +
+  scale_shape_discrete("Group") +
+  geom_pointrange(
+    aes(ymin = low, ymax = high),
+    position = position_dodge(width = 0.5)
+  )
+
+save_plot(
+  cdc_obj1_timepoint_gmts, "cdc-obj1-timepoint-gmts",
+  width = 20, height = 20
+)
