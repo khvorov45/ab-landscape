@@ -225,7 +225,7 @@ save_data(cdc_vacc_hist_obj2, "cdc-vacc-hist-obj2")
 # HI for objective 1
 
 cdc_hi_obj1 <- cdc_hi_time_obj1 %>%
-  select(pid = PID, contains("Titer")) %>%
+  select(pid = PID, contains("Titer"), virus = Virus_Name) %>%
   pivot_longer(
     contains("Titer"),
     names_to = "timepoint", values_to = "titre"
@@ -243,6 +243,10 @@ cdc_hi_obj1 <- cdc_hi_time_obj1 %>%
 cdc_hi_obj1 %>% filter(!complete.cases(.))
 
 compare_vectors(cdc_hi_obj1$pid, cdc_participants_obj1$pid)
+
+cdc_hi_obj1 %>%
+  group_by(pid, virus) %>%
+  filter(n() != 3)
 
 save_data(cdc_hi_obj1, "cdc-hi-obj1")
 
