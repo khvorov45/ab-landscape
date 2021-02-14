@@ -4,6 +4,9 @@ read_data <- function(name) {
     "hi-hanam" = list(
       timepoint = col_factor(c("BL", "d4", "d7", "d14", "d21", "d280"))
     ),
+    "cdc-hi-obj1" = list(
+      timepoint = col_factor(c("prevax", "postvax", "postseas"))
+    ),
     "hi-rmh-hcw" = list(
       timepoint = col_factor(c("Pre-vax", "Post-vax", "Post-season")),
       group = col_factor(c("Frequent", "Moderate", "Infrequent"))
