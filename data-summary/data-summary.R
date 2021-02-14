@@ -118,3 +118,26 @@ cdc_participant_obj1 %>%
     label = "cdc-participant-summary"
   ) %>%
   save_table("cdc-participant-summary")
+
+cdc_hi_obj1 <- read_data("cdc-hi-obj1")
+
+# Titre plot - the usual stuff, variable at prevax, rises at postvax, stays
+# the same/drops slightly to postseas.
+cdc_hi_obj1 %>%
+  ggplot(aes(timepoint, titre, group = pid, color = pid)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(
+    legend.position = "none",
+    strip.background = element_blank(),
+    panel.spacing = unit(0, "null"),
+    axis.text.x = element_text(angle = -35, hjust = 0),
+    plot.margin = margin(10, 25, 10, 10)
+  ) +
+  facet_wrap(~virus, ncol = 7) +
+  scale_y_log10(
+    "Titre",
+    breaks = 5 * 2^(0:15),
+  ) +
+  scale_x_discrete("Timepoint", expand = expansion(0.1)) +
+  geom_point(alpha = 0.5, shape = 18) +
+  geom_line(alpha = 0.5)
