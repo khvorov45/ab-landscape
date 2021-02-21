@@ -173,8 +173,11 @@ cdc_obj1_timepoint_gmts <- cdc_hi_obj1 %>%
     axis.text.x = element_text(angle = -45, hjust = 0),
     plot.margin = margin(10, 40, 10, 10)
   ) +
-  facet_wrap(~timepoint, ncol = 1, strip.position = "right", labeller = label_cdc_timepoints) +
-  scale_y_log10("GMT (95% CI)") +
+  facet_wrap(
+    ~timepoint,
+    ncol = 1, strip.position = "right", labeller = label_cdc_timepoints
+  ) +
+  scale_y_log10("GMT (95% CI)", breaks = 5 * 2^(0:15)) +
   scale_x_discrete("Virus") +
   scale_color_discrete("Group") +
   scale_shape_discrete("Group") +
@@ -186,4 +189,37 @@ cdc_obj1_timepoint_gmts <- cdc_hi_obj1 %>%
 save_plot(
   cdc_obj1_timepoint_gmts, "cdc-obj1-timepoint-gmts",
   width = 20, height = 20
+)
+
+# Differences between timepoints
+timepoint_diffs <- cdc_hi_obj1 %>%
+  filter(timepoint %in% c("prevax", "postvax")) %>%
+  pivot_wider(names_from = "timepoint", values_from = "titre") %>%
+  mutate(ratio = postvax / prevax) %>%
+  group_by(virus, group) %>%
+  summarise(summarise_logmean(ratio, out = "tibble"), .groups = "drop") %>%
+  ggplot(aes(virus, mn, color = group, shape = group)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(
+    legend.position = "bottom",
+    legend.box.spacing = unit(0, "null"),
+    strip.placement = "right",
+    panel.spacing = unit(0, "null"),
+    strip.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(angle = -45, hjust = 0),
+    plot.margin = margin(10, 60, 10, 10)
+  ) +
+  geom_pointrange(
+    aes(ymin = low, ymax = high),
+    position = position_dodge(width = 0.5)
+  ) +
+  scale_y_log10("Post/Pre vax ratio (95% CI)", breaks = 1:10) +
+  scale_x_discrete("Virus") +
+  scale_color_discrete("Group") +
+  scale_shape_discrete("Group")
+
+save_plot(
+  timepoint_diffs, "cdc-obj1-timepoint-diffs",
+  width = 20, height = 15
 )
