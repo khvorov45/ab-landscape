@@ -99,6 +99,8 @@ save_table <- function(table, name) {
 
 # Script ======================================================================
 
+# CDC Objective 1
+
 cdc_participant_obj1 <- read_data("cdc-participant-obj1")
 
 cdc_participant_obj1 %>%
@@ -118,16 +120,16 @@ cdc_participant_obj1 %>%
       "age_summ" = "Age (years) in 2016"
     )
   ) %>%
-  save_data("cdc-participant-summary") %>%
+  save_data("cdc-participant-summary-obj1") %>%
   kbl(
     format = "latex",
     caption = "Summaries of CDC objective 1 participants.
       Format: count (percentage); mean (sd)",
     booktabs = TRUE,
     col.names = c("", colnames(.)[-1]),
-    label = "cdc-participant-summary"
+    label = "cdc-participant-summary-obj1"
   ) %>%
-  save_table("cdc-participant-summary")
+  save_table("cdc-participant-summary-obj1")
 
 label_cdc_timepoints <- as_labeller(
   c("prevax" = "Pre-Vax", "postvax" = "Post-Vax", "postseas" = "Post-Season")
@@ -222,4 +224,181 @@ timepoint_diffs <- cdc_hi_obj1 %>%
 save_plot(
   timepoint_diffs, "cdc-obj1-timepoint-diffs",
   width = 20, height = 15
+)
+
+# CDC Objective 2
+
+cdc_participant_obj2 <- read_data("cdc-participant-obj2")
+cdc_vacc_hist_obj2 <- read_data("cdc-vacc-hist-obj2")
+
+cdc_vacc_hist_obj2_summ <- cdc_vacc_hist_obj2 %>%
+  group_by(pid) %>%
+  summarise(vacc_number = sum(vacc_status), .groups = "drop")
+
+cdc_participant_obj2_extra <- cdc_participant_obj2 %>%
+  inner_join(cdc_vacc_hist_obj2_summ, by = "pid") %>%
+  mutate(age_years = 2016 - yob)
+
+cdc_participant_obj2_extra %>%
+  summarise(
+    sex_prop = summarise_factor(sex),
+    age_summ = summarise_numeric(age_years),
+    vax_summ = summarise_factor(vacc_number),
+    .groups = "drop"
+  ) %>%
+  pivot_longer(everything(), names_to = "summary_type", values_to = "summary") %>%
+  mutate(
+    summary_type = recode(
+      summary_type,
+      "sex_prop" = "Sex",
+      "age_summ" = "Age (years) in 2016",
+      "vax_summ" = "Vaccinations in 2011-2015"
+    )
+  ) %>%
+  save_data("cdc-participant-summary-obj2") %>%
+  kbl(
+    format = "latex",
+    caption = "Summaries of CDC objective 2 participants.
+      Format: count (percentage); mean (sd)",
+    booktabs = TRUE,
+    col.names = c("", "Summary"),
+    label = "cdc-participant-summary-obj2"
+  ) %>%
+  save_table("cdc-participant-summary-obj2")
+
+
+# Titres
+cdc_hi_obj2 <- read_data("cdc-hi-obj2")
+cdc_viruses_obj2 <- read_data("cdc-virus-obj2")
+
+cdc_hi_obj2_extra <- cdc_hi_obj2 %>%
+  inner_join(cdc_viruses_obj2, "virus_n") %>%
+  mutate(study_year_lbl = as.factor(study_year))
+
+# Titre summaries
+cdc_obj2_gmts <- cdc_hi_obj2_extra %>%
+  group_by(timepoint, virus_full, study_year_lbl) %>%
+  summarise(summarise_logmean(titre, out = "tibble"), .groups = "drop")
+
+cdc_obj2_gmts_plot1 <- cdc_obj2_gmts %>%
+  ggplot(aes(virus_full, mn, color = timepoint, shape = timepoint)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(
+    legend.position = "bottom",
+    legend.box.spacing = unit(0, "null"),
+    strip.placement = "right",
+    panel.spacing = unit(0, "null"),
+    strip.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(angle = -45, hjust = 0),
+    plot.margin = margin(10, 40, 10, 10)
+  ) +
+  facet_wrap(
+    ~study_year_lbl,
+    ncol = 1, strip.position = "right",
+    labeller = as_labeller(function(x) paste("Year", x))
+  ) +
+  scale_y_log10("GMT (95% CI)", breaks = 5 * 2^(0:15)) +
+  scale_x_discrete("Virus") +
+  scale_color_discrete("Timepoint", labels = label_cdc_timepoints) +
+  scale_shape_discrete("Timepoint", labels = label_cdc_timepoints) +
+  geom_pointrange(
+    aes(ymin = low, ymax = high),
+    position = position_dodge(width = 0.5)
+  )
+
+save_plot(
+  cdc_obj2_gmts_plot1, "cdc-obj2-gmts-1",
+  width = 20, height = 20
+)
+
+cdc_obj2_gmts_plot2 <- cdc_obj2_gmts %>%
+  ggplot(aes(virus_full, mn, color = study_year_lbl, shape = study_year_lbl)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(
+    legend.position = "bottom",
+    legend.box.spacing = unit(0, "null"),
+    strip.placement = "right",
+    panel.spacing = unit(0, "null"),
+    strip.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(angle = -45, hjust = 0),
+    plot.margin = margin(10, 40, 10, 10)
+  ) +
+  facet_wrap(
+    ~timepoint,
+    ncol = 1, strip.position = "right",
+    labeller = label_cdc_timepoints
+  ) +
+  scale_y_log10("GMT (95% CI)", breaks = 5 * 2^(0:15)) +
+  scale_x_discrete("Virus") +
+  scale_color_discrete("Study year") +
+  scale_shape_discrete("Study year") +
+  geom_pointrange(
+    aes(ymin = low, ymax = high),
+    position = position_dodge(width = 0.5)
+  )
+
+save_plot(
+  cdc_obj2_gmts_plot2, "cdc-obj2-gmts-2",
+  width = 20, height = 20
+)
+
+# Titre changes
+cdc_hi_obj2_wide <- cdc_hi_obj2_extra %>%
+  pivot_wider(names_from = "timepoint", values_from = "titre") %>%
+  mutate(vax_resp = postvax / prevax)
+
+cdc_obj2_vax_resp_virus_plot <- cdc_hi_obj2_wide %>%
+  group_by(virus_full, study_year) %>%
+  summarise(summarise_logmean(vax_resp, out = "tibble"), .groups = "drop") %>%
+  mutate(study_year_lbl = as.factor(study_year)) %>%
+  ggplot(aes(virus_full, mn, color = study_year_lbl, shape = study_year_lbl)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(
+    legend.position = "bottom",
+    legend.box.spacing = unit(0, "null"),
+    strip.placement = "right",
+    panel.spacing = unit(0, "null"),
+    strip.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(angle = -45, hjust = 0),
+    plot.margin = margin(10, 60, 10, 10)
+  ) +
+  geom_pointrange(
+    aes(ymin = low, ymax = high),
+    position = position_dodge(width = 0.5)
+  ) +
+  scale_y_log10("Post/Pre vax ratio (95% CI)", breaks = 1:10) +
+  scale_x_discrete("Virus") +
+  scale_color_discrete("Study year") +
+  scale_shape_discrete("Study year")
+
+save_plot(
+  cdc_obj2_vax_resp_virus_plot, "cdc-obj2-vax-resp-virus",
+  width = 25, height = 15
+)
+
+cdc_obj2_average_response <- cdc_hi_obj2_wide %>%
+  filter(!is.na(vax_resp)) %>%
+  group_by(pid, study_year) %>%
+  summarise(average_response = exp(mean(log(vax_resp))), .groups = "drop") %>%
+  ggplot(aes(study_year, average_response, color = pid)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(
+    legend.position = "none",
+    legend.box.spacing = unit(0, "null"),
+    strip.placement = "right",
+    panel.spacing = unit(0, "null"),
+    strip.background = element_blank(),
+    panel.grid.minor = element_blank(),
+  ) +
+  geom_line(alpha = 0.7) +
+  geom_point(shape = 18, alpha = 0.7) +
+  scale_y_log10("Average post/pre vax ratio", breaks = 1:10) +
+  scale_x_continuous("Study year", breaks = 1:3)
+
+save_plot(
+  cdc_obj2_average_response, "cdc-obj2-average-response",
+  width = 15, height = 9
 )

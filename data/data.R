@@ -263,7 +263,8 @@ cdc_hi_obj2_raw <- read_raw("cdc-obj2/HIresult", guess_max = 1e5)
 
 cdc_hi_obj2 <- cdc_hi_obj2_raw %>%
   select(
-    pid = PID, study_year = SpecYearN, timepoint = DrawN, titre = Titer
+    pid = PID, study_year = SpecYearN, timepoint = DrawN, titre = Titer,
+    virus_n = VirusN
   ) %>%
   mutate(
     timepoint = recode(
@@ -276,6 +277,7 @@ cdc_hi_obj2 <- cdc_hi_obj2_raw %>%
 cdc_hi_obj2 %>% filter(!complete.cases(.))
 
 compare_vectors(cdc_hi_obj2$pid, cdc_participants_obj2$pid)
+compare_vectors(cdc_hi_obj2$virus_n, cdc_viruses_obj2$virus_n)
 
 save_data(cdc_hi_obj2, "cdc-hi-obj2")
 
