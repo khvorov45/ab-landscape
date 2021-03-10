@@ -384,7 +384,7 @@ cdc_hi_obj2_wide <- cdc_hi_obj2_extra %>%
   mutate(vax_resp = postvax / prevax)
 
 cdc_obj2_vax_resp_virus_plot <- cdc_hi_obj2_wide %>%
-  group_by(virus_full, study_year) %>%
+  group_by(virus_full, study_year, site) %>%
   summarise(summarise_logmean(vax_resp, out = "tibble"), .groups = "drop") %>%
   mutate(study_year_lbl = as.factor(study_year)) %>%
   ggplot(aes(virus_full, mn, color = study_year_lbl, shape = study_year_lbl)) +
@@ -399,6 +399,7 @@ cdc_obj2_vax_resp_virus_plot <- cdc_hi_obj2_wide %>%
     axis.text.x = element_text(angle = -45, hjust = 0),
     plot.margin = margin(10, 60, 10, 10)
   ) +
+  facet_wrap(~site, ncol = 1, strip.position = "right") +
   geom_pointrange(
     aes(ymin = low, ymax = high),
     position = position_dodge(width = 0.5)
@@ -410,7 +411,7 @@ cdc_obj2_vax_resp_virus_plot <- cdc_hi_obj2_wide %>%
 
 save_plot(
   cdc_obj2_vax_resp_virus_plot, "cdc-obj2-vax-resp-virus",
-  width = 25, height = 15
+  width = 20, height = 20
 )
 
 cdc_obj2_average_response <- cdc_hi_obj2_wide %>%
