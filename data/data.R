@@ -170,6 +170,21 @@ cdc_viruses_obj2 %>% filter(!complete.cases(.))
 save_data(cdc_viruses_obj1, "cdc-virus-obj1")
 save_data(cdc_viruses_obj2, "cdc-virus-obj2")
 
+# Vaccine viruses
+cdc_vaccine_obj1 <- tibble(virus_full = "a/singapore/16-0019/16e")
+cdc_vaccine_obj1$virus_full %in% cdc_viruses_obj1$virus_full
+
+cdc_vaccine_obj2 <- tibble(
+  virus_full = c(
+    "a/hong kong/4801/14e", "a/hong kong/4801/14e", "a/singapore/16-0019/16e"
+  ),
+  study_year = c(1, 2, 3)
+)
+cdc_vaccine_obj2$virus_full %in% cdc_viruses_obj2$virus_full
+
+save_data(cdc_vaccine_obj1, "cdc-vaccine-obj1")
+save_data(cdc_vaccine_obj2, "cdc-vaccine-obj2")
+
 # Participants for objective 1
 
 cdc_hi_time_obj1 <- read_raw("cdc-obj1/HI_timecourse")
