@@ -331,35 +331,50 @@ save_plot(
   width = 20, height = 20
 )
 
-cdc_obj2_gmts_plot2 <- cdc_obj2_gmts %>%
-  ggplot(aes(virus_full, mn, color = study_year_lbl, shape = study_year_lbl)) +
-  ggdark::dark_theme_bw(verbose = FALSE) +
-  theme(
-    legend.position = "bottom",
-    legend.box.spacing = unit(0, "null"),
-    strip.placement = "right",
-    panel.spacing = unit(0, "null"),
-    strip.background = element_blank(),
-    panel.grid.minor = element_blank(),
-    axis.text.x = element_text(angle = -45, hjust = 0),
-    plot.margin = margin(10, 40, 10, 10)
-  ) +
-  facet_wrap(
-    ~timepoint,
-    ncol = 1, strip.position = "right",
-    labeller = label_cdc_timepoints
-  ) +
-  scale_y_log10("GMT (95% CI)", breaks = 5 * 2^(0:15)) +
-  scale_x_discrete("Virus") +
-  scale_color_discrete("Study year") +
-  scale_shape_discrete("Study year") +
-  geom_pointrange(
-    aes(ymin = low, ymax = high),
-    position = position_dodge(width = 0.5)
-  )
+plot2_obj2_gmts <- function(data) {
+  data %>%
+    ggplot(aes(virus_full, mn, color = study_year_lbl, shape = study_year_lbl)) +
+    ggdark::dark_theme_bw(verbose = FALSE) +
+    theme(
+      legend.position = "bottom",
+      legend.box.spacing = unit(0, "null"),
+      strip.placement = "right",
+      panel.spacing = unit(0, "null"),
+      strip.background = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.text.x = element_text(angle = -45, hjust = 0),
+      plot.margin = margin(10, 40, 10, 10)
+    ) +
+    facet_wrap(
+      ~timepoint,
+      ncol = 1, strip.position = "right",
+      labeller = label_cdc_timepoints
+    ) +
+    scale_y_log10("GMT (95% CI)", breaks = 5 * 2^(0:15)) +
+    scale_x_discrete("Virus") +
+    scale_color_discrete("Study year") +
+    scale_shape_discrete("Study year") +
+    geom_pointrange(
+      aes(ymin = low, ymax = high),
+      position = position_dodge(width = 0.5)
+    )
+}
+
+cdc_obj2_gmts_plot2_israel <- cdc_obj2_gmts %>%
+  filter(site == "Israel") %>%
+  plot2_obj2_gmts()
+
+cdc_obj2_gmts_plot2_peru <- cdc_obj2_gmts %>%
+  filter(site == "Peru") %>%
+  plot2_obj2_gmts()
 
 save_plot(
-  cdc_obj2_gmts_plot2, "cdc-obj2-gmts-2",
+  cdc_obj2_gmts_plot2_israel, "cdc-obj2-gmts-2-israel",
+  width = 20, height = 20
+)
+
+save_plot(
+  cdc_obj2_gmts_plot2_peru, "cdc-obj2-gmts-2-peru",
   width = 20, height = 20
 )
 
