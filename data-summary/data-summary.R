@@ -273,7 +273,10 @@ cdc_viruses_obj2 <- read_data("cdc-virus-obj2")
 
 cdc_hi_obj2_extra <- cdc_hi_obj2 %>%
   inner_join(cdc_viruses_obj2, "virus_n") %>%
-  mutate(study_year_lbl = as.factor(study_year))
+  mutate(
+    study_year_lbl = as.factor(study_year),
+    egg_lbl = if_else(egg, "Egg", "Cell")
+  )
 
 # Titre summaries
 cdc_obj2_gmts <- cdc_hi_obj2_extra %>%
@@ -381,7 +384,7 @@ save_plot(
 
 cdc_obj2_average_response <- cdc_hi_obj2_wide %>%
   filter(!is.na(vax_resp)) %>%
-  group_by(pid, study_year) %>%
+  group_by(pid, study_year, egg_lbl) %>%
   summarise(average_response = exp(mean(log(vax_resp))), .groups = "drop") %>%
   ggplot(aes(study_year, average_response, color = pid)) +
   ggdark::dark_theme_bw(verbose = FALSE) +
@@ -393,9 +396,13 @@ cdc_obj2_average_response <- cdc_hi_obj2_wide %>%
     strip.background = element_blank(),
     panel.grid.minor = element_blank(),
   ) +
+  facet_wrap(~egg_lbl) +
   geom_line(alpha = 0.7) +
   geom_point(shape = 18, alpha = 0.7) +
-  scale_y_log10("Average post/pre vax ratio", breaks = 1:10) +
+  scale_y_log10(
+    "Average post/pre vax ratio",
+    breaks = c(1:5, 7, 10, 15, 20, 25)
+  ) +
   scale_x_continuous("Study year", breaks = 1:3)
 
 save_plot(
