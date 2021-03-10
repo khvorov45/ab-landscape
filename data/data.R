@@ -193,7 +193,7 @@ save_data(cdc_participants_obj1, "cdc-participant-obj1")
 cdc_hi_prior_vacc_obj2 <- read_raw("cdc-obj2/prior_vacc")
 
 cdc_participants_obj2 <- cdc_hi_prior_vacc_obj2 %>%
-  select(pid = study_id, sex = Sex, yob = yob) %>%
+  select(pid = study_id, sex = Sex, yob = yob, site = Site) %>%
   distinct(pid, .keep_all = TRUE)
 
 cdc_participants_obj2 %>% filter(!complete.cases(.))

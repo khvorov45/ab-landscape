@@ -273,6 +273,7 @@ cdc_viruses_obj2 <- read_data("cdc-virus-obj2")
 
 cdc_hi_obj2_extra <- cdc_hi_obj2 %>%
   inner_join(cdc_viruses_obj2, "virus_n") %>%
+  inner_join(cdc_participant_obj2, "pid") %>%
   mutate(
     study_year_lbl = as.factor(study_year),
     egg_lbl = if_else(egg, "Egg", "Cell")
@@ -280,38 +281,53 @@ cdc_hi_obj2_extra <- cdc_hi_obj2 %>%
 
 # Titre summaries
 cdc_obj2_gmts <- cdc_hi_obj2_extra %>%
-  group_by(timepoint, virus_full, study_year_lbl) %>%
+  group_by(timepoint, virus_full, study_year_lbl, site) %>%
   summarise(summarise_logmean(titre, out = "tibble"), .groups = "drop")
 
-cdc_obj2_gmts_plot1 <- cdc_obj2_gmts %>%
-  ggplot(aes(virus_full, mn, color = timepoint, shape = timepoint)) +
-  ggdark::dark_theme_bw(verbose = FALSE) +
-  theme(
-    legend.position = "bottom",
-    legend.box.spacing = unit(0, "null"),
-    strip.placement = "right",
-    panel.spacing = unit(0, "null"),
-    strip.background = element_blank(),
-    panel.grid.minor = element_blank(),
-    axis.text.x = element_text(angle = -45, hjust = 0),
-    plot.margin = margin(10, 40, 10, 10)
-  ) +
-  facet_wrap(
-    ~study_year_lbl,
-    ncol = 1, strip.position = "right",
-    labeller = as_labeller(function(x) paste("Year", x))
-  ) +
-  scale_y_log10("GMT (95% CI)", breaks = 5 * 2^(0:15)) +
-  scale_x_discrete("Virus") +
-  scale_color_discrete("Timepoint", labels = label_cdc_timepoints) +
-  scale_shape_discrete("Timepoint", labels = label_cdc_timepoints) +
-  geom_pointrange(
-    aes(ymin = low, ymax = high),
-    position = position_dodge(width = 0.5)
-  )
+plot1_obj2_gmts <- function(data) {
+  data %>%
+    ggplot(aes(virus_full, mn, color = timepoint, shape = timepoint)) +
+    ggdark::dark_theme_bw(verbose = FALSE) +
+    theme(
+      legend.position = "bottom",
+      legend.box.spacing = unit(0, "null"),
+      strip.placement = "right",
+      panel.spacing = unit(0, "null"),
+      strip.background = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.text.x = element_text(angle = -45, hjust = 0),
+      plot.margin = margin(10, 40, 10, 10)
+    ) +
+    facet_wrap(
+      ~study_year_lbl,
+      ncol = 1, strip.position = "right",
+      labeller = as_labeller(function(x) paste("Year", x))
+    ) +
+    scale_y_log10("GMT (95% CI)", breaks = 5 * 2^(0:15)) +
+    scale_x_discrete("Virus") +
+    scale_color_discrete("Timepoint", labels = label_cdc_timepoints) +
+    scale_shape_discrete("Timepoint", labels = label_cdc_timepoints) +
+    geom_pointrange(
+      aes(ymin = low, ymax = high),
+      position = position_dodge(width = 0.5)
+    )
+}
+
+cdc_obj2_gmts_plot1_israel <- cdc_obj2_gmts %>%
+  filter(site == "Israel") %>%
+  plot1_obj2_gmts()
+
+cdc_obj2_gmts_plot1_peru <- cdc_obj2_gmts %>%
+  filter(site == "Peru") %>%
+  plot1_obj2_gmts()
 
 save_plot(
-  cdc_obj2_gmts_plot1, "cdc-obj2-gmts-1",
+  cdc_obj2_gmts_plot1_israel, "cdc-obj2-gmts-1-israel",
+  width = 20, height = 20
+)
+
+save_plot(
+  cdc_obj2_gmts_plot1_peru, "cdc-obj2-gmts-1-peru",
   width = 20, height = 20
 )
 
