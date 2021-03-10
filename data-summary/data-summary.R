@@ -416,7 +416,7 @@ save_plot(
 
 cdc_obj2_average_response <- cdc_hi_obj2_wide %>%
   filter(!is.na(vax_resp)) %>%
-  group_by(pid, study_year, egg_lbl) %>%
+  group_by(pid, study_year, egg_lbl, site) %>%
   summarise(average_response = exp(mean(log(vax_resp))), .groups = "drop") %>%
   ggplot(aes(study_year, average_response, color = pid)) +
   ggdark::dark_theme_bw(verbose = FALSE) +
@@ -428,7 +428,7 @@ cdc_obj2_average_response <- cdc_hi_obj2_wide %>%
     strip.background = element_blank(),
     panel.grid.minor = element_blank(),
   ) +
-  facet_wrap(~egg_lbl) +
+  facet_grid(site ~ egg_lbl) +
   geom_line(alpha = 0.7) +
   geom_point(shape = 18, alpha = 0.7) +
   scale_y_log10(
@@ -439,5 +439,5 @@ cdc_obj2_average_response <- cdc_hi_obj2_wide %>%
 
 save_plot(
   cdc_obj2_average_response, "cdc-obj2-average-response",
-  width = 15, height = 9
+  width = 15, height = 15
 )
