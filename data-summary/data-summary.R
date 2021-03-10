@@ -240,19 +240,21 @@ cdc_participant_obj2_extra <- cdc_participant_obj2 %>%
   mutate(age_years = 2016 - yob)
 
 cdc_participant_obj2_extra %>%
+  group_by(site) %>%
   summarise(
     sex_prop = summarise_factor(sex),
     age_summ = summarise_numeric(age_years),
     vax_summ = summarise_factor(vacc_number),
     .groups = "drop"
   ) %>%
-  pivot_longer(everything(), names_to = "summary_type", values_to = "summary") %>%
+  pivot_longer(-site, names_to = "summary_type", values_to = "summary") %>%
+  pivot_wider(names_from = "site", values_from = "summary") %>%
   mutate(
     summary_type = recode(
       summary_type,
       "sex_prop" = "Sex",
       "age_summ" = "Age (years) in 2016",
-      "vax_summ" = "Vaccinations in 2011-2015"
+      "vax_summ" = "Vaccinations in 2011-15"
     )
   ) %>%
   save_data("cdc-participant-summary-obj2") %>%
@@ -261,9 +263,10 @@ cdc_participant_obj2_extra %>%
     caption = "Summaries of CDC objective 2 participants.
       Format: count (percentage); mean (sd)",
     booktabs = TRUE,
-    col.names = c("", "Summary"),
+    col.names = c("", colnames(.)[-1]),
     label = "cdc-participant-summary-obj2"
   ) %>%
+  kable_styling(latex_options = "scale_down") %>%
   save_table("cdc-participant-summary-obj2")
 
 
