@@ -51,7 +51,9 @@ standardise_full_virus_name <- function(virus_name) {
     str_replace("hongkong", "hong kong") %>%
     str_replace("infimh16/0019", "16-0019") %>%
     str_replace("/switz/", "/switzerland/") %>%
-    str_replace("new castle", "newcastle")
+    str_replace("new castle", "newcastle") %>%
+    str_replace("p$", "") %>%
+    str_replace("hanam", "hanoi")
 }
 
 # Convert short names to what's in the viruses table to look up long names to
@@ -65,7 +67,8 @@ standardise_short_names <- function(names) {
     str_replace("NCastle", "Ncast") %>%
     str_replace("NCaled", "Ncal") %>%
     str_replace("Townsville", "T'ville") %>%
-    str_replace("Brisbane", "Bris")
+    str_replace("Brisbane", "Bris") %>%
+    str_replace("p$", "")
 }
 
 save_data <- function(data, name) {
@@ -127,6 +130,7 @@ fmt_cdc_viruses <- function(data) {
     ) %>%
     mutate(
       virus_full = standardise_full_virus_name(virus_full),
+      virus_short = standardise_short_names(virus_short),
       virus_year = as.integer(virus_year),
       clade = replace_na(clade, "(Missing)"),
       egg = egg == 0,
@@ -143,22 +147,14 @@ cdc_viruses_obj2 <- cdc_viruses_raw_obj2 %>%
   rename(Year = Virus_Year) %>%
   fmt_cdc_viruses()
 
-# The differences are:
-# - 'p' on the end
-# - hanam vs hanoi
+
 compare_vectors(cdc_viruses_obj1$virus_full, cdc_viruses_obj2$virus_full)
-# The differences are:
-# - 'p' on the end
 compare_vectors(cdc_viruses_obj1$virus_short, cdc_viruses_obj2$virus_short)
 
-# See if they would match with the map
-# - 'p' on the end
+# See how they match to the map
 compare_vectors(
   cdc_viruses_obj1$virus_full, agmap$virus_full, "ob1", "map"
 ) %>% print(n = 99)
-
-# - 'p' on the end
-# - hanam vs hanoi
 compare_vectors(
   cdc_viruses_obj2$virus_full, agmap$virus_full, "ob2", "map"
 ) %>% print(n = 99)
@@ -166,7 +162,7 @@ compare_vectors(
 cdc_viruses_obj1 %>% filter(!complete.cases(.))
 cdc_viruses_obj2 %>% filter(!complete.cases(.))
 
-# They may be united if the names are sorted out
+# Let's not unite them for now
 save_data(cdc_viruses_obj1, "cdc-virus-obj1")
 save_data(cdc_viruses_obj2, "cdc-virus-obj2")
 
@@ -240,7 +236,7 @@ save_data(cdc_vacc_hist_obj2, "cdc-vacc-hist-obj2")
 # HI for objective 1
 
 cdc_hi_obj1 <- cdc_hi_time_obj1 %>%
-  select(pid = PID, contains("Titer"), virus = Virus_Name) %>%
+  select(pid = PID, contains("Titer"), virus_full = Virus_Name) %>%
   pivot_longer(
     contains("Titer"),
     names_to = "timepoint", values_to = "titre"
@@ -251,7 +247,8 @@ cdc_hi_obj1 <- cdc_hi_time_obj1 %>%
       "Pre.Titer" = "prevax",
       "Post.Titer" = "postvax",
       "PostS.Titer" = "postseas"
-    )
+    ),
+    virus_full = standardise_full_virus_name(virus_full)
   ) %>%
   filter(pid != "KK38")
 
@@ -260,8 +257,10 @@ cdc_hi_obj1 %>% filter(!complete.cases(.))
 compare_vectors(cdc_hi_obj1$pid, cdc_participants_obj1$pid)
 
 cdc_hi_obj1 %>%
-  group_by(pid, virus) %>%
+  group_by(pid, virus_full) %>%
   filter(n() != 3)
+
+compare_vectors(cdc_hi_obj1$virus_full, cdc_viruses_obj1$virus_full)
 
 save_data(cdc_hi_obj1, "cdc-hi-obj1")
 

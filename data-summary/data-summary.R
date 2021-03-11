@@ -135,8 +135,11 @@ label_cdc_timepoints <- as_labeller(
   c("prevax" = "Pre-Vax", "postvax" = "Post-Vax", "postseas" = "Post-Season")
 )
 
+cdc_vaccine_obj1 <- read_data("cdc-vaccine-obj1")
+
 cdc_hi_obj1 <- read_data("cdc-hi-obj1") %>%
-  inner_join(cdc_participant_obj1, by = "pid")
+  inner_join(cdc_participant_obj1, by = "pid") %>%
+  mutate(vaccine_strain = virus_full %in% cdc_vaccine_obj1$virus_full)
 
 # Titre plot - the usual stuff, variable at prevax, rises at postvax, stays
 # the same/drops slightly to postseas.
@@ -150,7 +153,7 @@ cdc_hi_obj1 %>%
     axis.text.x = element_text(angle = -35, hjust = 0),
     plot.margin = margin(10, 25, 10, 10)
   ) +
-  facet_wrap(~virus, ncol = 7) +
+  facet_wrap(~virus_full, ncol = 7) +
   scale_y_log10(
     "Titre",
     breaks = 5 * 2^(0:15),
@@ -161,9 +164,9 @@ cdc_hi_obj1 %>%
 
 # Timepoint GMT's
 cdc_obj1_timepoint_gmts <- cdc_hi_obj1 %>%
-  group_by(timepoint, virus, group) %>%
+  group_by(timepoint, virus_full, group) %>%
   summarise(summarise_logmean(titre, out = "tibble"), .groups = "drop") %>%
-  ggplot(aes(virus, mn, color = group, shape = group)) +
+  ggplot(aes(virus_full, mn, color = group, shape = group)) +
   ggdark::dark_theme_bw(verbose = FALSE) +
   theme(
     legend.position = "bottom",
@@ -183,6 +186,10 @@ cdc_obj1_timepoint_gmts <- cdc_hi_obj1 %>%
   scale_x_discrete("Virus") +
   scale_color_discrete("Group") +
   scale_shape_discrete("Group") +
+  geom_vline(
+    xintercept = cdc_hi_obj1$virus_full[cdc_hi_obj1$vaccine_strain],
+    size = 4, alpha = 0.3
+  ) +
   geom_pointrange(
     aes(ymin = low, ymax = high),
     position = position_dodge(width = 0.5)
@@ -198,9 +205,9 @@ timepoint_diffs <- cdc_hi_obj1 %>%
   filter(timepoint %in% c("prevax", "postvax")) %>%
   pivot_wider(names_from = "timepoint", values_from = "titre") %>%
   mutate(ratio = postvax / prevax) %>%
-  group_by(virus, group) %>%
+  group_by(virus_full, group) %>%
   summarise(summarise_logmean(ratio, out = "tibble"), .groups = "drop") %>%
-  ggplot(aes(virus, mn, color = group, shape = group)) +
+  ggplot(aes(virus_full, mn, color = group, shape = group)) +
   ggdark::dark_theme_bw(verbose = FALSE) +
   theme(
     legend.position = "bottom",
