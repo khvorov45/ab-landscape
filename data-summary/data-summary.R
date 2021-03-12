@@ -285,18 +285,27 @@ cdc_participant_obj2_extra %>%
 # Titres
 cdc_hi_obj2 <- read_data("cdc-hi-obj2")
 cdc_viruses_obj2 <- read_data("cdc-virus-obj2")
+cdc_vaccine_obj2 <- read_data("cdc-vaccine-obj2")
 
 cdc_hi_obj2_extra <- cdc_hi_obj2 %>%
   inner_join(cdc_viruses_obj2, "virus_n") %>%
   inner_join(cdc_participant_obj2, "pid") %>%
   mutate(
     study_year_lbl = as.factor(study_year),
-    egg_lbl = if_else(egg, "Egg", "Cell")
-  )
+    egg_lbl = if_else(egg, "Egg", "Cell"),
+  ) %>%
+  left_join(
+    mutate(
+      cdc_vaccine_obj2,
+      vaccine_strain = TRUE
+    ),
+    c("study_year", "virus_full")
+  ) %>%
+  mutate(vaccine_strain = replace_na(vaccine_strain, FALSE))
 
 # Titre summaries
 cdc_obj2_gmts <- cdc_hi_obj2_extra %>%
-  group_by(timepoint, virus_full, study_year_lbl, site) %>%
+  group_by(timepoint, virus_full, vaccine_strain, study_year_lbl, site) %>%
   summarise(summarise_logmean(titre, out = "tibble"), .groups = "drop")
 
 plot1_obj2_gmts <- function(data) {
@@ -322,6 +331,11 @@ plot1_obj2_gmts <- function(data) {
     scale_x_discrete("Virus") +
     scale_color_discrete("Timepoint", labels = label_cdc_timepoints) +
     scale_shape_discrete("Timepoint", labels = label_cdc_timepoints) +
+    geom_vline(
+      aes(xintercept = virus_full),
+      data = data %>% filter(vaccine_strain),
+      size = 6, alpha = 0.2
+    ) +
     geom_pointrange(
       aes(ymin = low, ymax = high),
       position = position_dodge(width = 0.5)
@@ -369,6 +383,11 @@ plot2_obj2_gmts <- function(data) {
     scale_x_discrete("Virus") +
     scale_color_discrete("Study year") +
     scale_shape_discrete("Study year") +
+    geom_vline(
+      aes(xintercept = virus_full),
+      data = data %>% filter(vaccine_strain),
+      size = 6, alpha = 0.2
+    ) +
     geom_pointrange(
       aes(ymin = low, ymax = high),
       position = position_dodge(width = 0.5)
@@ -399,7 +418,7 @@ cdc_hi_obj2_wide <- cdc_hi_obj2_extra %>%
   mutate(vax_resp = postvax / prevax)
 
 cdc_obj2_vax_resp_virus_plot <- cdc_hi_obj2_wide %>%
-  group_by(virus_full, study_year, site) %>%
+  group_by(virus_full, study_year, site, vaccine_strain) %>%
   summarise(summarise_logmean(vax_resp, out = "tibble"), .groups = "drop") %>%
   mutate(study_year_lbl = as.factor(study_year)) %>%
   ggplot(aes(virus_full, mn, color = study_year_lbl, shape = study_year_lbl)) +
@@ -415,6 +434,11 @@ cdc_obj2_vax_resp_virus_plot <- cdc_hi_obj2_wide %>%
     plot.margin = margin(10, 60, 10, 10)
   ) +
   facet_wrap(~site, ncol = 1, strip.position = "right") +
+  geom_vline(
+    aes(xintercept = virus_full),
+    data = . %>% filter(vaccine_strain),
+    size = 6, alpha = 0.2
+  ) +
   geom_pointrange(
     aes(ymin = low, ymax = high),
     position = position_dodge(width = 0.5)
