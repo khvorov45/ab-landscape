@@ -188,7 +188,7 @@ cdc_obj1_timepoint_gmts <- cdc_hi_obj1 %>%
   scale_shape_discrete("Group") +
   geom_vline(
     xintercept = cdc_hi_obj1$virus_full[cdc_hi_obj1$vaccine_strain],
-    size = 4, alpha = 0.3
+    size = 4, alpha = 0.2
   ) +
   geom_pointrange(
     aes(ymin = low, ymax = high),
@@ -201,6 +201,7 @@ save_plot(
 )
 
 # Differences between timepoints
+# Highlight vaccine strain here as well
 timepoint_diffs <- cdc_hi_obj1 %>%
   filter(timepoint %in% c("prevax", "postvax")) %>%
   pivot_wider(names_from = "timepoint", values_from = "titre") %>%
@@ -218,6 +219,10 @@ timepoint_diffs <- cdc_hi_obj1 %>%
     panel.grid.minor = element_blank(),
     axis.text.x = element_text(angle = -45, hjust = 0),
     plot.margin = margin(10, 60, 10, 10)
+  ) +
+  geom_vline(
+    xintercept = cdc_hi_obj1$virus_full[cdc_hi_obj1$vaccine_strain],
+    size = 4, alpha = 0.2
   ) +
   geom_pointrange(
     aes(ymin = low, ymax = high),
