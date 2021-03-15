@@ -71,6 +71,13 @@ standardise_short_names <- function(names) {
     str_replace("p$", "")
 }
 
+standardise_clades <- function(clades) {
+  clades %>%
+    tolower() %>%
+    str_replace_all("\\.", "") %>%
+    str_replace_all(" ", "")
+}
+
 save_data <- function(data, name) {
   write_csv(data, glue::glue("data/{name}.csv"))
 }
@@ -139,6 +146,7 @@ fmt_cdc_viruses <- function(data) {
         if_else(egg, paste0(., "e"), .),
       virus_full = str_replace(virus_full, "e$", "") %>%
         if_else(egg, paste0(., "e"), .),
+      clade = standardise_clades(clade)
     )
 }
 
@@ -146,7 +154,6 @@ cdc_viruses_obj1 <- fmt_cdc_viruses(cdc_viruses_raw_obj1)
 cdc_viruses_obj2 <- cdc_viruses_raw_obj2 %>%
   rename(Year = Virus_Year) %>%
   fmt_cdc_viruses()
-
 
 compare_vectors(cdc_viruses_obj1$virus_full, cdc_viruses_obj2$virus_full)
 compare_vectors(cdc_viruses_obj1$virus_short, cdc_viruses_obj2$virus_short)
@@ -158,6 +165,9 @@ compare_vectors(
 compare_vectors(
   cdc_viruses_obj2$virus_full, agmap$virus_full, "ob2", "map"
 ) %>% print(n = 99)
+
+# See if clades match
+compare_vectors(cdc_viruses_obj1$clade, cdc_viruses_obj2$clade)
 
 cdc_viruses_obj1 %>% filter(!complete.cases(.))
 cdc_viruses_obj2 %>% filter(!complete.cases(.))
@@ -180,6 +190,76 @@ cdc_vaccine_obj2$virus_full %in% cdc_viruses_obj2$virus_full
 
 save_data(cdc_vaccine_obj1, "cdc-vaccine-obj1")
 save_data(cdc_vaccine_obj2, "cdc-vaccine-obj2")
+
+# Look for virus/clade frequencies
+
+nextstrain_tree <- httr::GET(
+  "https://nextstrain.org/charon/getDataset?prefix=/flu/seasonal/h3n2/ha/12y"
+) %>%
+  httr::content()
+
+process_child <- function(child) {
+  children <- tibble()
+  if (!is.null(child$children)) {
+    children <- map_dfr(child$children, process_child)
+  }
+  bind_rows(
+    tibble(name = child$name, clade = child$node_attrs$clade_membership$value),
+    children
+  )
+}
+
+nextstrain_viruses <- map_dfr(nextstrain_tree$tree$children, process_child) %>%
+  filter(!str_starts(name, "NODE"))
+
+nextstain_freqs <- httr::GET(
+  "https://nextstrain.org/charon/getDataset?prefix=/flu/seasonal/h3n2/ha/12y&type=tip-frequencies"
+) %>%
+  httr::content()
+
+process_freq <- function(freq, name, pivots) {
+  if (name == "generated_by" | name == "pivots") {
+    return(tibble())
+  }
+  imap_dfr(
+    freq$frequencies,
+    ~ tibble(name = name, n = .y, freq = .x, year = pivots[[.y]])
+  )
+}
+
+nextstrain_freq_table <- imap_dfr(
+  nextstain_freqs, process_freq, nextstain_freqs$pivots
+)
+
+compare_vectors(nextstrain_freq_table$name, nextstrain_viruses$name)
+
+freq_table_extra <- nextstrain_freq_table %>%
+  inner_join(nextstrain_viruses, "name") %>%
+  mutate(clade = standardise_clades(clade))
+
+# We have a lot of viruses that are not in that table
+setdiff(cdc_viruses_obj1$virus_full, tolower(freq_table_extra$name))
+
+clade_frequencies <- freq_table_extra %>%
+  filter(clade != "unassigned", year >= 2016, year < 2019) %>%
+  group_by(year, clade) %>%
+  summarise(freq = sum(freq), .groups = "drop") %>%
+  mutate(
+    clade = recode(clade, "a1" = "3c2a1", "a2/re" = "3c2a2", "3c" = "3c1") %>%
+      str_replace("^a1b/", "3c2a1b+")
+  )
+
+cdc_viruses_obj1 %>% filter(clade == "3c1")
+
+freq_table_extra %>%
+  filter(str_detect(tolower(name), "texas/50")) %>%
+  select(name, clade) %>%
+  distinct()
+
+# Clades 1 and 2 correspond to 'unnassigned'
+compare_vectors(cdc_viruses_obj1$clade, clade_frequencies$clade)
+
+save_data(clade_frequencies, "cdc-clade-frequencies")
 
 # Participants for objective 1
 
