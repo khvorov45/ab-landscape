@@ -480,3 +480,12 @@ save_plot(
   cdc_obj2_average_response, "cdc-obj2-average-response",
   width = 15, height = 15
 )
+
+# Circulating clades
+cdc_clade_frequencies <- read_data("cdc-clade-frequencies")
+
+cdc_clade_frequencies %>%
+  filter(clade %in% cdc_viruses_obj2$clade) %>%
+  ggplot(aes(year, freq, fill = clade)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  geom_bar(stat = "identity", position = "stack")
