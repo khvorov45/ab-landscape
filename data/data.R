@@ -241,7 +241,7 @@ freq_table_extra <- nextstrain_freq_table %>%
 setdiff(cdc_viruses_obj1$virus_full, tolower(freq_table_extra$name))
 
 clade_frequencies <- freq_table_extra %>%
-  filter(clade != "unassigned", year >= 2016, year < 2019) %>%
+  filter(clade != "unassigned", year >= 2016, year < 2020) %>%
   group_by(year, clade) %>%
   summarise(freq = sum(freq), .groups = "drop") %>%
   mutate(
