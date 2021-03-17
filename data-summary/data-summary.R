@@ -203,6 +203,7 @@ save_plot(
 # Differences between timepoints
 # Highlight vaccine strain here as well
 timepoint_diffs <- cdc_hi_obj1 %>%
+  select(-bleed_date) %>%
   filter(timepoint %in% c("prevax", "postvax")) %>%
   pivot_wider(names_from = "timepoint", values_from = "titre") %>%
   mutate(ratio = postvax / prevax) %>%

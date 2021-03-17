@@ -313,6 +313,24 @@ compare_vectors(cdc_vacc_hist_obj2$pid, cdc_participants_obj2$pid)
 
 save_data(cdc_vacc_hist_obj2, "cdc-vacc-hist-obj2")
 
+# Dates of bleeds
+cdc_obj1_dates_raw <- read_raw(
+  "cdc-obj1/HCP_Melbourne_BAA_Objective1_VaccInfo_102320"
+)
+
+cdc_hi_obj1_dates <- cdc_obj1_dates_raw %>%
+  mutate(
+    timepoint = recode(
+      Blood_Draw...3,
+      "1" = "prevax", "2" = "postvax", "3" = "postseas"
+    )
+  ) %>%
+  select(pid = study_id, timepoint, bleed_date = Blood_Draw_date) %>%
+  mutate(bleed_date = lubridate::as_date(bleed_date))
+
+# There are some pid dates that don't correspond to samples I guess
+compare_vectors(cdc_hi_obj1_dates$pid, cdc_participants_obj1$pid)
+
 # HI for objective 1
 
 cdc_hi_obj1 <- cdc_hi_time_obj1 %>%
@@ -342,8 +360,15 @@ cdc_hi_obj1 %>%
 
 compare_vectors(cdc_hi_obj1$virus_full, cdc_viruses_obj1$virus_full)
 
-save_data(cdc_hi_obj1, "cdc-hi-obj1")
+# Add dates
+cdc_hi_obj1_with_dates <- cdc_hi_obj1 %>%
+  inner_join(cdc_hi_obj1_dates, c("pid", "timepoint"))
 
+cdc_hi_obj1_with_dates %>% filter(!complete.cases(.))
+
+save_data(cdc_hi_obj1_with_dates, "cdc-hi-obj1")
+
+# HI changes
 cdc_hi_change <- cdc_hi_obj1 %>%
   filter(timepoint %in% c("prevax", "postvax")) %>%
   pivot_wider(names_from = timepoint, values_from = titre) %>%
