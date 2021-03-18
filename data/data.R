@@ -172,9 +172,8 @@ compare_vectors(cdc_viruses_obj1$clade, cdc_viruses_obj2$clade)
 cdc_viruses_obj1 %>% filter(!complete.cases(.))
 cdc_viruses_obj2 %>% filter(!complete.cases(.))
 
-# Let's not unite them for now
-save_data(cdc_viruses_obj1, "cdc-virus-obj1")
-save_data(cdc_viruses_obj2, "cdc-virus-obj2")
+# They are the same table, so save one
+save_data(cdc_viruses_obj1, "cdc-virus")
 
 # Vaccine viruses
 cdc_vaccine_obj1 <- tibble(virus_full = "a/singapore/16-0019/16e")

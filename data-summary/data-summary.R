@@ -136,11 +136,11 @@ label_cdc_timepoints <- as_labeller(
   c("prevax" = "Pre-Vax", "postvax" = "Post-Vax", "postseas" = "Post-Season")
 )
 
-cdc_viruses_obj1 <- read_data("cdc-virus-obj1")
+cdc_viruses <- read_data("cdc-virus")
 cdc_vaccine_obj1 <- read_data("cdc-vaccine-obj1")
 
 # Viruses in each clade
-cdc_viruses_obj1 %>%
+cdc_viruses %>%
   filter(!clade %in% c("1", "2", "(missing)")) %>%
   mutate(egg_lbl = if_else(egg, "Egg", "Cell")) %>%
   select(Clade = clade, Virus = virus_full, Type = egg_lbl) %>%
@@ -155,7 +155,7 @@ cdc_viruses_obj1 %>%
 
 cdc_hi_obj1 <- read_data("cdc-hi-obj1") %>%
   inner_join(cdc_participant_obj1, by = "pid") %>%
-  inner_join(cdc_viruses_obj1, "virus_full") %>%
+  inner_join(cdc_viruses, "virus_full") %>%
   mutate(
     vaccine_strain = virus_full %in% cdc_vaccine_obj1$virus_full,
     egg_lbl = if_else(egg, "Egg", "Cell")
@@ -305,11 +305,11 @@ cdc_participant_obj2_extra %>%
 
 # Titres
 cdc_hi_obj2 <- read_data("cdc-hi-obj2")
-cdc_viruses_obj2 <- read_data("cdc-virus-obj2")
+cdc_viruses <- read_data("cdc-virus")
 cdc_vaccine_obj2 <- read_data("cdc-vaccine-obj2")
 
 cdc_hi_obj2_extra <- cdc_hi_obj2 %>%
-  inner_join(cdc_viruses_obj2, "virus_n") %>%
+  inner_join(cdc_viruses, "virus_n") %>%
   inner_join(cdc_participant_obj2, "pid") %>%
   mutate(
     study_year_lbl = as.factor(study_year),
@@ -513,7 +513,7 @@ label_years <- function(year) {
 }
 
 cdc_clade_freq_plot <- cdc_clade_frequencies %>%
-  filter(clade %in% cdc_viruses_obj1$clade) %>%
+  filter(clade %in% cdc_viruses$clade) %>%
   ggplot(aes(year, freq)) +
   ggdark::dark_theme_bw(verbose = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
@@ -588,7 +588,8 @@ cdc_obj1_ind_av_circulating <- cdc_obj1_hi_against_circulating %>%
     breaks = 5 * 2^(0:10)
   ) +
   scale_x_discrete(
-    "Timepoint", labels = label_cdc_timepoints,
+    "Timepoint",
+    labels = label_cdc_timepoints,
     expand = expansion(0.1)
   ) +
   facet_grid(egg_lbl ~ group) +
