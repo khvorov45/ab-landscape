@@ -49,6 +49,7 @@ summarise_binary <- function(bin_vec, return_everything = FALSE) {
   summ
 }
 
+#' Takes non-logged titres
 summarise_logmean <- function(titres, out = "string") {
   titres <- na.omit(titres)
   logtitres <- log(titres)
@@ -135,11 +136,30 @@ label_cdc_timepoints <- as_labeller(
   c("prevax" = "Pre-Vax", "postvax" = "Post-Vax", "postseas" = "Post-Season")
 )
 
+cdc_viruses_obj1 <- read_data("cdc-virus-obj1")
 cdc_vaccine_obj1 <- read_data("cdc-vaccine-obj1")
+
+# Viruses in each clade
+cdc_viruses_obj1 %>%
+  filter(!clade %in% c("1", "2", "(missing)")) %>%
+  mutate(egg_lbl = if_else(egg, "Egg", "Cell")) %>%
+  select(Clade = clade, Virus = virus_full, Type = egg_lbl) %>%
+  kbl(
+    format = "latex",
+    caption = "Viruses in each clade.",
+    booktabs = TRUE,
+    label = "cdc-obj1-clade-viruses"
+  ) %>%
+  collapse_rows(columns = 1, latex_hline = "major") %>%
+  save_table("cdc-obj1-clade-viruses")
 
 cdc_hi_obj1 <- read_data("cdc-hi-obj1") %>%
   inner_join(cdc_participant_obj1, by = "pid") %>%
-  mutate(vaccine_strain = virus_full %in% cdc_vaccine_obj1$virus_full)
+  inner_join(cdc_viruses_obj1, "virus_full") %>%
+  mutate(
+    vaccine_strain = virus_full %in% cdc_vaccine_obj1$virus_full,
+    egg_lbl = if_else(egg, "Egg", "Cell")
+  )
 
 # Titre plot - the usual stuff, variable at prevax, rises at postvax, stays
 # the same/drops slightly to postseas.
@@ -485,8 +505,117 @@ save_plot(
 # Circulating clades
 cdc_clade_frequencies <- read_data("cdc-clade-frequencies")
 
-cdc_clade_frequencies %>%
-  filter(clade %in% cdc_viruses_obj2$clade) %>%
-  ggplot(aes(year, freq, fill = clade)) +
+label_years <- function(year) {
+  year <- as.numeric(year)
+  glue::glue(
+    "{floor(year)} ({ifelse(year %% 1 == 0.25, '1st', '2nd')} half)"
+  )
+}
+
+cdc_clade_freq_plot <- cdc_clade_frequencies %>%
+  filter(clade %in% cdc_viruses_obj1$clade) %>%
+  ggplot(aes(year, freq)) +
   ggdark::dark_theme_bw(verbose = FALSE) +
-  geom_bar(stat = "identity", position = "stack")
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_continuous(
+    "Year",
+    breaks = unique(cdc_clade_frequencies$year),
+    labels = as_labeller(label_years),
+  ) +
+  scale_fill_discrete("Clade") +
+  scale_y_continuous(
+    "Frequency",
+    labels = scales::percent_format(1),
+    expand = expansion(c(0, 0.05))
+  ) +
+  geom_bar(aes(fill = clade), stat = "identity", color = "black")
+
+save_plot(cdc_clade_freq_plot, "cdc-obj1-clade-freq", width = 15, height = 10)
+
+# The 'season' was the first half of 2019
+cdc_obj1_bleed_dates <- cdc_hi_obj1 %>%
+  ggplot(aes(bleed_date, pid, color = timepoint)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "bottom",
+    legend.box.spacing = unit(0, "null")
+  ) +
+  scale_x_date("Bleed date", breaks = "month") +
+  scale_color_discrete("Timepoint", labels = label_cdc_timepoints) +
+  geom_point()
+
+save_plot(cdc_obj1_bleed_dates, "cdc-obj1-bleed-dates", width = 15, height = 15)
+
+
+# This is supposed to show titres against what was circulating at the time
+cdc_obj1_hi_against_circulating <- cdc_hi_obj1 %>%
+  filter(clade %in% cdc_clade_frequencies$clade) %>%
+  group_by(pid, timepoint, clade, group, egg_lbl) %>%
+  summarise(
+    mean_log_titre = mean(log(titre)),
+    .groups = "drop"
+  ) %>%
+  inner_join(filter(cdc_clade_frequencies, year == 2019.25), "clade") %>%
+  group_by(pid, timepoint, group, egg_lbl) %>%
+  summarise(
+    wmean_log_titre = sum(mean_log_titre * freq) / sum(freq),
+    wmean_titre = exp(wmean_log_titre),
+    .groups = "drop"
+  )
+
+cdc_obj1_ind_av_circulating <- cdc_obj1_hi_against_circulating %>%
+  ggplot(aes(timepoint, wmean_titre, group = pid, color = pid)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(
+    legend.position = "none",
+    strip.background = element_blank(),
+    panel.spacing = unit(0, "null")
+  ) +
+  scale_y_log10(
+    "Average titre against cirulating strains",
+    breaks = 5 * 2^(0:10)
+  ) +
+  scale_x_discrete("Timepoint", labels = label_cdc_timepoints) +
+  facet_grid(egg_lbl ~ group) +
+  geom_line(alpha = 0.5) +
+  geom_point()
+
+save_plot(
+  cdc_obj1_ind_av_circulating, "cdc-obj1-ind-av-circulating",
+  width = 15, height = 15
+)
+
+cdc_obj1_gmt_circulating <- cdc_obj1_hi_against_circulating %>%
+  group_by(group, timepoint, egg_lbl) %>%
+  summarise(
+    summarise_logmean(wmean_titre, out = "tibble"),
+    .groups = "drop"
+  ) %>%
+  ggplot(aes(timepoint, mn, color = group)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(
+    legend.position = "bottom",
+    legend.box.spacing = unit(0, "null"),
+    strip.background = element_blank(),
+    panel.spacing = unit(0, "null")
+  ) +
+  facet_wrap(~egg_lbl) +
+  scale_y_log10(
+    "GMT against circulating strains",
+    breaks = 5 * 2^(0:10),
+  ) +
+  scale_x_discrete("Timepoint", labels = label_cdc_timepoints) +
+  scale_color_discrete("Group") +
+  geom_pointrange(
+    aes(ymin = low, ymax = high),
+    position = position_dodge(width = 0.4)
+  )
+
+save_plot(
+  cdc_obj1_gmt_circulating, "cdc-obj1-gmt-circulating",
+  width = 15, height = 10
+)

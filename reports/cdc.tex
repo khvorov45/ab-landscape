@@ -132,6 +132,42 @@ vaccinated for the majority of viruses.
 	\label{fig:cdc-obj1-timepoint-diffs}
 \end{figure}
 
+\subsection{GMT against circulating strains}
+
+Frequencies of different virus clades during the study period are in Figure \ref{fig:cdc-obj1-clade-freq}. The timing of sample collection is in Figure \ref{fig:cdc-obj1-bleed-dates}. The most relevant set of frequencies is the first half of 2019 as it appers to be the influenza "season" that the titres belong to. The list of viruses for each clade is in Table \ref{tab:cdc-obj1-clade-viruses}.
+
+\begin{figure}
+	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj1-clade-freq.pdf}
+	\caption{Clade frequencies from 2016 to 2019. Two sets of frequencies per year. Data from Nexstrain. Whenever they do not add up to 100\%, it means that the remaining circulating flu was made up of clades whose viruses we do not have titre data against (e.g., clade 'A3')}
+	\label{fig:cdc-obj1-clade-freq}
+\end{figure}
+
+\begin{figure}
+	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj1-bleed-dates.pdf}
+	\caption{Bleed dates for objective 1 data. Each horizontal line represents a participant. Points are bleeds.}
+	\label{fig:cdc-obj1-bleed-dates}
+\end{figure}
+
+\input{../data-summary/cdc-obj1-clade-viruses.tex}
+
+The average titre against circulating strains was calculated separately for cell and egg viruses. The procedure was as follows. For each individual, calculate mean log titre per clade (only relevant for 3c1 as it is the only clade with more than one virus of each type). Then for each individual, calculate weighted (by clade frequency) mean of clade-specific mean log titres. This yields one observation per individual which can be interpreted as the mean titre against the circulating strains weighted by their frequencies (Figure \ref{fig:cdc-obj1-ind-av-circulating}). Then for each group (frequent and infrequent) calculate the mean log titre and its 95\% CI (normal approximation CI for the mean) which can be found in Figure INSERT.
+
+\begin{figure}
+	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj1-ind-av-circulating.pdf}
+	\caption{Weighted average titres agains circulating strains for each individual. Split by group and egg/cell viruses. Colored by individual ID.}
+	\label{fig:cdc-obj1-ind-av-circulating}
+\end{figure}
+
+\begin{figure}
+	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj1-gmt-circulating.pdf}
+	\caption{Means of weighted average titres agains circulating strains for each group. Split by egg/cell.}
+	\label{fig:cdc-obj1-gmt-circulating}
+\end{figure}
+
+Note that we do not have egg/cell pairs for every clade and the clades that we have titre data for do not account for all of the circulating flu. There is also no accounting for the geographic region as its frequencies are assumed to be similar to the global Nexstrain ones.
+
+The frequent group shows higher titres pre-vaccination (especially for the egg viruses) and lower titres post-vaccination (especially for the cell viruses) and well as slightly lower post-season titres for the cell viruses.
+
 \subsection{Interpretation}
 
 The vaccine response (titre change between post and pre vaccination timepoints)
