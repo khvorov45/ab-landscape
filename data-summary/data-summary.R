@@ -550,6 +550,14 @@ cdc_obj1_bleed_dates <- cdc_hi_obj1 %>%
 
 save_plot(cdc_obj1_bleed_dates, "cdc-obj1-bleed-dates", width = 15, height = 15)
 
+cdc_obj1_clades_summ <- cdc_hi_obj1 %>%
+  filter(!clade %in% c("(missing)", "1", "2")) %>%
+  select(clade, egg_lbl, group) %>%
+  distinct() %>%
+  inner_join(filter(cdc_clade_frequencies, year == 2019.25), "clade") %>%
+  filter(freq > 0) %>%
+  group_by(egg_lbl, group) %>%
+  summarise(clades = list(clade), freq_total = sum(freq), .groups = "drop")
 
 # This is supposed to show titres against what was circulating at the time
 cdc_obj1_hi_against_circulating <- cdc_hi_obj1 %>%
@@ -579,10 +587,18 @@ cdc_obj1_ind_av_circulating <- cdc_obj1_hi_against_circulating %>%
     "Average titre against cirulating strains",
     breaks = 5 * 2^(0:10)
   ) +
-  scale_x_discrete("Timepoint", labels = label_cdc_timepoints) +
+  scale_x_discrete(
+    "Timepoint", labels = label_cdc_timepoints,
+    expand = expansion(0.1)
+  ) +
   facet_grid(egg_lbl ~ group) +
   geom_line(alpha = 0.5) +
-  geom_point()
+  geom_point() +
+  geom_text(
+    aes(1, 640, label = paste0(signif(freq_total * 100, 2), "%")),
+    data = cdc_obj1_clades_summ,
+    inherit.aes = FALSE
+  )
 
 save_plot(
   cdc_obj1_ind_av_circulating, "cdc-obj1-ind-av-circulating",
