@@ -382,13 +382,14 @@ cdc_hi_obj2_raw <- read_raw("cdc-obj2/HIresult", guess_max = 1e5)
 cdc_hi_obj2 <- cdc_hi_obj2_raw %>%
   select(
     pid = PID, study_year = SpecYearN, timepoint = DrawN, titre = Titer,
-    virus_n = VirusN
+    virus_n = VirusN, bleed_date = Blood_Draw_date
   ) %>%
   mutate(
     timepoint = recode(
       timepoint,
       "1" = "prevax", "2" = "postvax", "3" = "postseas"
-    )
+    ),
+    bleed_date = lubridate::as_date(bleed_date)
   ) %>%
   filter(!is.na(titre))
 

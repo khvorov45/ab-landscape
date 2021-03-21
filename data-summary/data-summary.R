@@ -148,10 +148,10 @@ cdc_viruses %>%
     format = "latex",
     caption = "Viruses in each clade.",
     booktabs = TRUE,
-    label = "cdc-obj1-clade-viruses"
+    label = "cdc-clade-viruses"
   ) %>%
   collapse_rows(columns = 1, latex_hline = "major") %>%
-  save_table("cdc-obj1-clade-viruses")
+  save_table("cdc-clade-viruses")
 
 cdc_hi_obj1 <- read_data("cdc-hi-obj1") %>%
   inner_join(cdc_participant_obj1, by = "pid") %>%
@@ -312,7 +312,7 @@ cdc_hi_obj2_extra <- cdc_hi_obj2 %>%
   inner_join(cdc_viruses, "virus_n") %>%
   inner_join(cdc_participant_obj2, "pid") %>%
   mutate(
-    study_year_lbl = as.factor(study_year),
+    study_year_lbl = as.factor(study_year) %>% paste0("Year ", .),
     egg_lbl = if_else(egg, "Egg", "Cell"),
   ) %>%
   left_join(
@@ -530,7 +530,7 @@ cdc_clade_freq_plot <- cdc_clade_frequencies %>%
   ) +
   geom_bar(aes(fill = clade), stat = "identity", color = "black")
 
-save_plot(cdc_clade_freq_plot, "cdc-obj1-clade-freq", width = 15, height = 10)
+save_plot(cdc_clade_freq_plot, "cdc-clade-freq", width = 15, height = 10)
 
 # The 'season' was the first half of 2019
 cdc_obj1_bleed_dates <- cdc_hi_obj1 %>%
@@ -636,4 +636,125 @@ cdc_obj1_gmt_circulating <- cdc_obj1_hi_against_circulating %>%
 save_plot(
   cdc_obj1_gmt_circulating, "cdc-obj1-gmt-circulating",
   width = 15, height = 10
+)
+
+# See what the seasons were in objective 2
+cdc_obj2_bleed_dates_plot <- cdc_hi_obj2_extra %>%
+  ggplot(aes(bleed_date, pid, color = timepoint)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(
+    legend.position = "bottom",
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    strip.background = element_blank(),
+    strip.placement = "right",
+    legend.box.spacing = unit(0, "null")
+  ) +
+  scale_x_date("Bleed date", breaks = "month") +
+  scale_y_discrete("PID") +
+  scale_color_discrete("Timepoint", labels = label_cdc_timepoints) +
+  geom_point() +
+  geom_hline(yintercept = 15.5) +
+  annotate(
+    geom = "text",
+    x = lubridate::ymd("2019-04-01"),
+    y = 30, label = "Peru"
+  ) +
+  annotate(
+    geom = "text",
+    x = lubridate::ymd("2016-06-01"),
+    y = 9, label = "Israel"
+  )
+
+save_plot(
+  cdc_obj2_bleed_dates_plot, "cdc-obj2-bleed-dates",
+  width = 20, height = 20
+)
+
+cdc_hi_obj2_extra_circulating <- cdc_hi_obj2_extra %>%
+  mutate(
+    year = case_when(
+      study_year == 1 & site == "Peru" ~ 2016.75,
+      study_year == 1 & site == "Israel" ~ 2017.25,
+      study_year == 2 & site == "Peru" ~ 2017.75,
+      study_year == 2 & site == "Israel" ~ 2018.25,
+      study_year == 3 & site == "Peru" ~ 2018.75,
+      study_year == 3 & site == "Israel" ~ 2019.25,
+      TRUE ~ NA_real_
+    )
+  )
+
+cdc_obj2_clades_summ <- cdc_hi_obj2_extra_circulating %>%
+  filter(!clade %in% c("(missing)", "1", "2")) %>%
+  select(clade, egg_lbl, site, year, study_year_lbl) %>%
+  distinct() %>%
+  inner_join(cdc_clade_frequencies, c("clade", "year")) %>%
+  filter(freq > 0) %>%
+  group_by(egg_lbl, site, year, study_year_lbl) %>%
+  summarise(clades = list(clade), freq_total = sum(freq), .groups = "drop")
+
+cdc_obj2_ind_circulating <- cdc_hi_obj2_extra_circulating %>%
+  group_by(
+    pid, site, study_year, study_year_lbl, timepoint, clade, egg, egg_lbl
+  ) %>%
+  summarise(logtitre_mean = mean(log(titre)), .groups = "drop") %>%
+  inner_join(cdc_clade_frequencies, c("clade", "year")) %>%
+  group_by(pid, study_year, study_year_lbl, site, timepoint, egg, egg_lbl) %>%
+  summarise(
+    wmean_titre = exp(sum(logtitre_mean * freq) / sum(freq)),
+    .groups = "drop"
+  )
+
+cdc_obj2_ind_circulating_plot <- cdc_obj2_ind_circulating %>%
+  ggplot(aes(timepoint, wmean_titre, group = pid, color = pid)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(
+    strip.background = element_blank(),
+    panel.spacing = unit(0, "null"),
+    legend.position = "none"
+  ) +
+  facet_grid(site + egg_lbl ~ study_year_lbl) +
+  scale_x_discrete("Timepoint", labels = label_cdc_timepoints) +
+  scale_y_log10("Average titre against circulating", breaks = 5 * 2^(0:10)) +
+  geom_line(alpha = 0.4) +
+  geom_point() +
+  geom_text(
+    aes(1, 500, label = signif(freq_total * 100, 2) %>% paste0("%")),
+    data = cdc_obj2_clades_summ,
+    inherit.aes = FALSE
+  )
+
+save_plot(
+  cdc_obj2_ind_circulating_plot, "cdc-obj2-ind-circulating",
+  width = 20, height = 25
+)
+
+cdc_obj2_gmt_circulating <- cdc_obj2_ind_circulating %>%
+  group_by(study_year_lbl, site, timepoint, egg_lbl) %>%
+  summarise(
+    summarise_logmean(wmean_titre, out = "tibble"),
+    .groups = "drop"
+  ) %>%
+  ggplot(aes(timepoint, mn)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(
+    panel.spacing = unit(0, "null"),
+    strip.background = element_blank(),
+    legend.position = "bottom",
+    legend.box.spacing = unit(0, "null")
+  ) +
+  facet_grid(site ~ egg_lbl) +
+  scale_y_log10("GMT against circulating", breaks = 5 * 2^(0:10)) +
+  scale_color_discrete(
+    "Study year",
+    labels = as_labeller(function(x) str_replace(x, "Year ", ""))
+  ) +
+  scale_x_discrete("Timepoint", labels = label_cdc_timepoints) +
+  geom_pointrange(
+    aes(ymin = low, ymax = high, color = study_year_lbl),
+    position = position_dodge(0.4)
+  )
+
+save_plot(
+  cdc_obj2_gmt_circulating, "cdc-obj2-gmt-circulating",
+  width = 15, height = 15
 )

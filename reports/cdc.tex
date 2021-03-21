@@ -83,6 +83,18 @@
 
 \maketitle
 
+\section{Viruses}
+
+The viruses and their clades are in Table \ref{tab:cdc-clade-viruses}. The frequencies of clades throughout the study period are in Figure \ref{fig:cdc-clade-freq} (data from Nextstrain). I assume these global frequencies to be representative of what they were at the sites where the data was collected (Israel and Peru).
+
+\input{../data-summary/cdc-clade-viruses.tex}
+
+\begin{figure}
+	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-clade-freq.pdf}
+	\caption{Clade frequencies from 2016 to 2019. Two sets of frequencies per year. Data from Nexstrain. Whenever they do not add up to 100\%, it means that the remaining circulating flu was made up of clades whose viruses we do not have titre data against (e.g., clade 'A3').}
+	\label{fig:cdc-clade-freq}
+\end{figure}
+
 \section{Objective 1}
 
 Compare post-vaccination HI antibody titres for frequently vaccinated (in the past) vs infrequently vaccinated.
@@ -134,21 +146,13 @@ vaccinated for the majority of viruses.
 
 \subsection{GMT against circulating strains}
 
-Frequencies of different virus clades during the study period are in Figure \ref{fig:cdc-obj1-clade-freq}. The timing of sample collection is in Figure \ref{fig:cdc-obj1-bleed-dates}. The most relevant set of frequencies is the first half of 2019 as it appers to be the influenza "season" that the titres belong to. The list of viruses for each clade is in Table \ref{tab:cdc-obj1-clade-viruses}.
-
-\begin{figure}
-	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj1-clade-freq.pdf}
-	\caption{Clade frequencies from 2016 to 2019. Two sets of frequencies per year. Data from Nexstrain. Whenever they do not add up to 100\%, it means that the remaining circulating flu was made up of clades whose viruses we do not have titre data against (e.g., clade 'A3').}
-	\label{fig:cdc-obj1-clade-freq}
-\end{figure}
+The list of viruses for each clade is in Table \ref{tab:cdc-clade-viruses}.Frequencies of different virus clades during the study period are in Figure \ref{fig:cdc-clade-freq}. The timing of sample collection is in Figure \ref{fig:cdc-obj1-bleed-dates}. The most relevant set of frequencies is the first half of 2019 as it appears to be the influenza "season" that the titres belong to.
 
 \begin{figure}
 	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj1-bleed-dates.pdf}
 	\caption{Bleed dates for objective 1 data. Each horizontal line represents a participant. Points are bleeds.}
 	\label{fig:cdc-obj1-bleed-dates}
 \end{figure}
-
-\input{../data-summary/cdc-obj1-clade-viruses.tex}
 
 The average titre against circulating strains was calculated separately for cell and egg viruses. The procedure was as follows. For each individual, calculate mean log titre per clade (only relevant for 3c1 as it is the only clade with more than one virus of each type). Then for each individual, calculate weighted (by clade frequency) mean of clade-specific mean log titres. This yields one observation per individual which can be interpreted as the mean titre against the circulating strains weighted by their frequencies (Figure \ref{fig:cdc-obj1-ind-av-circulating}). Then for each group (frequent and infrequent) calculate the mean log titre and its 95\% CI (normal approximation CI for the mean) which can be found in Figure INSERT.
 
@@ -258,10 +262,36 @@ The egg viruses show higher responses for some individuals.
 	\label{fig:cdc-obj2-average-response}
 \end{figure}
 
+\subsection{Circulating strains}
+
+The list of viruses for each clade is in Table \ref{tab:cdc-clade-viruses}.Frequencies of different virus clades during the study period are in Figure \ref{fig:cdc-clade-freq}. The timing of sample collection is in Figure \ref{fig:cdc-obj2-bleed-dates}. The most relevant set of frequencies is the first halves of 2017-2019 for Israel and the second halves of 2016-2018 for Peru as they appear to be the influenza "seasons" that the titres belong to.
+
+\begin{figure}
+	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj2-bleed-dates.pdf}
+	\caption{Bleed dates for objective 2 data. Each horizontal line represents a participant. Points are bleeds.}
+	\label{fig:cdc-obj2-bleed-dates}
+\end{figure}
+
+The procedure for calculating the "GMT against circulating strains" was the same as in objective 1. The averages for each individual are in Figure \ref{fig:cdc-obj2-ind-circulating}. The yearly GMTs are in Figure \ref{fig:cdc-obj2-gmt-circulating}. The Israel site shows decreaseing titres in subsequent years for all timepoints except pre-vaccination for egg viruses where there is an increase in year 2. The Peru site shows a decrease in year 2 and a return to almost year 1 levels in year 3 (especially pronounced for cell viruses).
+
+\begin{figure}
+	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj2-ind-circulating.pdf}
+	\caption{Weighted average titres agains circulating strains for each individual. Split by site and egg/cell viruses. Colored by individual ID.  The percentage in the top-left corner shows the proportion of circulating flu (as per Nexstrain) accounted for by the strains that were avaraged.}
+	\label{fig:cdc-obj2-ind-circulating}
+\end{figure}
+
+\begin{figure}
+	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj2-gmt-circulating.pdf}
+	\caption{Means of weighted average titres agains circulating strains for each year. Split by egg/cell and site.}
+	\label{fig:cdc-obj2-gmt-circulating}
+\end{figure}
+
 \subsection{Interpretation}
 
 There is no clear trend of a decreasing vaccine response on the whole serology
 panel. Nor is there a clear trend of post-vaccianation titres being lower in subsequent years as compared to previous years. This runs somewhat contrary to
 the data for objective 1. For example, the post-vaccination titres in Figure \ref{fig:cdc-obj1-timepoint-gmts} are generally higher for the infrequently vaccinated but the post-vaccination titres in Figures \ref{fig:cdc-obj2-gmts-2-israel} and \ref{fig:cdc-obj2-gmts-2-peru} do not show the equivalent pattern of decresing in subsequent years as compared to previous years (i.e. as subjects become more highly vaccinated). There are examples of the opposite pattern (e.g., A/Sydney/22/18), where the post-vaccination GMTs appear to increase as subjects become more highly vaccinated.
+
+When considering only the circulating strains, the Israel site data appears to be in line with objective 1 data showing decreasing post-vaccination and post-season titres with subsequent years. The Peru site data does not show that pattern - there is a large decrease in year 2 (for cell viruses) and a return close to year 1 levels in year 3.
 
 \end{document}
