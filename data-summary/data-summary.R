@@ -581,7 +581,8 @@ cdc_obj1_ind_av_circulating <- cdc_obj1_hi_against_circulating %>%
   theme(
     legend.position = "none",
     strip.background = element_blank(),
-    panel.spacing = unit(0, "null")
+    panel.spacing = unit(0, "null"),
+    axis.text.x = element_text(angle = 45, hjust = 1)
   ) +
   scale_y_log10(
     "Average titre against cirulating strains",
