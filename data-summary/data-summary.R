@@ -435,6 +435,7 @@ save_plot(
 
 # Titre changes
 cdc_hi_obj2_wide <- cdc_hi_obj2_extra %>%
+  select(-bleed_date) %>%
   pivot_wider(names_from = "timepoint", values_from = "titre") %>%
   mutate(vax_resp = postvax / prevax)
 
@@ -694,7 +695,7 @@ cdc_obj2_clades_summ <- cdc_hi_obj2_extra_circulating %>%
 
 cdc_obj2_ind_circulating <- cdc_hi_obj2_extra_circulating %>%
   group_by(
-    pid, site, study_year, study_year_lbl, timepoint, clade, egg, egg_lbl
+    pid, site, study_year, study_year_lbl, timepoint, clade, egg, egg_lbl, year
   ) %>%
   summarise(logtitre_mean = mean(log(titre)), .groups = "drop") %>%
   inner_join(cdc_clade_frequencies, c("clade", "year")) %>%
