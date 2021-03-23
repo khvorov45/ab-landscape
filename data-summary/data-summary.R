@@ -759,3 +759,48 @@ save_plot(
   cdc_obj2_gmt_circulating, "cdc-obj2-gmt-circulating",
   width = 15, height = 15
 )
+
+# Look into Bilthoven viruses more closely
+yob_cutoffs <- c(-Inf, 1968, 1980, Inf)
+yob_labels <- c("1951-1967", "1968-1979", "1980-1991")
+
+cdc_participant_obj1 %>%
+  ggplot(aes(yob)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  geom_histogram(aes(fill = group), color = "black")
+
+cdc_obj1_ind_bilthoven <- cdc_hi_obj1 %>%
+  filter(str_detect(virus_full, "bilthoven")) %>%
+  group_by(pid, timepoint, group, yob) %>%
+  summarise(bilthoven_mean = exp(mean(log(titre))), .groups = "drop") %>%
+  mutate(
+    yob_cat = cut(yob, yob_cutoffs, right = FALSE),
+    x_position = as.integer(yob_cat) + 0.1 * (as.integer(timepoint) - 2),
+  )
+
+cdc_obj1_ind_bilthoven %>%
+  ggplot(aes(x_position, bilthoven_mean, color = timepoint, group = pid)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(
+    legend.position = "bottom", legend.box.spacing = unit(0, "null"),
+    panel.spacing = unit(0, "null"),
+    strip.background = element_blank()
+  ) +
+  facet_wrap(~group) +
+  scale_y_log10("Average Bilthoven titre", breaks = 5 * 2^(0:10)) +
+  scale_x_continuous(
+    "Year of birth",
+    breaks = 1:3,
+    labels = yob_labels
+  ) +
+  scale_color_discrete("Timepoint", labels = label_cdc_timepoints) +
+  geom_line() +
+  geom_point() +
+  geom_text(
+    aes(x_position, 5, label = n),
+    data = cdc_obj1_ind_bilthoven %>%
+      group_by(yob_cat, group) %>%
+      summarise(n = length(unique(pid)), .groups = "drop") %>%
+      mutate(x_position = as.integer(yob_cat)),
+    inherit.aes = FALSE
+  )
