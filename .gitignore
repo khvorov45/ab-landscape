@@ -12,3 +12,4 @@
 *.log
 *.synctex.gz
 *~lock.*
+*.accdb
