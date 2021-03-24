@@ -44,8 +44,4 @@ setdiff(nextstrain_viruses$name, nextstrain_freq_table$name)
 freq_table_extra <- nextstrain_freq_table %>%
   inner_join(nextstrain_viruses, "name")
 
-clade_frequencies <- freq_table_extra %>%
-  group_by(year, clade) %>%
-  summarise(freq = sum(freq), .groups = "drop")
-
-write_csv(clade_frequencies, "data-raw/nexstrain-clade-frequencies.csv")
+write_csv(freq_table_extra, "data-raw/nexstrain-virus-frequencies.csv")
