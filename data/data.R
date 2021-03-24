@@ -120,7 +120,7 @@ save_data(agmap, "map")
 
 # CDC -------------------------------------------------------------------------
 
-# Viruses
+# Viruses ---------------------------
 
 cdc_viruses_raw_obj1 <- read_raw_csv("cdc-obj1/Viruses", col_types = cols())
 cdc_viruses_raw_obj2 <- read_raw_csv("cdc-obj2/Viruses", col_types = cols())
@@ -183,22 +183,19 @@ cdc_viruses_obj3 %>% filter(!complete.cases(.))
 # They are the same table, so save one
 save_data(cdc_viruses_obj1, "cdc-virus")
 
-# Vaccine viruses
-cdc_vaccine_obj1 <- tibble(virus_full = "a/singapore/16-0019/16e")
-cdc_vaccine_obj1$virus_full %in% cdc_viruses_obj1$virus_full
+# Vaccine viruses ---------------------------
 
-cdc_vaccine_obj2 <- tibble(
+cdc_vaccine <- tibble(
   virus_full = c(
     "a/hong kong/4801/14e", "a/hong kong/4801/14e", "a/singapore/16-0019/16e"
   ),
   study_year = c(1, 2, 3)
 )
-cdc_vaccine_obj2$virus_full %in% cdc_viruses_obj2$virus_full
+cdc_vaccine$virus_full %in% cdc_viruses_obj2$virus_full
 
-save_data(cdc_vaccine_obj1, "cdc-vaccine-obj1")
-save_data(cdc_vaccine_obj2, "cdc-vaccine-obj2")
+save_data(cdc_vaccine, "cdc-vaccine")
 
-# Look for virus/clade frequencies
+# Look for virus/clade frequencies ------------------------
 
 nextstrain_tree <- httr::GET(
   "https://nextstrain.org/charon/getDataset?prefix=/flu/seasonal/h3n2/ha/12y"
@@ -256,19 +253,12 @@ clade_frequencies <- freq_table_extra %>%
       str_replace("^a1b/", "3c2a1b+")
   )
 
-cdc_viruses_obj1 %>% filter(clade == "3c1")
-
-freq_table_extra %>%
-  filter(str_detect(tolower(name), "texas/50")) %>%
-  select(name, clade) %>%
-  distinct()
-
 # Clades 1 and 2 correspond to 'unnassigned'
 compare_vectors(cdc_viruses_obj1$clade, clade_frequencies$clade)
 
 save_data(clade_frequencies, "cdc-clade-frequencies")
 
-# Participants for objective 1
+# Participants for objective 1 -------------------
 
 cdc_hi_time_obj1 <- read_raw("cdc-obj1/HI_timecourse")
 
