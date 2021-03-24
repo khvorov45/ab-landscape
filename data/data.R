@@ -260,23 +260,129 @@ save_data(clade_frequencies, "cdc-clade-frequencies")
 
 # Participants for objective 1 -------------------
 
-cdc_hi_time_obj1 <- read_raw("cdc-obj1/HI_timecourse")
+cdc_obj1_participants_raw <- read_raw_csv(
+  "cdc-obj1/vax_history",
+  col_types = cols()
+)
 
-cdc_participants_obj1 <- select(
-  cdc_hi_time_obj1,
-  pid = PID, group = `Case/Control`, sex = Sex, yob = YoB
-) %>%
-  distinct(pid, .keep_all = TRUE) %>%
+# Check that there is one row per participant
+cdc_obj1_participants_raw %>%
+  group_by(study_id) %>%
+  filter(n() > 1)
+
+
+cdc_obj1_participants <- cdc_obj1_participants_raw %>%
   mutate(
-    group = str_replace(group, "Vax", "") %>% str_trim()
+    dob_og = dob,
+    dob = if_else(
+      is.na(dob),
+      lubridate::ymd(paste0(YoB, "-07-01")),
+      str_replace(date, "^(\\d\\d/\\d\\d)/(\\d\\d) ", "\\1/19\\2 ") %>%
+        lubridate::mdy_hms() %>%
+        lubridate::as_date()
+    ),
   ) %>%
-  filter(pid != "KK38") # Annette
+  select(
+    pid = study_id, study_year = Specimen_Year, site = Site, gender = Sex,
+    dob
+  )
 
-cdc_participants_obj1 %>% filter(!complete.cases(.))
+# Missing values
+cdc_obj1_participants %>% filter(!complete.cases(.))
 
-save_data(cdc_participants_obj1, "cdc-participant-obj1")
+# Vaccination history -----------------------------------------
 
-# Participants for objective 2
+cdc_obj1_vax_hist <- cdc_obj1_participants_raw %>%
+  select(pid = study_id, contains("Vac")) %>%
+  pivot_longer(-pid, names_to = "year", values_to = "status") %>%
+  mutate(
+    year = str_replace(year, "Vac", "") %>% as.numeric()
+  )
+
+# HI titres --------------------------------------
+
+cdc_obj1_hi_raw <- read_raw_csv(
+  "cdc-obj1/HI",
+  col_types = cols(), guess_max = 1e4
+)
+
+cdc_obj1_hi <- cdc_obj1_hi_raw %>%
+  mutate(
+    sample_id = toupper(Sample_ID) %>% str_replace("NO SAMPLE - ", "")
+  ) %>%
+  select(sample_id, virus_n = VirusN, titre = Titer) %>%
+  filter(!is.na(titre), !str_detect(sample_id, "KK38 2020 D"))
+
+
+
+cdc_obj1_hi %>% filter(!complete.cases(.))
+
+# Dates -----------------------------------------------
+
+cdc_obj1_dates1_raw <- read_raw_csv("cdc-obj1/Obj1Dates", col_types = cols())
+cdc_obj1_dates2_raw <- read_raw_csv("cdc-obj1/Obj1_Dates", col_types = cols())
+
+# The first one has more samples
+compare_vectors(cdc_obj1_dates1_raw$Specimen_ID, cdc_obj1_dates2_raw$Specimen_ID)
+
+cdc_obj1_dates_raw <- cdc_obj1_dates1_raw
+
+cdc_obj1_dates <- cdc_obj1_dates_raw %>%
+  mutate(
+    timepoint = recode_3_timepoints(Blood_DrawN),
+    bleed_date = Blood_Draw_date %>%
+      str_replace("^(\\d\\d/\\d\\d)/(\\d\\d) ", "\\1/20\\2 ") %>%
+      lubridate::mdy_hms() %>%
+      lubridate::as_date()
+  ) %>%
+  select(
+    pid = PID, sample_id = Specimen_ID, site = Site, timepoint,
+    bleed_date
+  )
+
+# Now add the required columns to the various tables -------------
+
+# HI needs bleed dates
+
+# This shows the sample ids for which we have hi data but not dates
+compare_vectors(
+  cdc_obj1_dates$sample_id, cdc_obj1_hi$sample_id, "dates", "hi"
+) %>%
+  filter(!is.na(hi)) %>%
+  select(hi)
+
+cdc_obj1_hi_extra <- cdc_obj1_hi %>%
+  inner_join(cdc_obj1_dates, "sample_id") %>%
+  select(pid, site, timepoint, bleed_date, titre)
+
+# Participants need number of prior vaccinations
+
+compare_vectors(cdc_obj1_vax_hist$pid, cdc_obj1_participants$pid)
+
+cdc_obj1_prior_vacs <- cdc_obj1_vax_hist %>%
+  inner_join(cdc_obj1_participants, "pid") %>%
+  # Look only at 5 years prior to recruitment
+  # E.g. recruited in 2016 (study_year 1) -> 2011-2015 inclusive
+  filter(
+    year < study_year + 2015, year >= study_year + 2015 - 5,
+    !is.na(status)
+  ) %>%
+  group_by(pid) %>%
+  summarise(prior_vacs = sum(status), .groups = "drop")
+
+cdc_obj1_participants_extra <- cdc_obj1_participants %>%
+  inner_join(cdc_obj1_prior_vacs, "pid")
+
+cdc_obj1_participants_extra
+cdc_obj1_hi_extra
+
+# There are some participants without corresponding HI data
+compare_vectors(cdc_obj1_participants_extra$pid, cdc_obj1_hi_extra$pid)
+
+save_data(cdc_obj1_participants_extra, "cdc-obj1-participant")
+save_data(cdc_obj1_hi_extra, "cdc-obj1-hi")
+
+# Participants for objective 2 -----------------------------------------
 
 cdc_hi_prior_vacc_obj2 <- read_raw("cdc-obj2/prior_vacc")
 
