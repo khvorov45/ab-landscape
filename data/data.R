@@ -122,8 +122,9 @@ save_data(agmap, "map")
 
 # Viruses
 
-cdc_viruses_raw_obj1 <- read_raw("cdc-obj1/Viruses")
-cdc_viruses_raw_obj2 <- read_raw("cdc-obj2/Viruses")
+cdc_viruses_raw_obj1 <- read_raw_csv("cdc-obj1/Viruses", col_types = cols())
+cdc_viruses_raw_obj2 <- read_raw_csv("cdc-obj2/Viruses", col_types = cols())
+cdc_viruses_raw_obj3 <- read_raw_csv("cdc-obj3/Viruses", col_types = cols())
 
 fmt_cdc_viruses <- function(data) {
   data %>%
@@ -131,7 +132,7 @@ fmt_cdc_viruses <- function(data) {
       virus_full = Virus_Name,
       virus_short = Short_name,
       virus_n = VirusN,
-      virus_year = Year,
+      virus_year = Virus_Year,
       clade = Clade,
       egg = Egg_Cell,
     ) %>%
@@ -151,12 +152,14 @@ fmt_cdc_viruses <- function(data) {
 }
 
 cdc_viruses_obj1 <- fmt_cdc_viruses(cdc_viruses_raw_obj1)
-cdc_viruses_obj2 <- cdc_viruses_raw_obj2 %>%
-  rename(Year = Virus_Year) %>%
-  fmt_cdc_viruses()
+cdc_viruses_obj2 <- fmt_cdc_viruses(cdc_viruses_raw_obj2)
+cdc_viruses_obj3 <- fmt_cdc_viruses(cdc_viruses_raw_obj3)
 
 compare_vectors(cdc_viruses_obj1$virus_full, cdc_viruses_obj2$virus_full)
+compare_vectors(cdc_viruses_obj1$virus_full, cdc_viruses_obj3$virus_full)
+
 compare_vectors(cdc_viruses_obj1$virus_short, cdc_viruses_obj2$virus_short)
+compare_vectors(cdc_viruses_obj1$virus_short, cdc_viruses_obj3$virus_short)
 
 # See how they match to the map
 compare_vectors(
@@ -165,12 +168,17 @@ compare_vectors(
 compare_vectors(
   cdc_viruses_obj2$virus_full, agmap$virus_full, "ob2", "map"
 ) %>% print(n = 99)
+compare_vectors(
+  cdc_viruses_obj3$virus_full, agmap$virus_full, "ob2", "map"
+) %>% print(n = 99)
 
 # See if clades match
 compare_vectors(cdc_viruses_obj1$clade, cdc_viruses_obj2$clade)
+compare_vectors(cdc_viruses_obj1$clade, cdc_viruses_obj3$clade)
 
 cdc_viruses_obj1 %>% filter(!complete.cases(.))
 cdc_viruses_obj2 %>% filter(!complete.cases(.))
+cdc_viruses_obj3 %>% filter(!complete.cases(.))
 
 # They are the same table, so save one
 save_data(cdc_viruses_obj1, "cdc-virus")
