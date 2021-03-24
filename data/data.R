@@ -270,14 +270,13 @@ cdc_obj1_participants_raw %>%
   group_by(study_id) %>%
   filter(n() > 1)
 
-
 cdc_obj1_participants <- cdc_obj1_participants_raw %>%
   mutate(
     dob_og = dob,
     dob = if_else(
       is.na(dob),
       lubridate::ymd(paste0(YoB, "-07-01")),
-      str_replace(date, "^(\\d\\d/\\d\\d)/(\\d\\d) ", "\\1/19\\2 ") %>%
+      str_replace(dob, "^(\\d\\d/\\d\\d)/(\\d\\d) ", "\\1/19\\2 ") %>%
         lubridate::mdy_hms() %>%
         lubridate::as_date()
     ),
@@ -312,8 +311,6 @@ cdc_obj1_hi <- cdc_obj1_hi_raw %>%
   ) %>%
   select(sample_id, virus_n = VirusN, titre = Titer) %>%
   filter(!is.na(titre), !str_detect(sample_id, "KK38 2020 D"))
-
-
 
 cdc_obj1_hi %>% filter(!complete.cases(.))
 
@@ -370,14 +367,25 @@ cdc_obj1_prior_vacs <- cdc_obj1_vax_hist %>%
   group_by(pid) %>%
   summarise(prior_vacs = sum(status), .groups = "drop")
 
-cdc_obj1_participants_extra <- cdc_obj1_participants %>%
-  inner_join(cdc_obj1_prior_vacs, "pid")
+# Age at first bleed would be good as well
 
-cdc_obj1_participants_extra
-cdc_obj1_hi_extra
+cdc_obj1_first_bleeds <- cdc_obj1_dates %>%
+  group_by(pid) %>%
+  summarise(first_bleed = min(bleed_date), .groups = "drop")
+
+cdc_obj1_first_bleeds %>% filter(!complete.cases(.))
+
+cdc_obj1_participants_extra <- cdc_obj1_participants %>%
+  inner_join(cdc_obj1_prior_vacs, "pid") %>%
+  inner_join(cdc_obj1_first_bleeds, "pid") %>%
+  mutate(age_first_bleed = (first_bleed - dob) / lubridate::dyears(1)) %>%
+  select(-first_bleed)
 
 # There are some participants without corresponding HI data
 compare_vectors(cdc_obj1_participants_extra$pid, cdc_obj1_hi_extra$pid)
+
+cdc_obj1_participants_extra %>% filter(!complete.cases(.))
+cdc_obj1_hi_extra %>% filter(!complete.cases(.))
 
 save_data(cdc_obj1_participants_extra, "cdc-obj1-participant")
 save_data(cdc_obj1_hi_extra, "cdc-obj1-hi")
