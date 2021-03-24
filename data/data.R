@@ -317,9 +317,12 @@ compare_vectors(
   filter(!is.na(hi)) %>%
   select(hi)
 
+compare_vectors(cdc_obj1_hi$virus_n, cdc_viruses$virus_n)
+
 cdc_obj1_hi_extra <- cdc_obj1_hi %>%
   inner_join(cdc_obj1_dates, "sample_id") %>%
-  select(pid, site, timepoint, bleed_date, titre)
+  inner_join(cdc_viruses, "virus_n") %>%
+  select(pid, site, timepoint, bleed_date, virus_full, titre)
 
 # Participants need number of prior vaccinations
 
