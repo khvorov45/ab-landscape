@@ -197,58 +197,27 @@ save_data(cdc_vaccine, "cdc-vaccine")
 
 # Look for virus/clade frequencies ------------------------
 
-nextstrain_tree <- httr::GET(
-  "https://nextstrain.org/charon/getDataset?prefix=/flu/seasonal/h3n2/ha/12y"
-) %>%
-  httr::content()
-
-process_child <- function(child) {
-  children <- tibble()
-  if (!is.null(child$children)) {
-    children <- map_dfr(child$children, process_child)
-  }
-  bind_rows(
-    tibble(name = child$name, clade = child$node_attrs$clade_membership$value),
-    children
-  )
-}
-
-nextstrain_viruses <- map_dfr(nextstrain_tree$tree$children, process_child) %>%
-  filter(!str_starts(name, "NODE"))
-
-nextstain_freqs <- httr::GET(
-  "https://nextstrain.org/charon/getDataset?prefix=/flu/seasonal/h3n2/ha/12y&type=tip-frequencies"
-) %>%
-  httr::content()
-
-process_freq <- function(freq, name, pivots) {
-  if (name == "generated_by" | name == "pivots") {
-    return(tibble())
-  }
-  imap_dfr(
-    freq$frequencies,
-    ~ tibble(name = name, n = .y, freq = .x, year = pivots[[.y]])
-  )
-}
-
-nextstrain_freq_table <- imap_dfr(
-  nextstain_freqs, process_freq, nextstain_freqs$pivots
+nextrain_freqs_raw <- read_raw_csv(
+  "nexstrain-virus-frequencies",
+  col_types = cols()
 )
 
-compare_vectors(nextstrain_freq_table$name, nextstrain_viruses$name)
-
-freq_table_extra <- nextstrain_freq_table %>%
-  inner_join(nextstrain_viruses, "name") %>%
-  mutate(clade = standardise_clades(clade))
+nextrain_freqs <- nextrain_freqs_raw %>%
+  mutate(
+    clade = standardise_clades(clade),
+    name = tolower(name)
+  )
 
 # We have a lot of viruses that are not in that table
-setdiff(cdc_viruses_obj1$virus_full, tolower(freq_table_extra$name))
+setdiff(cdc_viruses_obj1$virus_full, nextrain_freqs$name)
 
-clade_frequencies <- freq_table_extra %>%
+clade_frequencies <- nextrain_freqs %>%
   filter(clade != "unassigned", year >= 2016, year < 2020) %>%
   group_by(year, clade) %>%
   summarise(freq = sum(freq), .groups = "drop") %>%
   mutate(
+    # Got this by looking through viruses and checking our clade and
+    # Nextstrain's
     clade = recode(clade, "a1" = "3c2a1", "a2/re" = "3c2a2", "3c" = "3c1") %>%
       str_replace("^a1b/", "3c2a1b+")
   )
