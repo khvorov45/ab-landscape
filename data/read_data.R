@@ -1,14 +1,15 @@
 read_data <- function(name) {
   common <- list()
+  cdc_timepoint <- col_factor(c("prevax", "postvax", "postseas"))
   specific <- list(
     "hi-hanam" = list(
       timepoint = col_factor(c("BL", "d4", "d7", "d14", "d21", "d280"))
     ),
-    "cdc-hi-obj1" = list(
-      timepoint = col_factor(c("prevax", "postvax", "postseas"))
+    "cdc-obj1-hi" = list(
+      timepoint = cdc_timepoint
     ),
     "cdc-hi-obj2" = list(
-      timepoint = col_factor(c("prevax", "postvax", "postseas"))
+      timepoint = cdc_timepoint
     ),
     "hi-rmh-hcw" = list(
       timepoint = col_factor(c("Pre-vax", "Post-vax", "Post-season")),
