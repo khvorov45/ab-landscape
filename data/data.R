@@ -104,6 +104,13 @@ compare_vectors <- function(vec1, vec2, vec1_lbl = "in1", vec2_lbl = "in2") {
     filter(!is.na(!!rlang::sym(vec1_lbl)) | !is.na(!!rlang::sym(vec2_lbl)))
 }
 
+parse_access_date <- function(date_strings, century = "19") {
+  date_strings %>%
+    str_replace("^(\\d\\d/\\d\\d)/(\\d\\d) ", paste0("\\1/", century, "\\2 ")) %>%
+    lubridate::mdy_hms() %>%
+    lubridate::as_date()
+}
+
 # Script ======================================================================
 
 # The map ---------------------------------------------------------------------
@@ -247,9 +254,7 @@ cdc_obj1_participants <- cdc_obj1_participants_raw %>%
     dob = if_else(
       is.na(dob),
       lubridate::ymd(paste0(YoB, "-07-01")),
-      str_replace(dob, "^(\\d\\d/\\d\\d)/(\\d\\d) ", "\\1/19\\2 ") %>%
-        lubridate::mdy_hms() %>%
-        lubridate::as_date()
+      dob %>% parse_access_date("19")
     ),
   ) %>%
   select(
@@ -298,10 +303,7 @@ cdc_obj1_dates_raw <- cdc_obj1_dates1_raw
 cdc_obj1_dates <- cdc_obj1_dates_raw %>%
   mutate(
     timepoint = recode_3_timepoints(Blood_DrawN),
-    bleed_date = Blood_Draw_date %>%
-      str_replace("^(\\d\\d/\\d\\d)/(\\d\\d) ", "\\1/20\\2 ") %>%
-      lubridate::mdy_hms() %>%
-      lubridate::as_date()
+    bleed_date = Blood_Draw_date %>% parse_access_date("20")
   ) %>%
   select(
     pid = PID, sample_id = Specimen_ID, site = Site, timepoint,
@@ -402,14 +404,17 @@ cdc_hi_prior_vacc_obj2 <- read_raw_csv(
 cdc_participants_obj2 <- cdc_hi_prior_vacc_obj2 %>%
   select(pid = study_id, sex = Sex, yob = yob, site = Site) %>%
   distinct(pid, .keep_all = TRUE)
+  select(pid = study_id, sex = Sex, yob = yob, site = Site)
+
+cdc_obj2_participants %>%
+  count(pid) %>%
+  filter(n > 1)
 
 cdc_participants_obj2 %>% filter(!complete.cases(.))
 
-save_data(cdc_participants_obj2, "cdc-participant-obj2")
-
 # Prior vaccinations for objective 2
 
-cdc_vacc_hist_obj2 <- cdc_hi_prior_vacc_obj2 %>%
+cdc_obj2_participants_raw <- cdc_hi_prior_vacc_obj2 %>%
   select(pid = study_id, contains("Vacc_")) %>%
   select(pid, matches("c$")) %>%
   pivot_longer(
