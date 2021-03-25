@@ -108,6 +108,10 @@ cp "$PROJ/immunogen/rmh.csv" \
     "$PROJ/immunogen/egg-vs-cell-estimates.txt" \
     "$RMH/Analyses/immunogen"
 
+# New landscapes --------------------------------------------------------------
+
+rsync -rv "$PROJ/indiv-hi/cdc-obj1/" "$OBJ1/individual-his/"
+
 # The whole project -----------------------------------------------------------
 
 rsync -rv "$PROJ" "$SHARED" --exclude "renv/library" --exclude ".snakemake"
