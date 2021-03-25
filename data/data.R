@@ -506,7 +506,7 @@ cdc_obj2_participants_extra <- cdc_obj2_participants %>%
   mutate(
     age_first_bleed = (date_first_bleed - dob) / lubridate::dyears(1)
   ) %>%
-  select(pid, site, gender, dob, age_first_bleed)
+  select(pid, site, gender, dob, age_first_bleed, prior_vacs)
 
 # HI needs pids, years, timepoints, dates and virus names
 
