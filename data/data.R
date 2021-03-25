@@ -410,7 +410,7 @@ cdc_obj2_participants <- cdc_obj2_participants_raw %>%
       dob %>% parse_access_date("19")
     )
   ) %>%
-  select(pid = study_id, sex = Sex, dob = dob, site = Site)
+  select(pid = study_id, gender = Sex, dob = dob, site = Site)
 
 cdc_obj2_participants %>%
   count(pid) %>%
@@ -506,7 +506,7 @@ cdc_obj2_participants_extra <- cdc_obj2_participants %>%
   mutate(
     age_first_bleed = (date_first_bleed - dob) / lubridate::dyears(1)
   ) %>%
-  select(pid, site, sex, dob, age_first_bleed)
+  select(pid, site, gender, dob, age_first_bleed)
 
 # HI needs pids, years, timepoints, dates and virus names
 
