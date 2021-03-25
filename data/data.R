@@ -312,6 +312,7 @@ cdc_obj1_dates <- cdc_obj1_dates_raw %>%
 
 # HI needs bleed dates
 
+# @FOLLOWUP
 # This shows the sample ids for which we have hi data but not dates
 compare_vectors(
   cdc_obj1_dates$sample_id, cdc_obj1_hi$sample_id, "dates", "hi"
