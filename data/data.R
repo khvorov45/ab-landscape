@@ -366,7 +366,10 @@ save_data(cdc_obj1_hi_extra, "cdc-obj1-hi")
 
 # Participants for objective 2 -----------------------------------------
 
-cdc_hi_prior_vacc_obj2 <- read_raw("cdc-obj2/prior_vacc")
+cdc_hi_prior_vacc_obj2 <- read_raw_csv(
+  "cdc-obj2/prior_vacc",
+  col_types = cols()
+)
 
 cdc_participants_obj2 <- cdc_hi_prior_vacc_obj2 %>%
   select(pid = study_id, sex = Sex, yob = yob, site = Site) %>%
