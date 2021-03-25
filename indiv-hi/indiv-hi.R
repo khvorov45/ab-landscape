@@ -12,7 +12,7 @@ plot_one <- function(data) {
   pid_info <- data %>%
     select(
       pid, age_first_bleed, gender, prior_vacs, study_year, pre_post_vax_days,
-      post_vax_post_season_days
+      post_vax_post_season_days, vax_years
     ) %>%
     distinct()
 
@@ -56,8 +56,11 @@ plot_one <- function(data) {
         " Age ", round(pid_info$age_first_bleed),
         " ", pid_info$gender,
         " Year ", pid_info$study_year,
-        " Pre-Post vax days ", pid_info$pre_post_vax_days,
-        " Post vax Post season days ", pid_info$post_vax_post_season_days
+        "\n",
+        "Pre-Post vax days ", pid_info$pre_post_vax_days,
+        "; Post vax Post season days ", pid_info$post_vax_post_season_days,
+        "\n",
+        "All vax years: ", paste(pid_info$vax_years[[1]], collapse = " ")
       )
     ) +
     # Ribbon should be before gridlines
@@ -117,6 +120,13 @@ cdc_obj1_hi <- read_data("cdc-obj1-hi") %>%
     read_data("cdc-vaccine") %>% mutate(vaccine_strain = TRUE),
     c("virus_full", "study_year")
   ) %>%
+  inner_join(
+    read_data("cdc-obj1-vax-hist") %>%
+      filter(status == 1) %>%
+      group_by(pid) %>%
+      summarise(vax_years = list(year), .groups = "drop"),
+    "pid"
+  ) %>%
   # Filter for if I want to change things - re-doing everything takes a while
   # filter(pid == first(pid)) %>%
   mutate(
@@ -128,7 +138,7 @@ cdc_obj1_hi <- read_data("cdc-obj1-hi") %>%
 plots <- cdc_obj1_hi %>%
   group_split(pid) %>%
   map(~ plot_one(.x), .keep = TRUE)
-plots
+
 if (!dir.exists("indiv-hi/cdc-obj1")) dir.create("indiv-hi/cdc-obj1")
 furrr::future_walk(
   plots,
