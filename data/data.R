@@ -181,7 +181,9 @@ cdc_viruses_obj2 %>% filter(!complete.cases(.))
 cdc_viruses_obj3 %>% filter(!complete.cases(.))
 
 # They are the same table, so save one
-save_data(cdc_viruses_obj1, "cdc-virus")
+cdc_viruses <- cdc_viruses_obj1
+
+save_data(cdc_viruses, "cdc-virus")
 
 # Vaccine viruses ---------------------------
 
