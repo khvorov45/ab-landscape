@@ -326,6 +326,10 @@ cdc_obj1_hi_extra <- cdc_obj1_hi %>%
   inner_join(cdc_viruses, "virus_n") %>%
   select(pid, timepoint, bleed_date, virus_full, titre)
 
+cdc_obj1_hi_extra %>%
+  count(pid, timepoint, virus_full) %>%
+  filter(n > 1)
+
 # Participants need number of prior vaccinations
 
 compare_vectors(cdc_obj1_vax_hist$pid, cdc_obj1_participants$pid)
@@ -349,9 +353,28 @@ cdc_obj1_first_bleeds <- cdc_obj1_dates %>%
 
 cdc_obj1_first_bleeds %>% filter(!complete.cases(.))
 
+# Add time difference b/w prevax postvax postseason
+
+cdc_obj1_pre_postvax_time <- cdc_obj1_dates %>%
+  select(-sample_id) %>%
+  # There are duplicate rows
+  distinct() %>%
+  pivot_wider(names_from = "timepoint", values_from = "bleed_date") %>%
+  mutate(
+    pre_post_vax_days = (`Post-vax` - `Pre-vax`) / lubridate::ddays(1),
+    post_vax_post_season_days =
+      (`Post-season` - `Post-vax`) / lubridate::ddays(1),
+  ) %>%
+  select(pid, pre_post_vax_days, post_vax_post_season_days)
+
+cdc_obj1_pre_postvax_time %>%
+  count(pid) %>%
+  filter(n > 1)
+
 cdc_obj1_participants_extra <- cdc_obj1_participants %>%
   inner_join(cdc_obj1_prior_vacs, "pid") %>%
   inner_join(cdc_obj1_first_bleeds, "pid") %>%
+  inner_join(cdc_obj1_pre_postvax_time, "pid") %>%
   mutate(age_first_bleed = (first_bleed - dob) / lubridate::dyears(1)) %>%
   select(-first_bleed)
 
@@ -360,6 +383,10 @@ compare_vectors(cdc_obj1_participants_extra$pid, cdc_obj1_hi_extra$pid)
 
 cdc_obj1_participants_extra %>% filter(!complete.cases(.))
 cdc_obj1_hi_extra %>% filter(!complete.cases(.))
+
+cdc_obj1_participants_extra %>%
+  count(pid) %>%
+  filter(n > 1)
 
 save_data(cdc_obj1_participants_extra, "cdc-obj1-participant")
 save_data(cdc_obj1_hi_extra, "cdc-obj1-hi")

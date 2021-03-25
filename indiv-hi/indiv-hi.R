@@ -10,7 +10,10 @@ source("data/read_data.R")
 
 plot_one <- function(data) {
   pid_info <- data %>%
-    select(pid, age_first_bleed, gender, prior_vacs, study_year) %>%
+    select(
+      pid, age_first_bleed, gender, prior_vacs, study_year, pre_post_vax_days,
+      post_vax_post_season_days
+    ) %>%
     distinct()
 
   xgrid <- data %>%
@@ -52,7 +55,9 @@ plot_one <- function(data) {
         " Prior vacs ", pid_info$prior_vacs,
         " Age ", round(pid_info$age_first_bleed),
         " ", pid_info$gender,
-        " Year ", pid_info$study_year
+        " Year ", pid_info$study_year,
+        " Pre-Post vax days ", pid_info$pre_post_vax_days,
+        " Post vax Post season days ", pid_info$post_vax_post_season_days
       )
     ) +
     # Ribbon should be before gridlines
