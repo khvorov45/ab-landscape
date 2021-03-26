@@ -111,6 +111,7 @@ cp "$PROJ/immunogen/rmh.csv" \
 # New landscapes --------------------------------------------------------------
 
 rsync -rv "$PROJ/indiv-hi/cdc-obj1/" "$OBJ1/individual-his/"
+rsync -rv "$PROJ/indiv-hi/cdc-obj2/" "$OBJ2/individual-his/"
 
 # The whole project -----------------------------------------------------------
 

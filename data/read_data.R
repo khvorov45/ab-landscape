@@ -10,8 +10,8 @@ read_data <- function(name) {
     "cdc-obj1-hi" = list(
       timepoint = cdc_timepoint2
     ),
-    "cdc-hi-obj2" = list(
-      timepoint = cdc_timepoint
+    "cdc-obj2-hi" = list(
+      timepoint = cdc_timepoint2
     ),
     "hi-rmh-hcw" = list(
       timepoint = col_factor(c("Pre-vax", "Post-vax", "Post-season")),
