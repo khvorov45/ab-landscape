@@ -744,9 +744,9 @@ cdc_obj4_hi_extra %>%
   count(pid, timepoint, virus_full) %>%
   filter(n > 1)
 
-save_data(cdc_obj4_participants_extra, "cdc-obj4-participants")
+save_data(cdc_obj4_participants_extra, "cdc-obj4-participant")
 save_data(cdc_obj4_vax_hist, "cdc-obj4-vax-hist")
-save_data(cdc_obj4_hi_extra, "cdc-obj4-hi-extra")
+save_data(cdc_obj4_hi_extra, "cdc-obj4-hi")
 
 # Not matching sample ids -------------------
 
