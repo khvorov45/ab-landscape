@@ -316,7 +316,7 @@ cdc_obj1_dates <- cdc_obj1_dates_raw %>%
 
 # @FOLLOWUP
 # This shows the sample ids for which we have hi data but not dates
-compare_vectors(
+cdc_obj1_hi_no_dates <- compare_vectors(
   cdc_obj1_dates$sample_id, cdc_obj1_hi$sample_id, "dates", "hi"
 ) %>%
   filter(!is.na(hi)) %>%
@@ -474,7 +474,7 @@ compare_vectors(cdc_obj2_participants$pid, cdc_obj2_dates$pid)
 
 # @FOLLOWUP
 # Specimen id in hi data does not match to dates
-compare_vectors(
+cdc_obj2_hi_no_dates <- compare_vectors(
   cdc_obj2_hi$sample_id, cdc_obj2_dates$sample_id, "hi", "dates"
 ) %>%
   select(hi) %>%
@@ -608,8 +608,11 @@ cdc_obj3_participants_extra <- cdc_obj3_participants %>%
 
 # @FOLLOWUP
 # There is a lot of HI samples that don't match to any dates
-compare_vectors(cdc_obj3_hi$sample_id, cdc_obj3_dates$sample_id) %>%
-  print(n = 100)
+cdc_obj3_hi_no_dates <- compare_vectors(
+  cdc_obj3_hi$sample_id, cdc_obj3_dates$sample_id, "hi", "dates"
+) %>%
+  select(hi) %>%
+  filter(!is.na(hi))
 
 cdc_obj3_hi %>%
   count(sample_id, virus_n) %>%
@@ -714,9 +717,13 @@ cdc_obj4_participants_extra <- cdc_obj4_participants %>%
   mutate(age_first_bleed = (date_first_bleed - dob) / lubridate::dyears(1)) %>%
   select(-date_first_bleed)
 
-# FOLLOWUP
+# @FOLLOWUP
 # Many non-matches
-compare_vectors(cdc_obj4_hi$sample_id, cdc_obj4_dates$sample_id)
+cdc_obj4_hi_no_dates <- compare_vectors(
+  cdc_obj4_hi$sample_id, cdc_obj4_dates$sample_id, "hi", "dates"
+) %>%
+  select(hi) %>%
+  filter(!is.na(hi))
 
 cdc_obj4_hi_extra <- cdc_obj4_hi %>%
   inner_join(cdc_viruses, "virus_n") %>%
@@ -731,6 +738,18 @@ cdc_obj4_hi_extra %>%
 save_data(cdc_obj4_participants_extra, "cdc-obj4-participants")
 save_data(cdc_obj4_vax_hist, "cdc-obj4-vax-hist")
 save_data(cdc_obj4_hi_extra, "cdc-obj4-hi-extra")
+
+# Not matching sample ids -------------------
+
+bind_rows(
+  cdc_obj1_hi_no_dates %>% mutate(objective = 1),
+  cdc_obj2_hi_no_dates %>% mutate(objective = 2),
+  cdc_obj3_hi_no_dates %>% mutate(objective = 3),
+  cdc_obj4_hi_no_dates %>% mutate(objective = 4),
+) %>%
+  rename(sample_id_no_date_match = hi) %>%
+  save_csv("cdc-hi-no-date")
+
 
 # The Hanam dataset Annette gave me -------------------------------------------
 
