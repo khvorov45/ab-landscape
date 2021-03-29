@@ -640,6 +640,98 @@ save_data(cdc_obj3_participants_extra, "cdc-obj3-participant")
 save_data(cdc_obj3_vax_hist, "cdc-obj3-vax-hist")
 save_data(cdc_obj3_hi_extra, "cdc-obj3-hi")
 
+# Objective 4 -----------------------
+
+# Participants
+cdc_obj4_participants_raw <- read_raw_csv(
+  name = "cdc-obj4/Vax History", col_types = cols(), na = c("NA", "", ".")
+)
+
+cdc_obj4_participants <- cdc_obj4_participants_raw %>%
+  mutate(
+    dob = if_else(
+      is.na(dob),
+      lubridate::ymd(paste0(dob_range1, "-07-01")),
+      parse_access_date(dob, "19")
+    )
+  ) %>%
+  select(pid = study_id, site = Site, gender = Sex, dob)
+
+# Vaccination history
+cdc_obj4_vax_hist <- cdc_obj4_participants_raw %>%
+  select(pid = study_id, matches("^Vac")) %>%
+  pivot_longer(-pid, names_to = "year", values_to = "status") %>%
+  mutate(year = str_replace(year, "Vac", "") %>% as.integer()) %>%
+  filter(!is.na(status))
+
+# Dates
+cdc_obj4_dates_raw <- read_raw_csv("cdc-obj4/Dates", col_types = cols())
+
+cdc_obj4_dates <- cdc_obj4_dates_raw %>%
+  mutate(
+    timepoint = recode_3_timepoints(Blood_Draw),
+    bleed_date = parse_access_date(Blood_Draw_date, "20")
+  ) %>%
+  select(
+    pid = study_id, study_year = Sp_Year, sample_id = Specimen_ID,
+    timepoint, bleed_date
+  )
+
+# There is one year's worth of data for each participant
+cdc_obj4_dates %>%
+  count(pid, timepoint) %>%
+  filter(n > 1)
+
+# HI
+cdc_obj4_hi_raw <- read_raw_csv("cdc-obj4/HI", col_types = cols())
+
+cdc_obj4_hi <- cdc_obj4_hi_raw %>%
+  select(sample_id = Sample_ID, virus_n = VirusN, titre = Titer)
+
+# Join up
+
+# Recruitment years
+cdc_obj4_recruitment_years <- cdc_obj4_dates %>%
+  select(pid, study_year) %>%
+  distinct()
+
+# Prior vaccinations
+cdc_obj4_prior_vacs <- cdc_obj4_vax_hist %>%
+  inner_join(cdc_obj4_recruitment_years, "pid") %>%
+  filter(year < study_year + 2015, year >= study_year + 2015 - 5) %>%
+  group_by(pid) %>%
+  summarise(prior_vacs = sum(status), .groups = "drop")
+
+# First bleeds
+cdc_obj4_first_bleeds <- cdc_obj4_dates %>%
+  group_by(pid) %>%
+  summarise(date_first_bleed = min(bleed_date), .groups = "drop")
+
+cdc_obj4_participants_extra <- cdc_obj4_participants %>%
+  inner_join(cdc_obj4_recruitment_years, "pid") %>%
+  inner_join(cdc_obj4_prior_vacs, "pid") %>%
+  inner_join(cdc_obj4_first_bleeds, "pid") %>%
+  mutate(age_first_bleed = (date_first_bleed - dob) / lubridate::dyears(1)) %>%
+  select(-date_first_bleed)
+
+# FOLLOWUP
+# Many non-matches
+compare_vectors(cdc_obj4_hi$sample_id, cdc_obj4_dates$sample_id)
+
+cdc_obj4_hi_extra <- cdc_obj4_hi %>%
+  inner_join(cdc_viruses, "virus_n") %>%
+  # Unexpected loss due to the above non-matches
+  inner_join(cdc_obj4_dates, "sample_id") %>%
+  select(pid, timepoint, virus_full, titre)
+
+cdc_obj4_hi_extra %>%
+  count(pid, timepoint, virus_full) %>%
+  filter(n > 1)
+
+save_data(cdc_obj4_participants_extra, "cdc-obj4-participants")
+save_data(cdc_obj4_vax_hist, "cdc-obj4-vax-hist")
+save_data(cdc_obj4_hi_extra, "cdc-obj4-hi-extra")
+
 # The Hanam dataset Annette gave me -------------------------------------------
 
 hi_hanam <- read_csv(
