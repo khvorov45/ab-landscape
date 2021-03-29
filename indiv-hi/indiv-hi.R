@@ -85,6 +85,92 @@ plot_one <- function(data, pid_info = "",
     )
 }
 
+plot_longitidinal <- function(data, pid_info) {
+  add_theme <- theme(
+    panel.spacing = unit(0, "null"),
+    strip.background = element_blank(),
+    legend.position = "right"
+  )
+  rm_x_axis <- theme(
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.ticks.length.x = unit(0, "null")
+  )
+  pl1 <- data %>%
+    plot_one() +
+    facet_wrap(
+      ~study_year,
+      ncol = 1,
+      strip.position = "right",
+      labeller = as_labeller(function(x) paste0("Year ", x))
+    ) +
+    add_theme
+
+  pl2 <- data %>%
+    plot_one("", as.factor(study_year) %>% paste0("Year ", .), "Study year") +
+    facet_wrap(
+      ~timepoint,
+      ncol = 1,
+      strip.position = "right",
+    ) +
+    add_theme
+
+  # This can be empty because some participants in longitudinal objectives
+  # don't have enough data
+  bwyear_subset <- data %>%
+    filter(
+      timepoint %in% c("Pre-vax", "Post-season"),
+      !(study_year == 3 & timepoint == "Post-season"),
+      !(study_year == 1 & timepoint == "Pre-vax")
+    ) %>%
+    mutate(
+      bwyear_period = if_else(
+        study_year == 1 | (study_year == 2 & timepoint == "Pre-vax"), 1, 2
+      ),
+      vaccine_strain = if_else(study_year == 3, FALSE, vaccine_strain)
+    ) %>%
+    group_by(bwyear_period) %>%
+    filter(length(unique(timepoint)) > 1) %>%
+    ungroup()
+
+  pl3 <- NULL
+  if (nrow(bwyear_subset) == 0) {
+    pl2 <- pl2 + labs(caption = pid_info)
+  } else {
+    pl3 <- bwyear_subset %>%
+      plot_one(
+        pid_info,
+        group_var = timepoint %>%
+          fct_rev() %>%
+          recode(
+            "Pre-vax" = "Pre-vax\n(next year)",
+            "Post-season" = "Post-season\n(this year)"
+          )
+      ) +
+      facet_wrap(
+        ~bwyear_period,
+        ncol = 1,
+        labeller = as_labeller(
+          function(x) recode(x, "1" = "Years 1/2", "2" = "Years 2/3")
+        ),
+        strip.position = "right"
+      ) +
+      add_theme
+  }
+
+  if (is.null(pl3)) {
+    pl_all <- list(pl1 + rm_x_axis, pl2)
+  } else {
+    pl_all <- list(pl1 + rm_x_axis, pl2 + rm_x_axis, pl3)
+  }
+
+  cowplot::plot_grid(
+    plotlist = pl_all,
+    ncol = 1, align = "v"
+  )
+}
+
 save_plot <- function(plot, name, ext = "pdf", ...) {
   ggsave(
     paste0("indiv-hi/", name, ".", ext),
@@ -96,33 +182,54 @@ save_plot <- function(plot, name, ext = "pdf", ...) {
 
 # Script ======================================================================
 
+# CDC -------------------------------------------------------------------------
+
+cdc_join_vaccine <- function(data) {
+  data %>%
+    left_join(
+      read_data("cdc-vaccine") %>% mutate(vaccine_strain = TRUE),
+      c("virus_full", "study_year")
+    ) %>%
+    mutate(
+      vaccine_strain = replace_na(vaccine_strain, FALSE)
+    )
+}
+
+cdc_read_collapsed_vax_hist <- function(obj) {
+  read_data(glue::glue("cdc-obj{obj}-vax-hist")) %>%
+    filter(status == 1) %>%
+    group_by(pid) %>%
+    summarise(vax_years = list(year), .groups = "drop")
+}
+
+cdc_reorder_viruses <- function(data) {
+  data %>%
+    mutate(
+      virus_full = fct_reorder(virus_full, virus_year),
+      virus_short = fct_reorder(virus_short, virus_year),
+    )
+}
+
+cdc_virus <- read_data("cdc-virus")
+
+cdc_read_hi <- function(obj) {
+  read_data(glue::glue("cdc-obj{obj}-hi")) %>%
+    inner_join(read_data(glue::glue("cdc-obj{obj}-participant")), "pid") %>%
+    inner_join(cdc_virus, "virus_full") %>%
+    cdc_join_vaccine() %>%
+    inner_join(cdc_read_collapsed_vax_hist(obj), "pid") %>%
+    # Filter for if I want to change things - re-doing everything takes a while
+    # filter(pid == first(pid)) %>%
+    cdc_reorder_viruses()
+}
+
 # Objective 1 -----------------------------------------------------------------
 
-cdc_obj1_hi <- read_data("cdc-obj1-hi") %>%
-  inner_join(read_data("cdc-obj1-participant"), "pid") %>%
-  inner_join(read_data("cdc-virus"), "virus_full") %>%
-  left_join(
-    read_data("cdc-vaccine") %>% mutate(vaccine_strain = TRUE),
-    c("virus_full", "study_year")
-  ) %>%
-  inner_join(
-    read_data("cdc-obj1-vax-hist") %>%
-      filter(status == 1) %>%
-      group_by(pid) %>%
-      summarise(vax_years = list(year), .groups = "drop"),
-    "pid"
-  ) %>%
-  # Filter for if I want to change things - re-doing everything takes a while
-  # filter(pid == first(pid)) %>%
-  mutate(
-    virus_full = fct_reorder(virus_full, virus_year),
-    virus_short = fct_reorder(virus_short, virus_year),
-    vaccine_strain = replace_na(vaccine_strain, FALSE)
-  )
+cdc_obj1_hi <- cdc_read_hi("1")
 
 plots <- cdc_obj1_hi %>%
   group_by(
-    pid, prior_vacs, age_first_bleed, gender, study_year,
+    pid, prior_vacs, age_first_bleed, gender, recruitment_year,
     pre_post_vax_days, post_vax_post_season_days, vax_years
   ) %>%
   group_map(function(data, key) {
@@ -131,7 +238,7 @@ plots <- cdc_obj1_hi %>%
       " Prior vacs ", key$prior_vacs,
       " Age ", round(key$age_first_bleed),
       " ", key$gender,
-      " Year ", key$study_year,
+      " Recrutment year ", key$recruitment_year,
       "\n",
       "Pre-Post vax days ", key$pre_post_vax_days,
       "; Post vax Post season days ", key$post_vax_post_season_days,
@@ -154,107 +261,24 @@ furrr::future_walk(
 
 # Objective 2 -----------------------------------------------------------------
 
-cdc_obj2_hi <- read_data("cdc-obj2-hi") %>%
-  inner_join(read_data("cdc-obj2-participant"), "pid") %>%
-  inner_join(read_data("cdc-virus"), "virus_full") %>%
-  left_join(
-    read_data("cdc-vaccine") %>% mutate(vaccine_strain = TRUE),
-    c("virus_full", "study_year")
-  ) %>%
-  inner_join(
-    read_data("cdc-obj2-vax-hist") %>%
-      filter(status == 1) %>%
-      group_by(pid) %>%
-      summarise(vax_years = list(year), .groups = "drop"),
-    "pid"
-  ) %>%
-  # Filter for if I want to change things - re-doing everything takes a while
-  # filter(pid == first(pid)) %>%
-  mutate(
-    virus_full = fct_reorder(virus_full, virus_year),
-    virus_short = fct_reorder(virus_short, virus_year),
-    vaccine_strain = replace_na(vaccine_strain, FALSE)
-  )
+cdc_obj2_hi <- cdc_read_hi("2")
 
 plots_obj2 <- cdc_obj2_hi %>%
   group_by(
-    pid, prior_vacs, age_first_bleed, gender, vax_years
+    pid, prior_vacs, age_first_bleed, gender, vax_years, recruitment_year
   ) %>%
   group_map(function(data, key) {
-    add_theme <- theme(
-      panel.spacing = unit(0, "null"),
-      strip.background = element_blank(),
-      legend.position = "right"
-    )
-    rm_x_axis <- theme(
-      axis.text.x = element_blank(),
-      axis.title.x = element_blank(),
-      axis.ticks.x = element_blank(),
-      axis.ticks.length.x = unit(0, "null")
-    )
     pid_info <- paste0(
       key$pid,
       " Prior vacs ", key$prior_vacs,
       " Age ", round(key$age_first_bleed),
       " ", key$gender,
+      " Recrutment year ", key$recruitment_year,
       "\n",
       "All vax years: ", paste(key$vax_years[[1]], collapse = " ")
     )
 
-    pl1 <- data %>%
-      plot_one() +
-      facet_wrap(
-        ~study_year,
-        ncol = 1,
-        strip.position = "right",
-        labeller = as_labeller(function(x) paste0("Year ", x))
-      ) +
-      add_theme
-
-    pl2 <- data %>%
-      plot_one("", as.factor(study_year) %>% paste0("Year ", .), "Study year") +
-      facet_wrap(
-        ~timepoint,
-        ncol = 1,
-        strip.position = "right",
-      ) +
-      add_theme
-
-    pl3 <- data %>%
-      filter(
-        timepoint %in% c("Pre-vax", "Post-season"),
-        !(study_year == 3 & timepoint == "Post-season"),
-        !(study_year == 1 & timepoint == "Pre-vax")
-      ) %>%
-      mutate(
-        bwyear_period = if_else(
-          study_year == 1 | (study_year == 2 & timepoint == "Pre-vax"), 1, 2
-        ),
-        vaccine_strain = if_else(study_year == 3, FALSE, vaccine_strain)
-      ) %>%
-      plot_one(
-        pid_info,
-        group_var = timepoint %>%
-          fct_rev() %>%
-          recode(
-            "Pre-vax" = "Pre-vax\n(next year)",
-            "Post-season" = "Post-season\n(this year)"
-          )
-      ) +
-      facet_wrap(
-        ~bwyear_period,
-        ncol = 1,
-        labeller = as_labeller(
-          function(x) recode(x, "1" = "Years 1/2", "2" = "Years 2/3")
-        ),
-        strip.position = "right"
-      ) +
-      add_theme
-
-    pl_all <- cowplot::plot_grid(
-      pl1 + rm_x_axis, pl2 + rm_x_axis, pl3,
-      ncol = 1, rel_heights = c(5, 5, 5), align = "v"
-    )
+    pl_all <- plot_longitidinal(data, pid_info)
 
     attr(pl_all, "pid") <- key$pid
     pl_all
@@ -265,6 +289,45 @@ furrr::future_walk(
   plots_obj2,
   ~ save_plot(
     .x, paste0("cdc-obj2/", attr(.x, "pid")),
+    ext = "png", width = 20, height = 30
+  )
+)
+
+# Objective 3 -----------------------------------------------------------------
+
+cdc_obj3_hi <- cdc_read_hi("3")
+
+# This is longitudinal sometimes
+plots_obj3 <- cdc_obj3_hi %>%
+  group_by(
+    pid, prior_vacs, age_first_bleed, gender, vax_years, recruitment_year
+  ) %>%
+  group_map(function(data, key) {
+    pid_info <- paste0(
+      key$pid,
+      " Prior vacs ", key$prior_vacs,
+      " Age ", round(key$age_first_bleed),
+      " ", key$gender,
+      " Recruitment year ", key$recruitment_year,
+      "\n",
+      "All vax years: ", paste(key$vax_years[[1]], collapse = " ")
+    )
+
+    if (length(unique(data$study_year)) > 1) {
+      pl <- plot_longitidinal(data, pid_info)
+    } else {
+      pl <- plot_one(data, pid_info)
+    }
+
+    attr(pl, "pid") <- key$pid
+    pl
+  })
+
+if (!dir.exists("indiv-hi/cdc-obj3")) dir.create("indiv-hi/cdc-obj3")
+furrr::future_walk(
+  plots_obj3,
+  ~ save_plot(
+    .x, paste0("cdc-obj3/", attr(.x, "pid")),
     ext = "png", width = 20, height = 30
   )
 )

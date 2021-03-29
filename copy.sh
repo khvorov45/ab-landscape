@@ -3,6 +3,8 @@ SHARED="/home/khvorova/vidrlwhoflu/Research"
 
 OBJ1="$SHARED/BAA 75D301-10-R-67835/Analyses/Objective 1"
 OBJ2="$SHARED/BAA 75D301-10-R-67835/Analyses/Objective 2"
+OBJ3="$SHARED/BAA 75D301-10-R-67835/Analyses/Objective 3"
+OBJ4="$SHARED/BAA 75D301-10-R-67835/Analyses/Objective 4"
 
 RMH="$SHARED/2016.003 RMH HCW Study"
 
@@ -112,6 +114,7 @@ cp "$PROJ/immunogen/rmh.csv" \
 
 rsync -rv "$PROJ/indiv-hi/cdc-obj1/" "$OBJ1/individual-his/"
 rsync -rv "$PROJ/indiv-hi/cdc-obj2/" "$OBJ2/individual-his/"
+rsync -rv "$PROJ/indiv-hi/cdc-obj3/" "$OBJ3/individual-his/"
 
 # The whole project -----------------------------------------------------------
 
