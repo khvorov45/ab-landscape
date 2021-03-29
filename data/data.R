@@ -257,10 +257,7 @@ cdc_obj1_participants <- cdc_obj1_participants_raw %>%
       dob %>% parse_access_date("19")
     ),
   ) %>%
-  select(
-    pid = study_id, study_year = Specimen_Year, site = Site, gender = Sex,
-    dob
-  )
+  select(pid = study_id, site = Site, gender = Sex, dob)
 
 # Missing values
 cdc_obj1_participants %>% filter(!complete.cases(.))
@@ -307,7 +304,7 @@ cdc_obj1_dates <- cdc_obj1_dates_raw %>%
   ) %>%
   select(
     pid = PID, sample_id = Specimen_ID, site = Site, timepoint,
-    bleed_date
+    bleed_date, study_year = Specimen_Year
   )
 
 # Now add the required columns to the various tables -------------
@@ -327,37 +324,38 @@ compare_vectors(cdc_obj1_hi$virus_n, cdc_viruses$virus_n)
 cdc_obj1_hi_extra <- cdc_obj1_hi %>%
   inner_join(cdc_obj1_dates, "sample_id") %>%
   inner_join(cdc_viruses, "virus_n") %>%
-  select(pid, timepoint, bleed_date, virus_full, titre)
+  select(pid, study_year, timepoint, bleed_date, virus_full, titre)
 
+# One year's worth of data for each participant
 cdc_obj1_hi_extra %>%
   count(pid, timepoint, virus_full) %>%
   filter(n > 1)
 
-# Participants need number of prior vaccinations
+# First bleeds
+cdc_obj1_first_bleeds <- cdc_obj1_dates %>%
+  group_by(pid) %>%
+  summarise(
+    first_bleed = min(bleed_date),
+    recruitment_year = min(study_year),
+    .groups = "drop"
+  )
 
+cdc_obj1_first_bleeds %>% filter(!complete.cases(.))
+
+# Prior vaccinations
 compare_vectors(cdc_obj1_vax_hist$pid, cdc_obj1_participants$pid)
-
 cdc_obj1_prior_vacs <- cdc_obj1_vax_hist %>%
-  inner_join(cdc_obj1_participants, "pid") %>%
+  inner_join(cdc_obj1_first_bleeds, "pid") %>%
   # Look only at 5 years prior to recruitment
   # E.g. recruited in 2016 (study_year 1) -> 2011-2015 inclusive
   filter(
-    year < study_year + 2015, year >= study_year + 2015 - 5,
+    year < recruitment_year + 2015, year >= recruitment_year + 2015 - 5,
     !is.na(status)
   ) %>%
   group_by(pid) %>%
   summarise(prior_vacs = sum(status), .groups = "drop")
 
-# Age at first bleed would be good as well
-
-cdc_obj1_first_bleeds <- cdc_obj1_dates %>%
-  group_by(pid) %>%
-  summarise(first_bleed = min(bleed_date), .groups = "drop")
-
-cdc_obj1_first_bleeds %>% filter(!complete.cases(.))
-
-# Add time difference b/w prevax postvax postseason
-
+# Time difference b/w prevax postvax postseason
 cdc_obj1_pre_postvax_time <- cdc_obj1_dates %>%
   select(-sample_id) %>%
   # There are duplicate rows
@@ -486,12 +484,19 @@ cdc_obj2_hi_no_dates <- compare_vectors(
 
 cdc_obj2_first_bleeds <- cdc_obj2_dates %>%
   group_by(pid) %>%
-  summarise(date_first_bleed = min(bleed_date), .groups = "drop")
+  summarise(
+    date_first_bleed = min(bleed_date),
+    recruitment_year = min(study_year),
+    .groups = "drop"
+  )
 
 cdc_obj2_first_bleeds %>%
   count(pid) %>%
   filter(n > 1)
 compare_vectors(cdc_obj2_first_bleeds$pid, cdc_obj2_participants$pid)
+
+unique(cdc_obj2_vax_hist$year)
+unique(cdc_obj2_first_bleeds$recruitment_year)
 
 # Vaccinations in 5 years prior to recrutment
 cdc_obj2_prior_vacs <- cdc_obj2_vax_hist %>%
@@ -506,7 +511,7 @@ cdc_obj2_participants_extra <- cdc_obj2_participants %>%
   mutate(
     age_first_bleed = (date_first_bleed - dob) / lubridate::dyears(1)
   ) %>%
-  select(pid, site, gender, dob, age_first_bleed, prior_vacs)
+  select(-date_first_bleed)
 
 # HI needs pids, years, timepoints, dates and virus names
 
@@ -544,9 +549,7 @@ cdc_obj3_participants <- cdc_obj3_participants_raw %>%
       parse_access_date(dob, "19")
     )
   ) %>%
-  select(
-    pid = study_id, study_year = Specimen_Year, dob, gender = Sex, site = Site
-  )
+  select(pid = study_id, dob, gender = Sex, site = Site)
 
 # Vaccination history
 
@@ -584,17 +587,23 @@ cdc_obj3_hi <- cdc_obj3_hi_raw %>%
 
 # Join the necessary
 
-# Vaccinations in the past 5 years
-cdc_obj3_prior_vacs <- cdc_obj3_vax_hist %>%
-  inner_join(cdc_obj3_participants, "pid") %>%
-  filter(year < study_year + 2015, year >= study_year + 2015 - 5) %>%
-  group_by(pid) %>%
-  summarise(prior_vacs = sum(status), .groups = "drop")
-
 # First bleeds
 cdc_obj3_first_bleeds <- cdc_obj3_dates %>%
   group_by(pid) %>%
-  summarise(date_first_bleed = min(date), .groups = "drop")
+  summarise(
+    date_first_bleed = min(date),
+    recruitment_year = min(study_year),
+    .groups = "drop"
+  )
+
+# Vaccinations in the past 5 years
+cdc_obj3_prior_vacs <- cdc_obj3_vax_hist %>%
+  inner_join(cdc_obj3_first_bleeds, "pid") %>%
+  filter(
+    year < recruitment_year + 2015, year >= recruitment_year + 2015 - 5
+  ) %>%
+  group_by(pid) %>%
+  summarise(prior_vacs = sum(status), .groups = "drop")
 
 cdc_obj3_participants_extra <- cdc_obj3_participants %>%
   inner_join(cdc_obj3_prior_vacs, "pid") %>%
@@ -693,25 +702,25 @@ cdc_obj4_hi <- cdc_obj4_hi_raw %>%
 
 # Join up
 
-# Recruitment years
-cdc_obj4_recruitment_years <- cdc_obj4_dates %>%
-  select(pid, study_year) %>%
-  distinct()
-
-# Prior vaccinations
-cdc_obj4_prior_vacs <- cdc_obj4_vax_hist %>%
-  inner_join(cdc_obj4_recruitment_years, "pid") %>%
-  filter(year < study_year + 2015, year >= study_year + 2015 - 5) %>%
-  group_by(pid) %>%
-  summarise(prior_vacs = sum(status), .groups = "drop")
-
 # First bleeds
 cdc_obj4_first_bleeds <- cdc_obj4_dates %>%
   group_by(pid) %>%
-  summarise(date_first_bleed = min(bleed_date), .groups = "drop")
+  summarise(
+    date_first_bleed = min(bleed_date),
+    recruitment_year = min(study_year),
+    .groups = "drop"
+  )
+
+# Prior vaccinations
+cdc_obj4_prior_vacs <- cdc_obj4_vax_hist %>%
+  inner_join(cdc_obj4_first_bleeds, "pid") %>%
+  filter(
+    year < recruitment_year + 2015, year >= recruitment_year + 2015 - 5
+  ) %>%
+  group_by(pid) %>%
+  summarise(prior_vacs = sum(status), .groups = "drop")
 
 cdc_obj4_participants_extra <- cdc_obj4_participants %>%
-  inner_join(cdc_obj4_recruitment_years, "pid") %>%
   inner_join(cdc_obj4_prior_vacs, "pid") %>%
   inner_join(cdc_obj4_first_bleeds, "pid") %>%
   mutate(age_first_bleed = (date_first_bleed - dob) / lubridate::dyears(1)) %>%
@@ -729,7 +738,7 @@ cdc_obj4_hi_extra <- cdc_obj4_hi %>%
   inner_join(cdc_viruses, "virus_n") %>%
   # Unexpected loss due to the above non-matches
   inner_join(cdc_obj4_dates, "sample_id") %>%
-  select(pid, timepoint, virus_full, titre)
+  select(pid, study_year, timepoint, virus_full, titre)
 
 cdc_obj4_hi_extra %>%
   count(pid, timepoint, virus_full) %>%
