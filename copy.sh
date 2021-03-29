@@ -115,6 +115,7 @@ cp "$PROJ/immunogen/rmh.csv" \
 rsync -rv "$PROJ/indiv-hi/cdc-obj1/" "$OBJ1/individual-his/"
 rsync -rv "$PROJ/indiv-hi/cdc-obj2/" "$OBJ2/individual-his/"
 rsync -rv "$PROJ/indiv-hi/cdc-obj3/" "$OBJ3/individual-his/"
+rsync -rv "$PROJ/indiv-hi/cdc-obj4/" "$OBJ4/individual-his/"
 
 # The whole project -----------------------------------------------------------
 

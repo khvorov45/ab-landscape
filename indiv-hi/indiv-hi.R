@@ -331,3 +331,36 @@ furrr::future_walk(
     ext = "png", width = 20, height = 30
   )
 )
+
+# Objective 4 -----------------------------------------------------------------
+
+cdc_obj4_hi <- cdc_read_hi("4")
+
+# One year's data for each partcipant here
+plots_obj4 <- cdc_obj4_hi %>%
+  group_by(
+    pid, prior_vacs, age_first_bleed, gender, recruitment_year, vax_years
+  ) %>%
+  group_map(function(data, key) {
+    pid_info <- paste0(
+      key$pid,
+      " Prior vacs ", key$prior_vacs,
+      " Age ", round(key$age_first_bleed),
+      " ", key$gender,
+      " Recrutment year ", key$recruitment_year,
+      "\n",
+      "All vax years: ", paste(key$vax_years[[1]], collapse = " ")
+    )
+    plot <- plot_one(data %>% filter(timepoint != "Post-vax"), pid_info)
+    attr(plot, "pid") <- key$pid
+    plot
+  })
+
+if (!dir.exists("indiv-hi/cdc-obj4")) dir.create("indiv-hi/cdc-obj4")
+furrr::future_walk(
+  plots_obj4,
+  ~ save_plot(
+    .x, paste0("cdc-obj4/", attr(.x, "pid")),
+    ext = "png", width = 20, height = 15
+  )
+)
