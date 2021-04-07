@@ -245,7 +245,7 @@ plots <- cdc_obj1_hi %>%
       "\n",
       "All vax years: ", paste(key$vax_years[[1]], collapse = " ")
     )
-    plot <- plot_one(data %>% filter(timepoint != "Post-vax"), pid_info)
+    plot <- plot_one(data, pid_info)
     attr(plot, "pid") <- key$pid
     plot
   })
