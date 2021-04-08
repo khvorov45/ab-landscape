@@ -104,11 +104,9 @@ is lower in the frequently vaccinated.
 
 \subsection{Data}
 
-All data analysed for objective 1 comes from the Israel study sample.
+The data comes from Israel and Peru sites over three years. Each participant was followed up for one year. Vaccination history was collected. A measure of prior vaccination history I will use is the number of prior vaccinations in the 5 years before recruitment (e.g., 2011-2015 for participants recruited in 2016).
 
-Table \ref{tab:cdc-participant-summary-obj1} contains sex and age summaries.
-The majority of subjects in both the frequent and the infrequent group are
-women and were around 40 years of age when the study started (2016).
+Table \ref{tab:cdc-participant-summary-obj1} contains sex and age summaries for participants split by the number of prior vaccinations, site and year of recruitment.
 
 \input{../data-summary/cdc-participant-summary-obj1.tex}
 
@@ -119,16 +117,13 @@ vaccinated vs infrequently vaccinated) are shown in Figure
 \ref{fig:cdc-obj1-timepoint-gmts}.
 Pre-vaccination GMTs are generally close to the same
 or higher for all viruses for the frequently vaccinated.
-Post-vaccination GMTs are generally close to the same or higher in the infrequently vaccinated with
-the exception of the Bilthoven viruses (which show the same pattern
-of frequently vaccinated GMTs being higher at every
-timepoint). The pattern of GMTs for the post-season timepoint is close to that
+Post-vaccination GMTs are generally close to the same or higher in the infrequently vaccinated. The pattern of GMTs for the post-season timepoint is close to that
 of post-vaccination except that titres are generally more similar between the
 frequently and infrequently vaccinated.
 
 \begin{figure}
 	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj1-timepoint-gmts.pdf}
-	\caption{Geometric mean titres and 95\% confidence intervals for each virus at each timepoint for the frequently and the infrequently vaccinated. The shaded region indicates the vaccine strain.}
+	\caption{Objective 1 geometric mean titres and 95\% confidence intervals for each virus at each timepoint for the group with 0, 1-3 and 5 vaccinations in the 5 years before the bleed. The shaded regions indicate the vaccine strains (study year 1 and 2 - A/Hong Kong/4801/14e, study year 3 - A/Singapore/16-0019/16e).}
 	\label{fig:cdc-obj1-timepoint-gmts}
 \end{figure}
 
@@ -140,13 +135,13 @@ vaccinated for the majority of viruses.
 
 \begin{figure}
 	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj1-timepoint-diffs.pdf}
-	\caption{Ratios of post-vaccination titres to pre-vaccination titres and 95\% confidence intervals for each virus for the frequently and the infrequently vaccinated. The shaded region indicates the vaccine strain.}
+	\caption{Objective 1 ratios of post-vaccination titres to pre-vaccination titres and 95\% confidence intervals for each virus for the frequently and the infrequently vaccinated. The shaded regions indicate the vaccine strains (study year 1 and 2 - A/Hong Kong/4801/14e, study year 3 - A/Singapore/16-0019/16e).}
 	\label{fig:cdc-obj1-timepoint-diffs}
 \end{figure}
 
 \subsection{GMT against circulating strains}
 
-The list of viruses for each clade is in Table \ref{tab:cdc-clade-viruses}.Frequencies of different virus clades during the study period are in Figure \ref{fig:cdc-clade-freq}. The timing of sample collection is in Figure \ref{fig:cdc-obj1-bleed-dates}. The most relevant set of frequencies is the first half of 2019 as it appears to be the influenza "season" that the titres belong to.
+The list of viruses for each clade is in Table \ref{tab:cdc-clade-viruses}. Frequencies of different virus clades during the study period are in Figure \ref{fig:cdc-clade-freq}. The timing of sample collection is in Figure \ref{fig:cdc-obj1-bleed-dates}. I used the frequencies for the first half of the corresponding years for Peru and the second half for Israel.
 
 \begin{figure}
 	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj1-bleed-dates.pdf}
@@ -154,17 +149,17 @@ The list of viruses for each clade is in Table \ref{tab:cdc-clade-viruses}.Frequ
 	\label{fig:cdc-obj1-bleed-dates}
 \end{figure}
 
-The average titre against circulating strains was calculated separately for cell and egg viruses. The procedure was as follows. For each individual, calculate mean log titre per clade (only relevant for 3c1 as it is the only clade with more than one virus of each type). Then for each individual, calculate weighted (by clade frequency) mean of clade-specific mean log titres. This yields one observation per individual which can be interpreted as the mean titre against the circulating strains weighted by their frequencies (Figure \ref{fig:cdc-obj1-ind-av-circulating}). Then for each group (frequent and infrequent) calculate the mean log titre and its 95\% CI (normal approximation CI for the mean) which can be found in Figure INSERT.
+The average titre against circulating strains was calculated separately for cell and egg viruses. The procedure was as follows. For each individual, calculate mean log titre per clade (only relevant for 3c1 as it is the only clade with more than one virus of each type). Then for each individual, calculate weighted (by clade frequency) mean of clade-specific mean log titres. This yields one observation per individual which can be interpreted as the mean titre against the circulating strains weighted by their frequencies (Figure \ref{fig:cdc-obj1-ind-av-circulating}). Then for each group (frequent and infrequent) calculate the mean log titre and its 95\% CI (normal approximation CI for the mean) which can be found in Figure \ref{fig:cdc-obj1-gmt-circulating}.
 
 \begin{figure}
 	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj1-ind-av-circulating.pdf}
-	\caption{Weighted average titres agains circulating strains for each individual. Split by group and egg/cell viruses. Colored by individual ID.  The percentage in the top-left corner shows the proportion of circulating flu (as per Nexstrain) accounted for by the strains that were avaraged.}
+	\caption{Objective 1 weighted average titres agains circulating strains for each individual. Split by group, egg/cell viruses, site, year and prior vaccination count. Colored by individual ID.  The percentage in the top-left corner shows the proportion of circulating flu (as per Nexstrain) accounted for by the strains that were avaraged.}
 	\label{fig:cdc-obj1-ind-av-circulating}
 \end{figure}
 
 \begin{figure}
 	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj1-gmt-circulating.pdf}
-	\caption{Means of weighted average titres agains circulating strains for each group. Split by egg/cell.}
+	\caption{Objective 1 means of weighted average titres agains circulating strains for each group. Split by egg/cell.}
 	\label{fig:cdc-obj1-gmt-circulating}
 \end{figure}
 
@@ -182,19 +177,38 @@ When considering only the circulating viruses, the differences between the group
 
 Both groups had low titres against A/South Australia/34/2019 and A/Sydney/22/2018 pre-vaccination. Those who were infrequently vaccinated had those titres rise to above 20 (on average) while the frequently vaccinated titres stayed below 20 (on average). This indicates that the depressed vaccine response mey be most evident for viruses that individuals have no/low titres against before vaccination (which could be novel strains, for example).
 
-Neither group had a strong response to the Bilthoven viruses. However, the frequently vaccinated group had higher titres against them throughout the season. This is likely due to the fact that while the current vaccine did not generate antibody production against these viruses, one of the previous vaccines did and the frequently vaccinated group retained those antibodies. This indicates that the frequently vaccinated are likely to be protected more broadly due the variety of vaccines they received in the past and the longevity of antibody titres.
-
 \subsection{Bilthoven viruses}
 
 The Bilthoven viruses do not appear to respond to the vaccine in either group.
-The frequent groups appears to have higher titres against them.
 They are old viruses and it is possible that only the people who were alive when
 these viruses circulated (i.e. born pre-1968) would have titres against them.
 
-Figure INSERT shows the age composition of the frequent and the infrequent groups. There are a few more older individuals in the frequent group and a few more yonger individuals in the infrequent group, but the overall age distribution is similar in both groups.
+Figure \ref{fig:cdc-obj1-yobs} shows the distribution of years of birth by vaccination history for objective 1 participants. There are a few more older individuals in the  group with 5 prior vaccinations and a few more yonger individuals in the  group with 0 prior, but the overall age distribution is similar in all groups.
 
-Figure INSERT shows the average titre against the four Bilthoven viruses for
-the individuals split into three age groups (born pre-1968, 1969-1980 and post-1980). Figure INSERT shows the GMTs (against the all four Bilthoven viruses that were averaged for each individual) for the frequent and the infrequent groups. The pattern of yonger individuals having lower titres is evident to some extent in the infrequent group. The titres of the frequent group are more heterogenous and do not appear to follow as clear a pattern.
+\begin{figure}
+	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj1-yobs.pdf}
+	\caption{Distribution of years of birth by vaccination history for objective 1 participants.}
+	\label{fig:cdc-obj1-yobs}
+\end{figure}
+
+Figure \ref{fig:cdc-obj1-ind-bilthoven} shows the average titre against the four Bilthoven viruses for
+the individuals split into three age groups (born pre-1968, 1969-1980 and post-1980). Individuals with 5 prior vaccinations appear to have more heterogenous titres which may be caused by the fact that there is more of them in the data.
+
+Figure \ref{fig:cdc-obj1-gmt-bilthoven} shows the GMTs (against the all four Bilthoven viruses that were averaged for each individual) for groups with different vaccination histories. The pattern of yonger individuals having lower titres is evident in all groups.
+
+Age appears to be a stronger contributor to the Bilthoven titres than vaccination history.
+
+\begin{figure}
+	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj1-ind-bilthoven.pdf}
+	\caption{Objective 1 average titres against the bilthoven viruses for each individual. Numbers indicate the number of individuals in the corresponding groups.}
+	\label{fig:cdc-obj1-ind-bilthoven}
+\end{figure}
+
+\begin{figure}
+	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj1-gmt-bilthoven.pdf}
+	\caption{Objective 1 means of average titres against the bilthoven viruses for each vaccination history group. }
+	\label{fig:cdc-obj1-gmt-bilthoven}
+\end{figure}
 
 \section{Objective 2}
 
@@ -217,34 +231,22 @@ the study.
 
 \subsection{Titres}
 
-Figure \ref{fig:cdc-obj2-gmts-1-israel} shows GMTs for each virus at each timepoint for each year for the Israel sample. Figure \ref{fig:cdc-obj2-gmts-1-peru} shows the same for the Peru sample.
+Figure \ref{fig:cdc-obj2-gmts-1} shows GMTs for each virus at each timepoint for each year for the two sites.
 Some viruses (e.g. Bilthoven) do not show much change across the timepoints in
 any year. Some viruses (e.g. A/Switzerland/8060/17e) consistently show the pattern of post-vaccination titres being the highest and post-season titres being between pre and post vaccination ones.
 
 \begin{figure}
-	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj2-gmts-1-israel.pdf}
-	\caption{Israel sample. Geometric mean titres and 95\% confidence intervals for each virus at each timepoint for each study year. Faceted by study year and colored by timepoint. The shaded region indicates the vaccine strain.}
-	\label{fig:cdc-obj2-gmts-1-israel}
+	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj2-gmts-1.pdf}
+	\caption{Geometric mean titres and 95\% confidence intervals for each virus at each timepoint for each study year for each site. Faceted by study year and colored by timepoint. The shaded region indicates the vaccine strain.}
+	\label{fig:cdc-obj2-gmts-1}
 \end{figure}
 
-\begin{figure}
-	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj2-gmts-1-peru.pdf}
-	\caption{Peru sample. Geometric mean titres and 95\% confidence intervals for each virus at each timepoint for each study year. Faceted by study year and colored by timepoint. The shaded region indicates the vaccine strain.}
-	\label{fig:cdc-obj2-gmts-1-peru}
-\end{figure}
-
-Figure \ref{fig:cdc-obj2-gmts-2-israel} shows GMTs for each virus at each timepoint for each year for the Israel sample. Figure \ref{fig:cdc-obj2-gmts-2-peru} shows the same for the Peru sample. These are similar to Figures \ref{fig:cdc-obj2-gmts-1-israel} and \ref{fig:cdc-obj2-gmts-1-peru} but layed out such that the same timepoint can be easily compared across years. The timepoint titres appear fairly similar across years. For some viruses (e.g., A/Brisbane/10/07p), the titres appear to increase in subsequent years as compared to previous years for every timepoint.
+Figure \ref{fig:cdc-obj2-gmts-2} shows GMTs for each virus at each timepoint for each year for the Israel sample. This is similar to Figure \ref{fig:cdc-obj2-gmts-1} but layed out such that the same timepoint can be easily compared across years. The timepoint titres appear fairly similar across years. For some viruses (e.g., A/Brisbane/10/07p), the titres appear to increase in subsequent years as compared to previous years for every timepoint.
 
 \begin{figure}
-	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj2-gmts-2-israel.pdf}
+	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj2-gmts-2.pdf}
 	\caption{Israel sample. Geometric mean titres and 95\% confidence intervals for each virus at each timepoint for each study year. Faceted by timepoint and colored by study year. The shaded region indicates the vaccine strain (study year 1 and 2 - A/Hong Kong/4801/14e, study year 3 - A/Singapore/16-0019/16e).}
-	\label{fig:cdc-obj2-gmts-2-israel}
-\end{figure}
-
-\begin{figure}
-	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj2-gmts-2-peru.pdf}
-	\caption{Peru sample. Geometric mean titres and 95\% confidence intervals for each virus at each timepoint for each study year. Faceted by timepoint and colored by study year. The shaded region indicates the vaccine strain (study year 1 and 2 - A/Hong Kong/4801/14e, study year 3 - A/Singapore/16-0019/16e).}
-	\label{fig:cdc-obj2-gmts-2-peru}
+	\label{fig:cdc-obj2-gmts-2}
 \end{figure}
 
 \subsection{Vaccine responses}
@@ -260,18 +262,6 @@ year 2 shows a lower response (e.g., A/Kansas/14/17e).
 	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj2-vax-resp-virus.pdf}
 	\caption{Ratios of post-vaccination titres to pre-vaccination titres and 95\% confidence intervals for each virus for each study year for the Israel and Peru samples. The shaded region indicates the vaccine strain (study year 1 and 2 - A/Hong Kong/4801/14e, study year 3 - A/Singapore/16-0019/16e).}
 	\label{fig:cdc-obj2-vax-resp-virus}
-\end{figure}
-
-Figure \ref{fig:cdc-obj2-average-response} shows average responses for each individual across the 3 years (i.e., for each individual, the ratios of pre and post-vaccination titres were averaged across viruses for each year).
-The pattern is inconsistent with some individuals showing a decreasing response,
-some - increasing and some with year 2 being either higher of lower
-than years 1 and 3.
-The egg viruses show higher responses for some individuals.
-
-\begin{figure}
-	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj2-average-response.pdf}
-	\caption{Averaged (across viruses) responses (post/pre vaccination titre ratios) for each individual at each study year. Split by site. Responses were averaged across cell and egg viruses separately. Line colors correspond to participant IDs.}
-	\label{fig:cdc-obj2-average-response}
 \end{figure}
 
 \subsection{Circulating strains}
@@ -302,7 +292,7 @@ The procedure for calculating the "GMT against circulating strains" was the same
 
 There is no clear trend of a decreasing vaccine response on the whole serology
 panel. Nor is there a clear trend of post-vaccianation titres being lower in subsequent years as compared to previous years. This runs somewhat contrary to
-the data for objective 1. For example, the post-vaccination titres in Figure \ref{fig:cdc-obj1-timepoint-gmts} are generally higher for the infrequently vaccinated but the post-vaccination titres in Figures \ref{fig:cdc-obj2-gmts-2-israel} and \ref{fig:cdc-obj2-gmts-2-peru} do not show the equivalent pattern of decresing in subsequent years as compared to previous years (i.e. as subjects become more highly vaccinated). There are examples of the opposite pattern (e.g., A/Sydney/22/18), where the post-vaccination GMTs appear to increase as subjects become more highly vaccinated.
+the data for objective 1. For example, the post-vaccination titres in Figure \ref{fig:cdc-obj1-timepoint-gmts} are generally higher for the infrequently vaccinated but the post-vaccination titres in Figure \ref{fig:cdc-obj2-gmts-2} do not show the equivalent pattern of decresing in subsequent years as compared to previous years (i.e. as subjects become more highly vaccinated). There are examples of the opposite pattern (e.g., A/Sydney/22/18), where the post-vaccination GMTs appear to increase as subjects become more highly vaccinated.
 
 When considering only the circulating strains, the Israel site data appears to be in line with objective 1 data showing decreasing post-vaccination and post-season titres with subsequent years. The Peru site data does not show that pattern - there is a large decrease in year 2 (for cell viruses) and a return close to year 1 levels in year 3.
 
