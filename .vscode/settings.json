@@ -1,8 +1,4 @@
 {
-    "cSpell.words": [
-        "Bilthoven",
-        "GMTs",
-        "Nexstrain",
-        "clades"
-    ]
+  "cSpell.words": ["Bilthoven", "GMTs", "Nexstrain", "clades"],
+  "latex-workshop.message.badbox.show": false
 }

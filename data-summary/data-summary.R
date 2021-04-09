@@ -204,8 +204,11 @@ cdc_circulating_year <- function(study_year, site) {
 cdc_obj1_hi <- read_data("cdc-obj1-hi") %>%
   inner_join(cdc_obj1_participant, by = "pid") %>%
   inner_join(cdc_viruses, "virus_full") %>%
+  left_join(
+    cdc_vaccine %>% mutate(vaccine_strain = TRUE), c("virus_full", "study_year")
+  ) %>%
   mutate(
-    vaccine_strain = virus_full %in% cdc_vaccine$virus_full,
+    vaccine_strain = replace_na(vaccine_strain, FALSE),
     egg_lbl = if_else(egg, "Egg", "Cell"),
     circulating_year = cdc_circulating_year(study_year, site)
   )
@@ -233,7 +236,7 @@ cdc_obj1_hi %>%
 
 # Timepoint GMT's
 cdc_obj1_timepoint_gmts <- cdc_obj1_hi %>%
-  group_by(timepoint, virus_full, prior_vacs2, site) %>%
+  group_by(timepoint, virus_full, prior_vacs2, site, vaccine_strain) %>%
   summarise(summarise_logmean(titre, out = "tibble"), .groups = "drop") %>%
   ggplot(
     aes(
@@ -261,7 +264,8 @@ cdc_obj1_timepoint_gmts <- cdc_obj1_hi %>%
   scale_color_discrete("Prior vaccinations") +
   scale_shape_discrete("Prior vaccinations") +
   geom_vline(
-    xintercept = cdc_obj1_hi$virus_full[cdc_obj1_hi$vaccine_strain],
+    aes(xintercept = virus_full),
+    data = . %>% filter(vaccine_strain),
     size = 7, alpha = 0.2
   ) +
   geom_pointrange(
@@ -281,7 +285,7 @@ timepoint_diffs <- cdc_obj1_hi %>%
   filter(timepoint %in% c("Pre-vax", "Post-vax")) %>%
   pivot_wider(names_from = "timepoint", values_from = "titre") %>%
   mutate(ratio = `Post-vax` / `Pre-vax`) %>%
-  group_by(virus_full, prior_vacs2) %>%
+  group_by(virus_full, prior_vacs2, site, vaccine_strain) %>%
   summarise(summarise_logmean(ratio, out = "tibble"), .groups = "drop") %>%
   ggplot(aes(virus_full, mn, color = prior_vacs2, shape = prior_vacs2)) +
   ggdark::dark_theme_bw(verbose = FALSE) +
@@ -295,22 +299,24 @@ timepoint_diffs <- cdc_obj1_hi %>%
     axis.text.x = element_text(angle = -45, hjust = 0),
     plot.margin = margin(10, 60, 10, 10)
   ) +
+  facet_wrap(~site, ncol = 1, strip.position = "right") +
   geom_vline(
-    xintercept = cdc_obj1_hi$virus_full[cdc_obj1_hi$vaccine_strain],
+    aes(xintercept = virus_full),
+    data = . %>% filter(vaccine_strain),
     size = 4, alpha = 0.2
   ) +
   geom_pointrange(
     aes(ymin = low, ymax = high),
     position = position_dodge(width = 0.5)
   ) +
-  scale_y_log10("Post/Pre vax ratio (95% CI)", breaks = 1:10) +
+  scale_y_log10("Post/Pre vax ratio (95% CI)", breaks = c(1:5, 10, 15)) +
   scale_x_discrete("Virus") +
   scale_color_discrete("Prior vaccinations") +
   scale_shape_discrete("Prior vaccinations")
 
 save_plot(
   timepoint_diffs, "cdc-obj1-timepoint-diffs",
-  width = 20, height = 15
+  width = 25, height = 20
 )
 
 # CDC Objective 2
@@ -346,8 +352,11 @@ summarise_baseline(
 cdc_obj2_hi <- read_data("cdc-obj2-hi") %>%
   inner_join(cdc_obj2_participants, by = "pid") %>%
   inner_join(cdc_viruses, "virus_full") %>%
+  left_join(
+    cdc_vaccine %>% mutate(vaccine_strain = TRUE), c("virus_full", "study_year")
+  ) %>%
   mutate(
-    vaccine_strain = virus_full %in% cdc_vaccine$virus_full,
+    vaccine_strain = replace_na(vaccine_strain, FALSE),
     egg_lbl = if_else(egg, "Egg", "Cell"),
     study_year_lbl = recode(
       study_year,
@@ -379,7 +388,8 @@ plot_obj2_gmts <- function(data, group_var, group_var_lab) {
     scale_y_log10("GMT (95% CI)", breaks = 5 * 2^(0:15)) +
     scale_x_discrete("Virus") +
     geom_vline(
-      xintercept = data$virus_full[data$vaccine_strain],
+      aes(xintercept = virus_full),
+      data = data %>% filter(vaccine_strain),
       size = 6, alpha = 0.2
     ) +
     geom_pointrange(
