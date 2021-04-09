@@ -319,9 +319,62 @@ save_plot(
   width = 25, height = 20
 )
 
-# CDC Objective 2
+# CDC Objective 2 =============================================================
+# Remove all infected individuals (in years 1 and 2)
+# to see the vaccine reponses unadulterated
+# by intermittent infection
 
-cdc_obj2_participants <- read_data("cdc-obj2-participant")
+# Titres
+cdc_obj2_hi_all <- read_data("cdc-obj2-hi") %>%
+  inner_join(cdc_obj2_participants, by = "pid") %>%
+  inner_join(cdc_viruses, "virus_full") %>%
+  left_join(
+    cdc_vaccine %>% mutate(vaccine_strain = TRUE), c("virus_full", "study_year")
+  ) %>%
+  mutate(
+    vaccine_strain = replace_na(vaccine_strain, FALSE),
+    egg_lbl = if_else(egg, "Egg", "Cell"),
+    study_year_lbl = recode(
+      study_year,
+      "1" = "1 (2016)", "2" = "2 (2017)", "3" = "3 (2018)"
+    ),
+    circulating_year = cdc_circulating_year(study_year, site)
+  )
+
+# Infected in years 1 and 2
+infected_pids_within_years <- cdc_obj2_hi_all %>%
+  filter(
+    study_year %in% c(1, 2), timepoint %in% c("Post-vax", "Post-season")
+  ) %>%
+  select(-bleed_date) %>%
+  pivot_wider(names_from = "timepoint", values_from = "titre") %>%
+  filter(`Post-season` / `Post-vax` >= 4) %>%
+  pull(pid) %>%
+  unique()
+
+infected_between_years <- cdc_obj2_hi_all %>%
+  filter(
+    (timepoint == "Post-season" & study_year == 1) |
+      (timepoint %in% c("Post-season", "Pre-vax") & study_year == 2) |
+      (timepoint == "Pre-vax" & study_year == 3),
+  ) %>%
+  mutate(bwyear_period = case_when(
+    study_year == 1 | (study_year == 2 & timepoint == "Pre-vax") ~ 1,
+    study_year == 3 | (study_year == 2 & timepoint == "Post-season") ~ 2,
+  )) %>%
+  select(pid, titre, bwyear_period, timepoint, virus_full) %>%
+  pivot_wider(names_from = "timepoint", values_from = "titre") %>%
+  filter(`Pre-vax` / `Post-season` >= 4) %>%
+  pull(pid) %>%
+  unique()
+
+infected_pids <- c(infected_pids_within_years, infected_between_years) %>%
+  unique()
+
+cdc_obj2_hi <- cdc_obj2_hi_all %>% filter(!pid %in% infected_pids)
+
+cdc_obj2_participants <- read_data("cdc-obj2-participant") %>%
+  filter(!pid %in% infected_pids)
 
 summarise_baseline(
   cdc_obj2_participants, prior_vacs, site
@@ -348,22 +401,7 @@ summarise_baseline(
   ) %>%
   save_table("cdc-participant-summary-obj2")
 
-# Titres
-cdc_obj2_hi <- read_data("cdc-obj2-hi") %>%
-  inner_join(cdc_obj2_participants, by = "pid") %>%
-  inner_join(cdc_viruses, "virus_full") %>%
-  left_join(
-    cdc_vaccine %>% mutate(vaccine_strain = TRUE), c("virus_full", "study_year")
-  ) %>%
-  mutate(
-    vaccine_strain = replace_na(vaccine_strain, FALSE),
-    egg_lbl = if_else(egg, "Egg", "Cell"),
-    study_year_lbl = recode(
-      study_year,
-      "1" = "1 (2016)", "2" = "2 (2017)", "3" = "3 (2018)"
-    ),
-    circulating_year = cdc_circulating_year(study_year, site)
-  )
+
 
 # Titre summaries
 cdc_obj2_gmts <- cdc_obj2_hi %>%
@@ -647,16 +685,16 @@ cdc_obj2_bleed_dates_plot <- cdc_obj2_hi %>%
   scale_y_discrete("PID") +
   scale_color_discrete("Timepoint") +
   geom_point() +
-  geom_hline(yintercept = 15.5) +
+  geom_hline(yintercept = 9.5) +
   annotate(
     geom = "text",
     x = lubridate::ymd("2019-04-01"),
-    y = 30, label = "Peru"
+    y = 20, label = "Peru"
   ) +
   annotate(
     geom = "text",
     x = lubridate::ymd("2016-06-01"),
-    y = 9, label = "Israel"
+    y = 4, label = "Israel"
   )
 
 save_plot(
