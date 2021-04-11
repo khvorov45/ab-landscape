@@ -208,6 +208,7 @@ cdc_obj1_hi <- read_data("cdc-obj1-hi") %>%
     cdc_vaccine %>% mutate(vaccine_strain = TRUE), c("virus_full", "study_year")
   ) %>%
   mutate(
+    virus_full = fct_reorder(virus_full, virus_year),
     vaccine_strain = replace_na(vaccine_strain, FALSE),
     egg_lbl = if_else(egg, "Egg", "Cell"),
     circulating_year = cdc_circulating_year(study_year, site)
@@ -334,6 +335,7 @@ cdc_obj2_hi_all <- read_data("cdc-obj2-hi") %>%
     cdc_vaccine %>% mutate(vaccine_strain = TRUE), c("virus_full", "study_year")
   ) %>%
   mutate(
+    virus_full = fct_reorder(virus_full, virus_year),
     vaccine_strain = replace_na(vaccine_strain, FALSE),
     egg_lbl = if_else(egg, "Egg", "Cell"),
     study_year_lbl = recode(
