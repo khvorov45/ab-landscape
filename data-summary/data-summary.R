@@ -237,7 +237,7 @@ cdc_obj1_hi %>%
 
 # Timepoint GMT's
 cdc_obj1_timepoint_gmts <- cdc_obj1_hi %>%
-  group_by(timepoint, virus_full, prior_vacs2, site, vaccine_strain) %>%
+  group_by(timepoint, virus_full, prior_vacs2, site) %>%
   summarise(summarise_logmean(titre, out = "tibble"), .groups = "drop") %>%
   ggplot(
     aes(
@@ -266,7 +266,7 @@ cdc_obj1_timepoint_gmts <- cdc_obj1_hi %>%
   scale_shape_discrete("Prior vaccinations") +
   geom_vline(
     aes(xintercept = virus_full),
-    data = . %>% filter(vaccine_strain),
+    data = cdc_vaccine,
     size = 7, alpha = 0.2
   ) +
   geom_pointrange(
@@ -286,7 +286,7 @@ timepoint_diffs <- cdc_obj1_hi %>%
   filter(timepoint %in% c("Pre-vax", "Post-vax")) %>%
   pivot_wider(names_from = "timepoint", values_from = "titre") %>%
   mutate(ratio = `Post-vax` / `Pre-vax`) %>%
-  group_by(virus_full, prior_vacs2, site, vaccine_strain) %>%
+  group_by(virus_full, prior_vacs2, site) %>%
   summarise(summarise_logmean(ratio, out = "tibble"), .groups = "drop") %>%
   ggplot(aes(virus_full, mn, color = prior_vacs2, shape = prior_vacs2)) +
   ggdark::dark_theme_bw(verbose = FALSE) +
@@ -303,7 +303,7 @@ timepoint_diffs <- cdc_obj1_hi %>%
   facet_wrap(~site, ncol = 1, strip.position = "right") +
   geom_vline(
     aes(xintercept = virus_full),
-    data = . %>% filter(vaccine_strain),
+    data = cdc_vaccine,
     size = 4, alpha = 0.2
   ) +
   geom_pointrange(
@@ -409,7 +409,7 @@ summarise_baseline(
 
 # Titre summaries
 cdc_obj2_gmts <- cdc_obj2_hi %>%
-  group_by(timepoint, virus_full, vaccine_strain, study_year_lbl, site) %>%
+  group_by(timepoint, virus_full, study_year, site) %>%
   summarise(summarise_logmean(titre, out = "tibble"), .groups = "drop")
 
 plot_obj2_gmts <- function(data, group_var, group_var_lab) {
@@ -431,7 +431,7 @@ plot_obj2_gmts <- function(data, group_var, group_var_lab) {
     scale_x_discrete("Virus") +
     geom_vline(
       aes(xintercept = virus_full),
-      data = data %>% filter(vaccine_strain),
+      data = cdc_vaccine,
       size = 6, alpha = 0.2
     ) +
     geom_pointrange(
@@ -445,10 +445,10 @@ plot_obj2_gmts <- function(data, group_var, group_var_lab) {
 cdc_obj2_gmts_plot1 <- cdc_obj2_gmts %>%
   plot_obj2_gmts(timepoint, "Timepoint") +
   facet_wrap(
-    ~ site + study_year_lbl,
+    ~ site + study_year,
     ncol = 1, strip.position = "right",
     labeller = function(labels) {
-      mutate(labels, study_year_lbl = paste0("Year ", study_year_lbl))
+      mutate(labels, study_year = paste0("Year ", study_year))
     }
   )
 
@@ -458,7 +458,7 @@ save_plot(
 )
 
 cdc_obj2_gmts_plot2 <- cdc_obj2_gmts %>%
-  plot_obj2_gmts(study_year_lbl, "Study year") +
+  plot_obj2_gmts(as.factor(study_year), "Study year") +
   facet_wrap(
     ~ site + timepoint,
     ncol = 1, strip.position = "right",
@@ -476,7 +476,7 @@ cdc_obj2_hi_wide <- cdc_obj2_hi %>%
   mutate(vax_resp = `Post-vax` / `Pre-vax`)
 
 cdc_obj2_vax_resp_virus_plot <- cdc_obj2_hi_wide %>%
-  group_by(virus_full, study_year, site, vaccine_strain) %>%
+  group_by(virus_full, study_year, site) %>%
   summarise(summarise_logmean(vax_resp, out = "tibble"), .groups = "drop") %>%
   mutate(study_year_lbl = as.factor(study_year)) %>%
   ggplot(aes(virus_full, mn, color = study_year_lbl, shape = study_year_lbl)) +
@@ -494,7 +494,7 @@ cdc_obj2_vax_resp_virus_plot <- cdc_obj2_hi_wide %>%
   facet_wrap(~site, ncol = 1, strip.position = "right") +
   geom_vline(
     aes(xintercept = virus_full),
-    data = . %>% filter(vaccine_strain),
+    data = cdc_vaccine,
     size = 6, alpha = 0.2
   ) +
   geom_pointrange(
