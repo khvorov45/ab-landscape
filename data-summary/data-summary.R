@@ -324,9 +324,11 @@ save_plot(
 # to see the vaccine reponses unadulterated
 # by intermittent infection
 
+cdc_obj2_participants_all <- read_data("cdc-obj2-participant")
+
 # Titres
 cdc_obj2_hi_all <- read_data("cdc-obj2-hi") %>%
-  inner_join(cdc_obj2_participants, by = "pid") %>%
+  inner_join(cdc_obj2_participants_all, by = "pid") %>%
   inner_join(cdc_viruses, "virus_full") %>%
   left_join(
     cdc_vaccine %>% mutate(vaccine_strain = TRUE), c("virus_full", "study_year")
@@ -373,7 +375,7 @@ infected_pids <- c(infected_pids_within_years, infected_between_years) %>%
 
 cdc_obj2_hi <- cdc_obj2_hi_all %>% filter(!pid %in% infected_pids)
 
-cdc_obj2_participants <- read_data("cdc-obj2-participant") %>%
+cdc_obj2_participants <- cdc_obj2_participants_all %>%
   filter(!pid %in% infected_pids)
 
 summarise_baseline(
