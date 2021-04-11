@@ -202,6 +202,26 @@ Age appears to be a stronger contributor to the Bilthoven titres than vaccinatio
 	\label{fig:cdc-obj1-gmt-bilthoven}
 \end{figure}
 
+\subsection{Latent cluster model}
+
+I used the mixAK R package to fit a mixture model.
+
+The model fit per virus was
+
+$$
+	T = \beta_0 + \beta_{\text{postvax}}P_{\text{postvax}} + \beta_{\text{postseason}}P_{\text{postseason}} + r + e
+$$
+
+Where $T$ is the log-titre, $P$ is the timepoint (pre-vaccination, post-vaccination, post-season; separate parameter for each), $r$ is the random effect (per individual) and $e$ is the residual error.
+
+I ran it with 1-4 clusters. There were 2 chains per fit, 1000 burn-in iterations, 5000 iterations after the burn-in, no thinning.
+
+The models for 1 and 2 clusters look like they converged. Trace plots supplied separately because there are too many of them.
+
+The penalized expected deviance for each number of clusters is in Table \ref{tab:cdc-obj1-cluster-ped}. The smallest deviance indicates the best fit. The model with one cluster has the smallest deviance.
+
+\input{../cluster/cdc-obj1-cluster-ped}
+
 \section{Objective 2}
 
 Investigate HI antibody titres for infrequently vaccinated (at most 3 times in the past 5 years) over 3 years of the study where

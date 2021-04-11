@@ -1,4 +1,5 @@
 library(tidyverse)
+library(kableExtra)
 
 # Functions ===================================================================
 
@@ -24,6 +25,10 @@ save_plot <- function(plot, name, ...) {
   ggdark::ggsave_dark(glue::glue("cluster/{name}.pdf"), units = "cm", ...)
 }
 
+save_table <- function(table, name) {
+  write(table, file.path("cluster", paste0(name, ".tex")))
+}
+
 # Script ======================================================================
 
 parameters <- read_data("parameters")
@@ -35,3 +40,15 @@ trace_plots <- parameters %>%
   plot_trace()
 
 save_plot(trace_plots, "trace", width = 80, height = 50)
+
+diag <- read_data("diag")
+
+diag %>%
+  select(Clusters = n_clusters, PED = ped) %>%
+  kbl(
+    format = "latex",
+    caption = "Penalised expected deviance for models with 1-4 clusters",
+    booktabs = TRUE,
+    label = "cdc-obj1-cluster-ped"
+  ) %>%
+  save_table("cdc-obj1-cluster-ped")
