@@ -159,19 +159,26 @@ save_data <- function(data, name) {
 # Script ======================================================================
 
 cdc_obj1_hi <- read_data("cdc-obj1-hi")
+cdc_obj1_partcipant <- read_data("cdc-obj1-participant")
 
 cdc_obj1_titres_wide <- cdc_obj1_hi %>%
+  inner_join(cdc_obj1_partcipant, "pid") %>%
   mutate(
     logtitremid = if_else(titre == 5, log(5), log(titre) + log(2) / 2),
-    timepoint_n = as.integer(timepoint) %>% as.factor()
+    timepoint_n = as.integer(timepoint) %>% as.factor(),
+    prior_vacs_3cat = case_when(
+      prior_vacs == 0 ~ "0",
+      prior_vacs == 5 ~ "5",
+      TRUE ~ "1_4"
+    )
   ) %>%
-  select(-titre, -timepoint) %>%
+  select(-titre, -timepoint, -prior_vacs) %>%
   pivot_wider(names_from = "virus_full", values_from = "logtitremid")
 
 # Fit with different clusters
 future::plan(future::multisession)
 diff_cl <- furrr::future_map(
-  1:4,
+  1:2,
   ~ fit_mixak(
     cdc_obj1_titres_wide,
     c(
@@ -188,7 +195,7 @@ diff_cl <- furrr::future_map(
       "a/victoria/361/11", "a/texas/50/12", "a/switzerland/9715293/13",
       "a/bilthoven/2271/76"
     ),
-    ~timepoint_n,
+    ~ timepoint_n + prior_vacs_3cat + age_first_bleed,
     n_clusters = .x,
     burn = 100,
     keep = 500,
