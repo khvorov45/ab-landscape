@@ -206,13 +206,17 @@ Age appears to be a stronger contributor to the Bilthoven titres than vaccinatio
 
 I used the mixAK R package to fit a mixture model.
 
-The model fit per virus was
+The model fit per outcome was
 
 $$
 	T = \beta_0 + \beta_{\text{postvax}}P_{\text{postvax}} + \beta_{\text{postseason}}P_{\text{postseason}} + r + e
 $$
 
-Where $T$ is the log-titre, $P$ is the timepoint (pre-vaccination, post-vaccination, post-season; separate parameter for each), $r$ is the random effect (per individual) and $e$ is the residual error.
+Where $T$ is the log-titre for one virus, $P$ is the timepoint (pre-vaccination, post-vaccination, post-season; separate parameter for each), $r$ is the random effect (per individual) and $e$ is the residual error.
+
+The "outcome" is the log-titres for one virus. The overall model that was fit by the package would have had the log-titres for all the viruses. Its specification is the same as above but with more matrices.
+
+The number of "clusters" corresponds to the number of distributions that the random effects are assumed to follow. One cluster corresponds to one distribution for the random effects which is the standard assumption for linear mixed models that don't look for clusters.
 
 I ran it with 1-4 clusters. There were 2 chains per fit, 1000 burn-in iterations, 5000 iterations after the burn-in, no thinning.
 
