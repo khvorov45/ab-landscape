@@ -218,13 +218,26 @@ The "outcome" is the log-titres for one virus. The overall model that was fit by
 
 The number of "clusters" corresponds to the number of distributions that the random effects are assumed to follow. One cluster corresponds to one distribution for the random effects which is the standard assumption for linear mixed models that don't look for clusters.
 
-I ran it with 1-4 clusters. There were 2 chains per fit, 1000 burn-in iterations, 5000 iterations after the burn-in, no thinning.
+I ran it with 1-3 clusters. There were 2 chains per fit, 1000 burn-in iterations, 5000 iterations after the burn-in, no thinning.
 
 The models for 1 and 2 clusters look like they converged. Trace plots supplied separately because there are too many of them.
 
 The penalized expected deviance for each number of clusters is in Table \ref{tab:cdc-obj1-cluster-ped}. The smallest deviance indicates the best fit. The model with one cluster has the smallest deviance.
 
 \input{../cluster/cdc-obj1-cluster-ped}
+
+The demographic characteristics of the clusters identified by the 2-cluster
+model are in table \ref{tab:cdc-obj1-participants-cluster2}. The GMTs against
+each virus for the two clusters are in Figure \ref{fig:cdc-obj1-cluster2-gmts}.
+I do not see any patterns in the demographics nor the serology.
+
+\input{../cluster/cdc-obj1-participants-cluster2}
+
+\begin{figure}
+	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../cluster/cdc-obj1-cluster2-gmts.pdf}
+	\caption{Objective 1 geometric mean titres and 95\% confidence intervals for each virus at each timepoint for the 2 clusters.}
+	\label{fig:cdc-obj1-cluster2-gmts}
+\end{figure}
 
 \section{Objective 2}
 

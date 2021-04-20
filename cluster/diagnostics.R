@@ -47,7 +47,7 @@ diag %>%
   select(Clusters = n_clusters, PED = ped) %>%
   kbl(
     format = "latex",
-    caption = "Penalised expected deviance for models with 1-4 clusters",
+    caption = "Penalised expected deviance for models with 1-3 clusters",
     booktabs = TRUE,
     label = "cdc-obj1-cluster-ped"
   ) %>%
