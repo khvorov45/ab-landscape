@@ -117,6 +117,11 @@ rsync -rv "$PROJ/indiv-hi/cdc-obj2/" "$OBJ2/individual-his/"
 rsync -rv "$PROJ/indiv-hi/cdc-obj3/" "$OBJ3/individual-his/"
 rsync -rv "$PROJ/indiv-hi/cdc-obj4/" "$OBJ4/individual-his/"
 
+# GAM -------------------------------------------------------------------------
+
+cp "$PROJ/gam/cdc-obj1-gam.pdf" "$OBJ1/gam/cdc-obj1-gam.pdf"
+cp "$PROJ/gam/cdc-obj1-gam.txt" "$OBJ1/gam/cdc-obj1-gam.txt"
+
 # The whole project -----------------------------------------------------------
 
 rsync -rv "$PROJ" "$SHARED" --exclude "renv/library" --exclude ".snakemake"

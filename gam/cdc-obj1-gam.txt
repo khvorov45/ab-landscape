@@ -1,0 +1,5 @@
+The GAM model fit with spline on virus year (different for each timepoint), PID as random effect and timepoint.
+
+The dotted lines are vaccine strain virus years.
+
+The points on the lines correspond to the virus years for which we have data.
