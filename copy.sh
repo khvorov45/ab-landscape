@@ -119,7 +119,8 @@ rsync -rv "$PROJ/indiv-hi/cdc-obj4/" "$OBJ4/individual-his/"
 
 # GAM -------------------------------------------------------------------------
 
-cp "$PROJ/gam/cdc-obj1-gam.pdf" "$OBJ1/gam/cdc-obj1-gam.pdf"
+cp "$PROJ/gam/cdc-obj1-gam-timepoint.pdf" "$OBJ1/gam/cdc-obj1-gam-timepoint.pdf"
+cp "$PROJ/gam/cdc-obj1-gam-prior-vacs.pdf" "$OBJ1/gam/cdc-obj1-gam-prior-vacs.pdf"
 cp "$PROJ/gam/cdc-obj1-gam.txt" "$OBJ1/gam/cdc-obj1-gam.txt"
 
 # The whole project -----------------------------------------------------------
