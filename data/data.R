@@ -289,15 +289,10 @@ cdc_obj1_hi %>% filter(!complete.cases(.))
 
 # Dates -----------------------------------------------
 
-cdc_obj1_dates1_raw <- read_raw_csv("cdc-obj1/Obj1Dates", col_types = cols())
-cdc_obj1_dates2_raw <- read_raw_csv("cdc-obj1/Obj1_Dates", col_types = cols())
+cdc_obj1_dates_raw1 <- read_raw_csv("cdc-obj1/Obj1Dates", col_types = cols())
+cdc_obj1_dates_raw2 <- read_raw_csv("cdc-obj1/Obj1_Dates", col_types = cols())
 
-# The first one has more samples
-compare_vectors(cdc_obj1_dates1_raw$Specimen_ID, cdc_obj1_dates2_raw$Specimen_ID)
-
-cdc_obj1_dates_raw <- cdc_obj1_dates1_raw
-
-cdc_obj1_dates <- cdc_obj1_dates_raw %>%
+cdc_obj1_dates1 <- cdc_obj1_dates_raw1 %>%
   mutate(
     timepoint = recode_3_timepoints(Blood_DrawN),
     bleed_date = Blood_Draw_date %>% parse_access_date("20")
@@ -307,11 +302,29 @@ cdc_obj1_dates <- cdc_obj1_dates_raw %>%
     bleed_date, study_year = Specimen_Year
   )
 
+cdc_obj1_dates2 <- cdc_obj1_dates_raw2 %>%
+  mutate(
+    timepoint = recode_3_timepoints(Blood_Draw),
+    bleed_date = Blood_Draw_date %>% parse_access_date("20")
+  ) %>%
+  select(
+    pid = study_id, sample_id = Specimen_ID, site = Site, timepoint,
+    bleed_date, study_year = Specimen_Year
+  )
+
+dates_comp_result <- compare_vectors(
+  cdc_obj1_dates1$sample_id, cdc_obj1_dates2$sample_id
+)
+
+cdc_obj1_dates <- cdc_obj1_dates1 %>%
+  # Add to 1 what's in 2 but not in 1
+  bind_rows(cdc_obj1_dates2 %>% filter(sample_id %in% dates_comp_result$in2)) %>%
+  filter(complete.cases(.))
+
 # Now add the required columns to the various tables -------------
 
 # HI needs bleed dates
 
-# @FOLLOWUP
 # This shows the sample ids for which we have hi data but not dates
 cdc_obj1_hi_no_dates <- compare_vectors(
   cdc_obj1_dates$sample_id, cdc_obj1_hi$sample_id, "dates", "hi"
