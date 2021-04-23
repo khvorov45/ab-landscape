@@ -739,8 +739,6 @@ cdc_obj4_participants_extra <- cdc_obj4_participants %>%
   mutate(age_first_bleed = (date_first_bleed - dob) / lubridate::dyears(1)) %>%
   select(-date_first_bleed)
 
-# @FOLLOWUP
-# Many non-matches
 cdc_obj4_hi_no_dates <- compare_vectors(
   cdc_obj4_hi$sample_id, cdc_obj4_dates$sample_id, "hi", "dates"
 ) %>%
@@ -771,7 +769,6 @@ bind_rows(
 ) %>%
   rename(sample_id_no_date_match = hi) %>%
   save_csv("cdc-hi-no-date")
-
 
 # The Hanam dataset Annette gave me -------------------------------------------
 
