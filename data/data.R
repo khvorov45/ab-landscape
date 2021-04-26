@@ -581,7 +581,12 @@ cdc_obj3_dates_raw <- read_raw_csv(
   # There is some phantom data reading as NA
   filter(!is.na(study_id))
 
-cdc_obj3_dates <- cdc_obj3_dates_raw %>%
+cdc_obj3_dates_raw2 <- read_raw_csv(
+  name = "cdc-obj3/HCP_CDC_Obj3_All",
+  col_types = cols()
+)
+
+cdc_obj3_dates1 <- cdc_obj3_dates_raw %>%
   mutate(
     timepoint = recode_3_timepoints(Blood_Draw_n),
     date = parse_access_date(Blood_Draw_date, "20")
@@ -590,6 +595,21 @@ cdc_obj3_dates <- cdc_obj3_dates_raw %>%
     pid = study_id, study_year = Specimen_Year, timepoint,
     date, sample_id = Specimen_ID
   )
+
+cdc_obj3_dates2 <- cdc_obj3_dates_raw2 %>%
+  mutate(timepoint = recode_3_timepoints(`Blood Draw c`)) %>%
+  select(
+    pid = `Study ID`, sample_id = `Specimen ID`,
+    timepoint, study_year = Specimen_Year
+  )
+
+cdc_obj3_dates <- cdc_obj3_dates2 %>%
+  left_join(
+    cdc_obj3_dates1, c("pid", "sample_id", "study_year", "timepoint")
+  ) %>%
+  group_by(pid, timepoint, study_year) %>%
+  mutate(date = na.omit(date)) %>%
+  ungroup()
 
 # HI
 
@@ -628,8 +648,6 @@ cdc_obj3_participants_extra <- cdc_obj3_participants %>%
 
 # HI
 
-# @FOLLOWUP
-# There is a lot of HI samples that don't match to any dates
 cdc_obj3_hi_no_dates <- compare_vectors(
   cdc_obj3_hi$sample_id, cdc_obj3_dates$sample_id, "hi", "dates"
 ) %>%
@@ -761,6 +779,7 @@ save_data(cdc_obj4_hi_extra, "cdc-obj4-hi")
 
 # Not matching sample ids -------------------
 
+# Seem to have solved this problem
 bind_rows(
   cdc_obj1_hi_no_dates %>% mutate(objective = 1),
   cdc_obj2_hi_no_dates %>% mutate(objective = 2),
