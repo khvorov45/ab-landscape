@@ -710,6 +710,18 @@ cdc_obj4_participants_raw <- read_raw_csv(
   name = "cdc-obj4/Vax History", col_types = cols(), na = c("NA", "", ".")
 )
 
+# Vaccination status (year of recruitment)
+cdc_obj4_vaccination_status_raw <- read_raw_csv(
+  "cdc-obj4/Obj4_tested",
+  col_types = cols()
+)
+
+cdc_obj4_vaccination_status <- cdc_obj4_vaccination_status_raw %>%
+  select(pid = `Study ID`, vaccination_status = `Case/Control`) %>%
+  distinct()
+
+compare_vectors(cdc_obj4_vaccination_status$pid, cdc_obj4_participants_raw$study_id)
+
 cdc_obj4_participants <- cdc_obj4_participants_raw %>%
   mutate(
     dob = if_else(
@@ -718,14 +730,18 @@ cdc_obj4_participants <- cdc_obj4_participants_raw %>%
       parse_access_date(dob, "19")
     )
   ) %>%
-  select(pid = study_id, site = Site, gender = Sex, dob)
+  select(pid = study_id, site = Site, gender = Sex, dob) %>%
+  # Some entries in the vaccination history table correspond to pids
+  # we have no data for, so drop them
+  filter(pid %in% cdc_obj4_vaccination_status$pid) %>%
+  inner_join(cdc_obj4_vaccination_status, "pid")
 
 # Vaccination history
 cdc_obj4_vax_hist <- cdc_obj4_participants_raw %>%
   select(pid = study_id, matches("^Vac")) %>%
   pivot_longer(-pid, names_to = "year", values_to = "status") %>%
   mutate(year = str_replace(year, "Vac", "") %>% as.integer()) %>%
-  filter(!is.na(status))
+  filter(!is.na(status), pid %in% cdc_obj4_participants$pid)
 
 # Dates
 cdc_obj4_dates_raw <- read_raw_csv("cdc-obj4/Dates", col_types = cols())
@@ -738,12 +754,15 @@ cdc_obj4_dates <- cdc_obj4_dates_raw %>%
   select(
     pid = study_id, study_year = Sp_Year, sample_id = Specimen_ID,
     timepoint, bleed_date
-  )
+  ) %>%
+  filter(pid %in% cdc_obj4_participants$pid)
 
 # There is one year's worth of data for each participant
 cdc_obj4_dates %>%
-  count(pid, timepoint) %>%
-  filter(n > 1)
+  group_by(pid, timepoint) %>%
+  filter(n() > 1) %>%
+  arrange(pid) %>%
+  print(n = 100)
 
 # HI
 cdc_obj4_hi_raw <- read_raw_csv("cdc-obj4/HI", col_types = cols())
@@ -791,6 +810,8 @@ cdc_obj4_hi_extra <- cdc_obj4_hi %>%
 cdc_obj4_hi_extra %>%
   count(pid, timepoint, virus_full) %>%
   filter(n > 1)
+
+compare_vectors(cdc_obj4_hi_extra$pid, cdc_obj4_participants$pid)
 
 save_data(cdc_obj4_participants_extra, "cdc-obj4-participant")
 save_data(cdc_obj4_vax_hist, "cdc-obj4-vax-hist")
