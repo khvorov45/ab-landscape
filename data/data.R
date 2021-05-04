@@ -571,9 +571,9 @@ cdc_obj3_infection_raw <- read_raw_csv(
   col_types = cols()
 )
 
-compare_vectors(cdc_obj3_infection_status_raw$`Study ID`, cdc_obj3_participants$pid)
+compare_vectors(cdc_obj3_infection_raw$`Study ID`, cdc_obj3_participants$pid)
 
-cdc_obj3_infections <- cdc_obj3_infection_status_raw %>%
+cdc_obj3_infections <- cdc_obj3_infection_raw %>%
   mutate(
     infected = `Case/Control` == "Case",
     infection_year = `Infection Year`
