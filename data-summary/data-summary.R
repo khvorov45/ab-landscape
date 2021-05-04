@@ -893,6 +893,7 @@ cdc_obj3_participants <- read_data("cdc-obj3-participant") %>%
   )
 
 summarise_baseline(cdc_obj3_participants, prior_vacs, site, infected) %>%
+  arrange(site, infected) %>%
   bind_rows(
     summarise_baseline(cdc_obj3_participants, prior_vacs) %>%
       mutate(site = "Both", infected = "Overall")
