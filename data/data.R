@@ -564,6 +564,26 @@ cdc_obj3_participants <- cdc_obj3_participants_raw %>%
   ) %>%
   select(pid = study_id, dob, gender = Sex, site = Site)
 
+# Infections info
+
+cdc_obj3_infection_raw <- read_raw_csv(
+  "cdc-obj3/HCP_CDC_Obj3_All",
+  col_types = cols()
+)
+
+compare_vectors(cdc_obj3_infection_status_raw$`Study ID`, cdc_obj3_participants$pid)
+
+cdc_obj3_infections <- cdc_obj3_infection_status_raw %>%
+  mutate(
+    infected = `Case/Control` == "Case",
+    infection_year = `Infection Year`
+  ) %>%
+  filter(infected) %>%
+  select(pid = `Study ID`, infection_year) %>%
+  distinct()
+
+save_data(cdc_obj3_infections, "cdc-obj3-infections")
+
 # Vaccination history
 
 cdc_obj3_vax_hist <- cdc_obj3_participants_raw %>%
