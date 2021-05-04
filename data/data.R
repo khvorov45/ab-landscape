@@ -785,7 +785,6 @@ cdc_obj4_hi_no_dates <- compare_vectors(
 
 cdc_obj4_hi_extra <- cdc_obj4_hi %>%
   inner_join(cdc_viruses, "virus_n") %>%
-  # Unexpected loss due to the above non-matches
   inner_join(cdc_obj4_dates, "sample_id") %>%
   select(pid, study_year, timepoint, virus_full, titre)
 
