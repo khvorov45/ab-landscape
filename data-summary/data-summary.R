@@ -921,11 +921,43 @@ summarise_baseline(cdc_obj3_participants, prior_vacs, site, infected) %>%
   kable_styling(latex_options = "scale_down") %>%
   save_table("cdc-participant-summary-obj3")
 
-cdc_obj3_hi <- read_data("cdc-obj3-hi")
+cdc_obj3_hi <- read_data("cdc-obj3-hi") %>%
+  inner_join(cdc_viruses, "virus_full") %>%
+  mutate(
+    virus_full = fct_reorder(virus_full, virus_year),
+    virus_short = fct_reorder(virus_short, virus_year)
+  )
 
-cdc_obj3_hi %>%
-  group_by(pid, virus_full, timepoint) %>%
-  filter(n() != 3)
+cdc_obj3_gmts <- cdc_obj3_hi %>%
+  group_by(timepoint, virus_full, study_year) %>%
+  summarise(summarise_logmean(titre, out = "tibble"), .groups = "drop")
+
+cdc_obj3_gmts_plot1 <- cdc_obj3_gmts %>%
+  plot_obj2_gmts(timepoint, "Timepoint") +
+  facet_wrap(
+    ~study_year,
+    ncol = 1, strip.position = "right",
+    labeller = function(labels) {
+      mutate(labels, study_year = paste0("Year ", study_year))
+    }
+  )
+
+save_plot(
+  cdc_obj3_gmts_plot1, "cdc-obj3-gmts-1",
+  width = 20, height = 18
+)
+
+cdc_obj3_gmts_plot2 <- cdc_obj3_gmts %>%
+  plot_obj2_gmts(as.factor(study_year), "Study year") +
+  facet_wrap(
+    ~timepoint,
+    ncol = 1, strip.position = "right",
+  )
+
+save_plot(
+  cdc_obj3_gmts_plot2, "cdc-obj3-gmts-2",
+  width = 20, height = 18
+)
 
 # Objective 4 =================================================================
 
