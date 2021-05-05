@@ -921,8 +921,50 @@ summarise_baseline(cdc_obj3_participants, prior_vacs, site, infected) %>%
   kable_styling(latex_options = "scale_down") %>%
   save_table("cdc-participant-summary-obj3")
 
+cdc_obj3_hi <- read_data("cdc-obj3-hi")
+
+cdc_obj3_hi %>%
+  group_by(pid, virus_full, timepoint) %>%
+  filter(n() != 3)
+
 # Objective 4 =================================================================
 
 cdc_obj4_participants <- read_data("cdc-obj4-participant")
 
-summarise_baseline(cdc_obj4_participants, prior_vacs)
+summarise_baseline(cdc_obj4_participants, prior_vacs, site, vaccination_status) %>%
+  arrange(site, vaccination_status) %>%
+  bind_rows(
+    summarise_baseline(cdc_obj4_participants, prior_vacs) %>%
+      mutate(site = "Both", vaccination_status = "Overall")
+  ) %>%
+  save_data("cdc-participant-summary-obj4") %>%
+  mutate(
+    across(matches("^\\d$"), ~ replace_na(., "")),
+    vaccination_status = tools::toTitleCase(vaccination_status)
+  ) %>%
+  kbl(
+    format = "latex",
+    caption = "Summaries of CDC objective 4 participants.
+      Format: count (percentage); mean (sd)",
+    booktabs = TRUE,
+    col.names = c("Site", "Vaccinated", "", colnames(.)[-(1:3)]),
+    label = "cdc-participant-summary-obj4"
+  ) %>%
+  add_header_above(
+    c(" " = 3, "Vaccinations in 5 years before recruitment" = 6)
+  ) %>%
+  column_spec(4:9, width = "2.2cm", latex_valign = "m") %>%
+  column_spec(1, width = "1cm") %>%
+  column_spec(2, width = "2.1cm") %>%
+  column_spec(3, width = "2.5cm", latex_valign = "m") %>%
+  collapse_rows(
+    columns = 1:2, latex_hline = "custom", custom_latex_hline = 2
+  ) %>%
+  kable_styling(latex_options = "scale_down") %>%
+  save_table("cdc-participant-summary-obj4")
+
+cdc_obj4_hi <- read_data("cdc-obj4-hi")
+
+cdc_obj4_hi %>%
+  group_by(pid, timepoint, virus_full) %>%
+  filter(n() > 1)
