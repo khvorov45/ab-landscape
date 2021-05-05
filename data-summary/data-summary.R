@@ -995,8 +995,48 @@ summarise_baseline(cdc_obj4_participants, prior_vacs, site, vaccination_status) 
   kable_styling(latex_options = "scale_down") %>%
   save_table("cdc-participant-summary-obj4")
 
-cdc_obj4_hi <- read_data("cdc-obj4-hi")
+cdc_obj4_hi <- read_data("cdc-obj4-hi") %>%
+  inner_join(cdc_obj4_participants, "pid")
 
-cdc_obj4_hi %>%
-  group_by(pid, timepoint, virus_full) %>%
-  filter(n() > 1)
+cdc_obj4_timepoint_gmts <- cdc_obj4_hi %>%
+  group_by(timepoint, virus_full, vaccination_status) %>%
+  summarise(summarise_logmean(titre, out = "tibble"), .groups = "drop") %>%
+  ggplot(
+    aes(
+      virus_full, mn,
+      color = vaccination_status, shape = vaccination_status
+    )
+  ) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(
+    legend.position = "bottom",
+    legend.box.spacing = unit(0, "null"),
+    strip.placement = "right",
+    panel.spacing = unit(0, "lines"),
+    strip.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(angle = -45, hjust = 0),
+    plot.margin = margin(10, 40, 10, 10)
+  ) +
+  facet_wrap(
+    ~timepoint,
+    ncol = 1, strip.position = "right"
+  ) +
+  scale_y_log10("GMT (95% CI)", breaks = 5 * 2^(0:15)) +
+  scale_x_discrete("Virus") +
+  scale_color_discrete("Vaccinated") +
+  scale_shape_discrete("Vaccinated") +
+  geom_vline(
+    aes(xintercept = virus_full),
+    data = cdc_vaccine,
+    size = 7, alpha = 0.2
+  ) +
+  geom_pointrange(
+    aes(ymin = low, ymax = high),
+    position = position_dodge(width = 0.8)
+  )
+
+save_plot(
+  cdc_obj4_timepoint_gmts, "cdc-obj4-timepoint-gmts",
+  width = 20, height = 18
+)
