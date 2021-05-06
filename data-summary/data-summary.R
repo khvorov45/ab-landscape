@@ -959,6 +959,10 @@ save_plot(
   width = 20, height = 18
 )
 
+# General infection info
+cdc_obj3_infections %>%
+  count(infection_year)
+
 # Infected GMTs the (supposed) year of infection
 
 cdc_obj3_infected_gmts <- cdc_obj3_hi %>%
