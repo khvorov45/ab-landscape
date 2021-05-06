@@ -959,6 +959,38 @@ save_plot(
   width = 20, height = 18
 )
 
+# Infected GMTs the (supposed) year of infection
+
+cdc_obj3_infected_gmts <- cdc_obj3_hi %>%
+  inner_join(cdc_obj3_infections, "pid") %>%
+  filter(study_year == infection_year) %>%
+  group_by(virus_full, timepoint) %>%
+  summarise(summarise_logmean(titre, out = "tibble"), .groups = "drop") %>%
+  ggplot(aes(virus_full, mn, color = timepoint, shape = timepoint)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(
+    legend.position = "bottom",
+    legend.box.spacing = unit(0, "null"),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.margin = margin(10, 10, 10, 20)
+  ) +
+  scale_y_log10("Titre", breaks = 5 * 2^(0:15)) +
+  scale_x_discrete("Virus") +
+  geom_vline(
+    aes(xintercept = virus_full),
+    data = cdc_vaccine %>% filter(study_year %in% cdc_obj3_infections$infection_year),
+    size = 6, alpha = 0.2
+  ) +
+  geom_pointrange(
+    aes(ymin = low, ymax = high),
+    position = position_dodge(width = 0.5)
+  )
+
+save_plot(
+  cdc_obj3_infected_gmts, "cdc-obj3-infected-gmts",
+  width = 18, height = 12
+)
+
 # Objective 4 =================================================================
 
 cdc_obj4_participants <- read_data("cdc-obj4-participant")
