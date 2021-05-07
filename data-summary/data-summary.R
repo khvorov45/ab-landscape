@@ -923,9 +923,11 @@ summarise_baseline(cdc_obj3_participants, prior_vacs, site, infected) %>%
 
 cdc_obj3_hi <- read_data("cdc-obj3-hi") %>%
   inner_join(cdc_viruses, "virus_full") %>%
+  inner_join(cdc_obj3_participants, "pid") %>%
   mutate(
     virus_full = fct_reorder(virus_full, virus_year),
-    virus_short = fct_reorder(virus_short, virus_year)
+    virus_short = fct_reorder(virus_short, virus_year),
+    circulating_year = cdc_circulating_year(study_year, site)
   )
 
 cdc_obj3_gmts <- cdc_obj3_hi %>%
@@ -993,6 +995,85 @@ cdc_obj3_infected_gmts <- cdc_obj3_hi %>%
 save_plot(
   cdc_obj3_infected_gmts, "cdc-obj3-infected-gmts",
   width = 18, height = 12
+)
+
+# Circulating strains I guess
+cdc_obj3_hi_circulating <- cdc_obj3_hi %>%
+  inner_join(cdc_clade_frequencies, c("circulating_year" = "year", "clade"))
+
+cdc_obj3_ind_av_circulating <- cdc_obj3_hi_circulating %>%
+  group_by(pid, study_year, timepoint, clade, freq) %>%
+  summarise(
+    .groups = "drop",
+    av_titre_clade = exp(mean(log(titre)))
+  ) %>%
+  group_by(pid, study_year, timepoint) %>%
+  summarise(
+    .groups = "drop",
+    av_titre_circulating = exp(sum(log(av_titre_clade) * freq) / sum(freq))
+  )
+
+cdc_obj3_ind_av_circulating <- cdc_obj3_ind_av_circulating %>%
+  left_join(cdc_obj3_infections, "pid") %>%
+  mutate(
+    x_position = as.integer(timepoint) + 3 * (study_year - 1),
+    infection_year = replace_na(infection_year, -1),
+  ) %>%
+  ggplot(aes(x_position, av_titre_circulating, color = pid)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(
+    legend.position = "none",
+    panel.spacing = unit(0, "null"),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    strip.background = element_blank()
+  ) +
+  facet_wrap(
+    ~infection_year,
+    ncol = 1, strip.position = "right",
+    labeller = as_labeller(
+      function(x) {
+        ifelse(x == -1, "Not infected", glue::glue("Infected in year {x}"))
+      }
+    )
+  ) +
+  scale_y_log10("Av. titre vs circulating", breaks = 5 * 2^(0:10)) +
+  scale_x_continuous(
+    "Timepoint",
+    breaks = 1:9,
+    labels = as_labeller(function(x) {
+      x <- as.numeric(x)
+      year <- floor((x - 1) / 3) + 1
+      timepoint <- (x - 1) %% 3 + 1
+      timepoint <- recode(
+        timepoint,
+        "1" = "Pre-vax", "2" = "Post-vax", "3" = "Post-season"
+      )
+      glue::glue("Year {year} - {timepoint}")
+    })
+  ) +
+  coord_cartesian(ylim = c(5, 640)) +
+  geom_rect(
+    aes(
+      ymin = 0.001, ymax = 50000, xmin = xmin, xmax = xmax,
+    ),
+    col = NA,
+    fill = "gray50",
+    alpha = 0.3,
+    data = tribble(
+      ~infection_year, ~xmin, ~xmax,
+      1, 2, 3,
+      2, 5, 6
+    ),
+    inherit.aes = FALSE
+  ) +
+  geom_line() +
+  geom_point()
+
+save_plot(
+  cdc_obj3_ind_av_circulating,
+  "cdc-obj3-ind-av-circulating",
+  width = 12,
+  height = 15
 )
 
 # Objective 4 =================================================================
