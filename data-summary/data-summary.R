@@ -1013,7 +1013,7 @@ cdc_obj3_ind_av_circulating <- cdc_obj3_hi_circulating %>%
     av_titre_circulating = exp(sum(log(av_titre_clade) * freq) / sum(freq))
   )
 
-cdc_obj3_ind_av_circulating <- cdc_obj3_ind_av_circulating %>%
+cdc_obj3_ind_av_circulating_plot <- cdc_obj3_ind_av_circulating %>%
   left_join(cdc_obj3_infections, "pid") %>%
   mutate(
     x_position = as.integer(timepoint) + 3 * (study_year - 1),
@@ -1070,10 +1070,55 @@ cdc_obj3_ind_av_circulating <- cdc_obj3_ind_av_circulating %>%
   geom_point()
 
 save_plot(
-  cdc_obj3_ind_av_circulating,
+  cdc_obj3_ind_av_circulating_plot,
   "cdc-obj3-ind-av-circulating",
   width = 12,
   height = 15
+)
+
+cdc_obj3_group_av_circulating_plot <- cdc_obj3_ind_av_circulating %>%
+  inner_join(cdc_obj3_participants, "pid") %>%
+  left_join(cdc_obj3_infections, "pid") %>%
+  mutate(
+    infected = !is.na(infection_year),
+    infection_year = replace_na(infection_year, 0),
+    index_year = if_else(
+      infected, study_year - infection_year, study_year - recruitment_year
+    )
+  ) %>%
+  filter(index_year >= 0) %>%
+  group_by(infected, index_year, timepoint) %>%
+  summarise(
+    .groups = "drop",
+    summarise_logmean(av_titre_circulating, out = "tibble")
+  ) %>%
+  ggplot(aes(timepoint, mn)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(
+    panel.spacing = unit(0, "null"),
+    strip.background = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  ) +
+  facet_grid(
+    infected ~ index_year,
+    labeller = function(breaks) {
+      if ("index_year" %in% names(breaks)) {
+        breaks$index_year <- paste0("Index year ", breaks$index_year)
+      } else {
+        breaks$infected <- if_else(breaks$infected, "Infected", "Not infected")
+      }
+      breaks
+    }
+  ) +
+  scale_y_log10("Titre", breaks = 5 * 2^(0:15)) +
+  scale_x_discrete("Timepoint") +
+  geom_pointrange(aes(ymin = low, ymax = high))
+
+save_plot(
+  cdc_obj3_group_av_circulating_plot,
+  "cdc-obj3-group-av-circulating",
+  width = 12,
+  height = 10
 )
 
 # Objective 4 =================================================================
