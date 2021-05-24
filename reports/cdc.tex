@@ -114,6 +114,20 @@ Table \ref{tab:cdc-participant-summary-obj1} contains sex and age summaries for 
 
 \input{../data-summary/cdc-participant-summary-obj1.tex}
 
+Bleed dates for each participant are in Figure \ref{fig:cdc-obj1-bleed-dates} and the time difference between pre- and post- vaccination bleed is in Figure \ref{fig:cdc-obj1-pre-post-days}.
+
+\begin{figure}
+	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj1-bleed-dates.pdf}
+	\caption{Bleed dates for objective 1 data. Each horizontal line represents a participant. Points are bleeds.}
+	\label{fig:cdc-obj1-bleed-dates}
+\end{figure}
+
+\begin{figure}
+	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj1-pre-post-days.pdf}
+	\caption{Objective 1 time differences between the pre- and the post-vaccination bleeds. The box plot format is: midline - median, upper and lower hinges - 25th and 75th quartiles, whiskers - largest/smallest value no further than 1.5 times the interquartile range from the hinge.}
+	\label{fig:cdc-obj1-pre-post-days}
+\end{figure}
+
 \subsection{HI titres}
 
 Geometric mean titres for each virus at each timepoint for each vaccination history group (0, 1-3 or 5 prior vaccinations) split by site are shown in Figure
@@ -144,12 +158,6 @@ vaccinated for the majority of viruses.
 \subsection{GMT against circulating strains}
 
 The list of viruses for each clade is in Table \ref{tab:cdc-clade-viruses}. Frequencies of different virus clades during the study period are in Figure \ref{fig:cdc-clade-freq}. The timing of sample collection is in Figure \ref{fig:cdc-obj1-bleed-dates}. I used the frequencies for the first half of the corresponding years for Peru and the second half for Israel.
-
-\begin{figure}
-	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../data-summary/cdc-obj1-bleed-dates.pdf}
-	\caption{Bleed dates for objective 1 data. Each horizontal line represents a participant. Points are bleeds.}
-	\label{fig:cdc-obj1-bleed-dates}
-\end{figure}
 
 The average titre against circulating strains was calculated separately for cell and egg viruses as well as for each site. The procedure was as follows. For each individual, calculate mean log titre per clade (only relevant for 3c1 as it is the only clade with more than one virus of each type). Then for each individual, calculate weighted (by clade frequency) mean of clade-specific mean log titres. This yields one observation per individual which can be interpreted as the mean titre against the circulating strains weighted by their frequencies (Figure \ref{fig:cdc-obj1-ind-av-circulating}). Then for each vaccination history group calculate the mean log titre and its 95\% CI (normal approximation CI for the mean) which can be found in Figure \ref{fig:cdc-obj1-gmt-circulating}.
 

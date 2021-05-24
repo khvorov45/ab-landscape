@@ -571,6 +571,32 @@ cdc_obj1_bleed_dates <- cdc_obj1_hi %>%
 
 save_plot(cdc_obj1_bleed_dates, "cdc-obj1-bleed-dates", width = 15, height = 20)
 
+# Look at the differences b/w pre-post vax bleed times
+cdc_obj1_pre_post_plot <- cdc_obj1_hi %>%
+  select(pid, study_year, site, timepoint, bleed_date) %>%
+  distinct() %>%
+  pivot_wider(names_from = "timepoint", values_from = "bleed_date") %>%
+  mutate(
+    pre_post_days = (`Post-vax` - `Pre-vax`) / lubridate::ddays(1),
+    study_year = factor(study_year)
+  ) %>%
+  ggplot(aes(study_year, pre_post_days)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(
+    panel.spacing = unit(0, "null"),
+    strip.background = element_blank()
+  ) +
+  scale_x_discrete("Study year") +
+  scale_y_continuous("Days b/w pre-vax and post-vax bleed") +
+  facet_wrap(~site, nrow = 1) +
+  geom_jitter(width = 0.2, alpha = 0.5, shape = 18) +
+  geom_boxplot(fill = NA, outlier.color = NA)
+
+save_plot(
+  cdc_obj1_pre_post_plot, "cdc-obj1-pre-post-days",
+  width = 15, height = 10
+)
+
 cdc_obj1_clades_summ <- cdc_obj1_hi %>%
   filter(!clade %in% c("(missing)", "1", "2")) %>%
   select(site, egg_lbl, circulating_year, study_year, prior_vacs2, clade) %>%
