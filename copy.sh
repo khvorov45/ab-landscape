@@ -123,6 +123,10 @@ cp "$PROJ/gam/cdc-obj1-gam-timepoint.pdf" "$OBJ1/gam/cdc-obj1-gam-timepoint.pdf"
 cp "$PROJ/gam/cdc-obj1-gam-prior-vacs.pdf" "$OBJ1/gam/cdc-obj1-gam-prior-vacs.pdf"
 cp "$PROJ/gam/cdc-obj1-gam.txt" "$OBJ1/gam/cdc-obj1-gam.txt"
 
+# CDC report -----------------------------------------------------------------
+
+cp "$PROJ/reports/cdc.tex" "$PROJ/reports/cdc.pdf" "$SHARED/BAA 75D301-10-R-67835/Analyses/report"
+
 # The whole project -----------------------------------------------------------
 
 rsync -rv "$PROJ" "$SHARED" --exclude "renv/library" --exclude ".snakemake"
