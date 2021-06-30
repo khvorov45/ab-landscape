@@ -547,6 +547,17 @@ cdc_clade_freq_plot <- cdc_clade_frequencies %>%
 
 save_plot(cdc_clade_freq_plot, "cdc-clade-freq", width = 15, height = 10)
 
+cdc_obj1_year_breaks <- tribble(
+  ~site, ~study_year, ~end, ~mid,
+  "Israel", 1, "2017-06-01", "2017-01-01",
+  "Peru", 1, "2017-01-01", "2016-08-01",
+  "Israel", 2, "2018-07-15", "2018-01-01",
+  "Peru", 2, "2018-01-01", "2017-08-01",
+  "Israel", 3, NA, "2019-01-01",
+  "Peru", 3, NA, "2018-06-01",
+) %>%
+  mutate(end = lubridate::ymd(end), mid = lubridate::ymd(mid))
+
 cdc_obj1_bleed_dates <- cdc_obj1_hi %>%
   ggplot(aes(bleed_date, pid, color = timepoint)) +
   ggdark::dark_theme_bw(verbose = FALSE) +
@@ -558,21 +569,24 @@ cdc_obj1_bleed_dates <- cdc_obj1_hi %>%
     panel.grid.minor.y = element_blank(),
     panel.grid.major.y = element_blank(),
     legend.position = "bottom",
-    legend.box.spacing = unit(0, "null")
+    legend.box.spacing = unit(0, "null"),
+    strip.background = element_blank(),
+    panel.spacing = unit(0, "lines")
   ) +
   scale_x_date("Bleed date", breaks = "month") +
+  scale_y_discrete(expand = expansion(c(0.1, 0))) +
   scale_color_discrete("Timepoint") +
+  facet_wrap(~site, ncol = 1, scales = "free_y", strip.position = "right") +
   geom_point() +
-  geom_hline(yintercept = 177.5) +
-  annotate(
-    geom = "text",
-    x = lubridate::ymd("2019-04-01"),
-    y = 230, label = "Peru"
+  geom_vline(
+    aes(xintercept = end),
+    data = cdc_obj1_year_breaks
   ) +
-  annotate(
-    geom = "text",
-    x = lubridate::ymd("2016-06-01"),
-    y = 50, label = "Israel"
+  geom_label(
+    aes(label = paste0("Year ", study_year), x = mid, y = 0),
+    data = cdc_obj1_year_breaks,
+    inherit.aes = FALSE,
+    vjust = 1.2
   )
 
 save_plot(cdc_obj1_bleed_dates, "cdc-obj1-bleed-dates", width = 15, height = 20)
@@ -715,22 +729,26 @@ cdc_obj2_bleed_dates_plot <- cdc_obj2_hi %>%
     axis.text.x = element_text(angle = 45, hjust = 1),
     strip.background = element_blank(),
     strip.placement = "right",
-    legend.box.spacing = unit(0, "null")
+    legend.box.spacing = unit(0, "null"),
+    panel.spacing = unit(0, "null")
   ) +
   scale_x_date("Bleed date", breaks = "month") +
-  scale_y_discrete("PID") +
+  scale_y_discrete("PID", expand = expansion(c(0.1, 0.02))) +
   scale_color_discrete("Timepoint") +
+  facet_wrap(~site, ncol = 1, scales = "free_y", strip.position = "right") +
   geom_point() +
-  geom_hline(yintercept = 9.5) +
-  annotate(
-    geom = "text",
-    x = lubridate::ymd("2019-04-01"),
-    y = 20, label = "Peru"
+  geom_vline(
+    aes(xintercept = end),
+    data = cdc_obj1_year_breaks
   ) +
-  annotate(
-    geom = "text",
-    x = lubridate::ymd("2016-06-01"),
-    y = 4, label = "Israel"
+  geom_label(
+    aes(
+      label = paste0("Year ", study_year),
+      vjust = ifelse(site == "Israel", -0.1, 0.4),
+      x = mid, y = 0
+    ),
+    data = cdc_obj1_year_breaks,
+    inherit.aes = FALSE,
   )
 
 save_plot(
