@@ -235,6 +235,12 @@ cdc_obj1_hi %>%
   geom_point(alpha = 0.5, shape = 18) +
   geom_line(alpha = 0.5)
 
+virus_labeller <- as_labeller(function(breaks) {
+  breaks %>%
+    tools::toTitleCase() %>%
+    str_replace("^a/", "A/")
+})
+
 # Timepoint GMT's
 cdc_obj1_timepoint_gmts <- cdc_obj1_hi %>%
   group_by(timepoint, virus_full, prior_vacs2, site) %>%
@@ -261,7 +267,7 @@ cdc_obj1_timepoint_gmts <- cdc_obj1_hi %>%
     ncol = 1, strip.position = "right"
   ) +
   scale_y_log10("GMT (95% CI)", breaks = 5 * 2^(0:15)) +
-  scale_x_discrete("Virus") +
+  scale_x_discrete("Virus", labels = virus_labeller) +
   scale_color_discrete("Prior vaccinations") +
   scale_shape_discrete("Prior vaccinations") +
   geom_vline(
@@ -311,7 +317,7 @@ timepoint_diffs <- cdc_obj1_hi %>%
     position = position_dodge(width = 0.5)
   ) +
   scale_y_log10("Post/Pre vax ratio (95% CI)", breaks = c(1:5, 10, 15)) +
-  scale_x_discrete("Virus") +
+  scale_x_discrete("Virus", labels = virus_labeller) +
   scale_color_discrete("Prior vaccinations") +
   scale_shape_discrete("Prior vaccinations")
 
@@ -322,7 +328,7 @@ save_plot(
 
 # CDC Objective 2 =============================================================
 # Remove all infected individuals (in years 1 and 2)
-# to see the vaccine reponses unadulterated
+# to see the vaccine responses unadulterated
 # by intermittent infection
 
 cdc_obj2_participants_all <- read_data("cdc-obj2-participant")
@@ -428,7 +434,7 @@ plot_obj2_gmts <- function(data, group_var, group_var_lab) {
       plot.margin = margin(10, 40, 10, 10)
     ) +
     scale_y_log10("GMT (95% CI)", breaks = 5 * 2^(0:15)) +
-    scale_x_discrete("Virus") +
+    scale_x_discrete("Virus", labels = virus_labeller) +
     geom_vline(
       aes(xintercept = virus_full),
       data = cdc_vaccine,
@@ -502,7 +508,7 @@ cdc_obj2_vax_resp_virus_plot <- cdc_obj2_hi_wide %>%
     position = position_dodge(width = 0.5)
   ) +
   scale_y_log10("Post/Pre vax ratio (95% CI)", breaks = 1:10) +
-  scale_x_discrete("Virus") +
+  scale_x_discrete("Virus", labels = virus_labeller) +
   scale_color_discrete("Study year") +
   scale_shape_discrete("Study year")
 
@@ -1007,7 +1013,7 @@ cdc_obj3_infected_gmts <- cdc_obj3_hi %>%
     plot.margin = margin(10, 10, 10, 20)
   ) +
   scale_y_log10("Titre", breaks = 5 * 2^(0:15)) +
-  scale_x_discrete("Virus") +
+  scale_x_discrete("Virus", labels = virus_labeller) +
   geom_vline(
     aes(xintercept = virus_full),
     data = cdc_vaccine %>% filter(study_year %in% cdc_obj3_infections$infection_year),
@@ -1211,7 +1217,7 @@ cdc_obj4_timepoint_gmts <- cdc_obj4_hi %>%
     ncol = 1, strip.position = "right"
   ) +
   scale_y_log10("GMT (95% CI)", breaks = 5 * 2^(0:15)) +
-  scale_x_discrete("Virus") +
+  scale_x_discrete("Virus", labels = virus_labeller) +
   scale_color_discrete("Vaccinated") +
   scale_shape_discrete("Vaccinated") +
   geom_vline(

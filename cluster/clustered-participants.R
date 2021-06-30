@@ -101,6 +101,12 @@ cdc_obj1_participants %>%
   kable_styling(latex_options = "scale_down") %>%
   write("cluster/cdc-obj1-participants-cluster2.tex")
 
+virus_labeller <- as_labeller(function(breaks) {
+  breaks %>%
+    tools::toTitleCase() %>%
+    str_replace("^a/", "A/")
+})
+
 cdc_obj1_cluster_gmts <- cdc_obj1_serology %>%
   group_by(virus_full, cluster, timepoint) %>%
   summarise(summarise_logmean(titre, out = "tibble"), .groups = "drop") %>%
@@ -116,7 +122,7 @@ cdc_obj1_cluster_gmts <- cdc_obj1_serology %>%
   ) +
   facet_wrap(~timepoint, ncol = 1, strip.position = "right") +
   scale_y_log10("Titre", breaks = 5 * 2^(0:10)) +
-  scale_x_discrete("Virus") +
+  scale_x_discrete("Virus", labels = virus_labeller) +
   scale_color_discrete("Cluster") +
   scale_shape_discrete("Cluster") +
   geom_pointrange(aes(ymin = low, ymax = high), position = position_dodge(1))
