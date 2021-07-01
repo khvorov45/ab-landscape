@@ -409,19 +409,22 @@ cdc_obj2_hi_infected <- cdc_obj2_hi_recent %>% filter(pid %in% infected_pids)
 
 cdc_obj2_hi_infected_plot <- cdc_obj2_hi_infected %>%
   mutate(global_timepoint = (study_year - 1) * 3 + as.integer(timepoint)) %>%
-  ggplot(aes(global_timepoint, titre, group = pid, col = pid)) +
+  ggplot(aes(global_timepoint, titre, group = virus_full, col = virus_full)) +
   ggdark::dark_theme_bw(verbose = FALSE) +
   theme(
-    legend.position = "none",
-    strip.background = element_blank()
+    strip.background = element_blank(),
+    panel.spacing.x = unit(0, "null"),
+    legend.box.spacing = unit(0, "null"),
+    axis.text.x = element_text(angle = 90)
   ) +
-  facet_wrap(~virus_full, labeller = virus_labeller, ncol = 3) +
+  facet_wrap(~pid, ncol = 3) +
   scale_y_log10("Titre", breaks = 5 * 2^(0:15)) +
   scale_x_continuous("Year-Timepoint", breaks = 1:9, labels = function(breaks) {
     years <- floor((breaks - 1) / 3) + 1
     timepoints <- (breaks - 1) %% 3 + 1
     paste0(years, "-", timepoints)
   }) +
+  scale_color_discrete("Virus", labels = virus_labeller) +
   geom_line(
     data = infected_within_years %>%
       mutate(global_timepoint = (study_year - 1) * 3 + if_else(timepoint == "Post-vax", 2, 3)),
@@ -441,7 +444,7 @@ cdc_obj2_hi_infected_plot <- cdc_obj2_hi_infected %>%
 
 save_plot(
   cdc_obj2_hi_infected_plot, "cdc-obj2-hi-infected",
-  width = 20, height = 20
+  width = 20, height = 25
 )
 
 cdc_obj2_participants <- cdc_obj2_participants_all %>%
