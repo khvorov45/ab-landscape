@@ -231,7 +231,7 @@ clade_frequencies <- nextrain_freqs %>%
       str_replace("^a1b/", "3c2a1b+")
   )
 
-# Clades 1 and 2 correspond to 'unnassigned'
+# Clades 1 and 2 correspond to 'unassigned'
 compare_vectors(cdc_viruses_obj1$clade, clade_frequencies$clade)
 
 save_data(clade_frequencies, "cdc-clade-frequencies")
@@ -511,7 +511,7 @@ compare_vectors(cdc_obj2_first_bleeds$pid, cdc_obj2_participants$pid)
 unique(cdc_obj2_vax_hist$year)
 unique(cdc_obj2_first_bleeds$recruitment_year)
 
-# Vaccinations in 5 years prior to recrutment
+# Vaccinations in 5 years prior to recruitment
 cdc_obj2_prior_vacs <- cdc_obj2_vax_hist %>%
   # We know everyone was recruited in 2016
   # And we know all of this vaccination history is relevant (2011-2015)

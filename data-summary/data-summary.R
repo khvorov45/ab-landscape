@@ -146,7 +146,7 @@ summarise_baseline(
   bind_rows(summarise_baseline(cdc_obj1_participant, prior_vacs, site) %>%
     mutate(recruitment_year_lbl = "Overall")) %>%
   bind_rows(summarise_baseline(cdc_obj1_participant, prior_vacs) %>%
-    mutate(recruitment_year_lbl = "Overalll", site = "Both")) %>%
+    mutate(recruitment_year_lbl = "Overall1", site = "Both")) %>%
   mutate(site = fct_relevel(site, "Both", after = Inf)) %>%
   arrange(site, recruitment_year_lbl) %>%
   save_data("cdc-participant-summary-obj1") %>%
@@ -169,6 +169,7 @@ summarise_baseline(
     columns = 1:2, latex_hline = "custom", custom_latex_hline = 2
   ) %>%
   kable_styling(latex_options = "scale_down") %>%
+  str_replace("Overall1", "Overall") %>%
   save_table("cdc-participant-summary-obj1")
 
 cdc_viruses <- read_data("cdc-virus")
@@ -721,7 +722,7 @@ cdc_obj1_ind_av_circulating <- cdc_obj1_hi_against_circulating %>%
     axis.text.x = element_text(angle = 45, hjust = 1)
   ) +
   scale_y_log10(
-    "Average titre against cirulating strains",
+    "Average titre against circulating strains",
     breaks = 5 * 2^(0:10)
   ) +
   scale_x_discrete(
@@ -787,7 +788,7 @@ save_plot(
 # See what the seasons were in objective 2
 cdc_obj2_bleed_dates_plot <- cdc_obj2_hi %>%
   ggplot(aes(bleed_date, pid, color = timepoint)) +
-  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme_bw() +
   theme(
     legend.position = "bottom",
     axis.text.x = element_text(angle = 45, hjust = 1),
@@ -805,20 +806,38 @@ cdc_obj2_bleed_dates_plot <- cdc_obj2_hi %>%
     aes(xintercept = end),
     data = cdc_obj1_year_breaks
   ) +
-  geom_label(
+  geom_text(
     aes(
       label = paste0("Year ", study_year),
-      vjust = ifelse(site == "Israel", -0.1, 0.4),
+      vjust = ifelse(site == "Israel", -0.2, 0.4),
       x = mid, y = 0
     ),
     data = cdc_obj1_year_breaks,
     inherit.aes = FALSE,
+    col = "black"
   )
 
-save_plot(
-  cdc_obj2_bleed_dates_plot, "cdc-obj2-bleed-dates",
-  width = 20, height = 20
-)
+# Change facet heights
+pdf("TEMP")
+cdc_obj2_bleed_dates_gtable <-
+  ggplot_gtable(ggplot_build(cdc_obj2_bleed_dates_plot))
+dev.off()
+file.remove("TEMP")
+
+pids_sites_length <- cdc_obj2_hi %>%
+  split(as.factor(.$site)) %>%
+  map(~ pull(.x, pid) %>%
+    unique() %>%
+    length())
+
+cdc_obj2_bleed_dates_gtable$heights[7] <-
+  pids_sites_length$Israel * cdc_obj2_bleed_dates_gtable$heights[7]
+cdc_obj2_bleed_dates_gtable$heights[11] <-
+  pids_sites_length$Peru * cdc_obj2_bleed_dates_gtable$heights[11]
+
+pdf("data-summary/cdc-obj2-bleed-dates.pdf", width = 9, height = 9)
+grid::grid.draw(cdc_obj2_bleed_dates_gtable)
+dev.off()
 
 cdc_obj2_clades_summ <- cdc_obj2_hi %>%
   filter(!clade %in% c("(missing)", "1", "2")) %>%
