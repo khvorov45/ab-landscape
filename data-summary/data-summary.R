@@ -176,9 +176,12 @@ cdc_vaccine <- read_data("cdc-vaccine")
 
 # Viruses in each clade
 cdc_viruses %>%
-  filter(!clade %in% c("1", "2", "(missing)")) %>%
-  mutate(egg_lbl = if_else(egg, "Egg", "Cell")) %>%
-  select(Clade = clade, Virus = virus_full, Type = egg_lbl) %>%
+  mutate(
+    egg_lbl = if_else(egg, "Egg", "Cell"),
+    virus_lbl = tools::toTitleCase(virus_full) %>% str_replace("^a/", "A/"),
+    clade_lbl = if_else(clade %in% c("1", "2", "(missing)"), "", clade)
+  ) %>%
+  select(Clade = clade_lbl, Virus = virus_lbl, Type = egg_lbl) %>%
   arrange(Clade) %>%
   kbl(
     format = "latex",
