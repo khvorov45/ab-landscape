@@ -152,7 +152,7 @@ summarise_baseline(
   save_data("cdc-participant-summary-obj1") %>%
   kbl(
     format = "latex",
-    caption = "Summaries of CDC objective 1 participants.
+    caption = "Characteristics of participants included in objective 1.
       Format: count (percentage); mean (sd)",
     booktabs = TRUE,
     col.names = c("Site", "Year", "", colnames(.)[-(1:3)]),
@@ -397,7 +397,7 @@ summarise_baseline(
   save_data("cdc-participant-summary-obj2") %>%
   kbl(
     format = "latex",
-    caption = "Summaries of CDC objective 2 participants.
+    caption = "Characteristics of participants included in objective 2.
       Format: count (percentage); mean (sd)",
     booktabs = TRUE,
     col.names = c("Site", "", colnames(.)[-(1:2)]),
@@ -955,7 +955,7 @@ summarise_baseline(cdc_obj3_participants, prior_vacs, site, infected) %>%
   mutate(across(matches("^\\d$"), ~ replace_na(., ""))) %>%
   kbl(
     format = "latex",
-    caption = "Summaries of CDC objective 3 participants.
+    caption = "Characteristics of participants included in objective 3.
       Format: count (percentage); mean (sd)",
     booktabs = TRUE,
     col.names = c("Site", "Infected", "", colnames(.)[-(1:3)]),
@@ -990,8 +990,6 @@ cdc_obj3_hi_infected <- cdc_obj3_hi %>%
   inner_join(cdc_obj3_infections, c("pid")) %>%
   mutate(years_from_infection = study_year - infection_year) %>%
   filter(years_from_infection >= 0)
-
-cdc_obj3_gmts <- cdc_obj3_hi %>%
 
 cdc_obj3_gmts_noninfected <- cdc_obj3_hi_noninfected %>%
   group_by(timepoint, virus_full, study_year) %>%
@@ -1206,7 +1204,7 @@ summarise_baseline(cdc_obj4_participants, prior_vacs, site, vaccination_status) 
   ) %>%
   kbl(
     format = "latex",
-    caption = "Summaries of CDC objective 4 participants.
+    caption = "Characteristics of participants included in objective 4.
       Format: count (percentage); mean (sd)",
     booktabs = TRUE,
     col.names = c("Site", "Vaccinated", "", colnames(.)[-(1:3)]),
