@@ -980,11 +980,25 @@ cdc_obj3_hi <- read_data("cdc-obj3-hi") %>%
     circulating_year = cdc_circulating_year(study_year, site)
   )
 
+cdc_obj3_hi_noninfected <- cdc_obj3_hi %>%
+  filter(!pid %in% cdc_obj3_infections$pid)
+
+cdc_obj3_hi_infected <- cdc_obj3_hi %>%
+  inner_join(cdc_obj3_infections, c("pid")) %>%
+  mutate(years_from_infection = study_year - infection_year) %>%
+  filter(years_from_infection >= 0)
+
 cdc_obj3_gmts <- cdc_obj3_hi %>%
+
+cdc_obj3_gmts_noninfected <- cdc_obj3_hi_noninfected %>%
   group_by(timepoint, virus_full, study_year) %>%
   summarise(summarise_logmean(titre, out = "tibble"), .groups = "drop")
 
-cdc_obj3_gmts_plot1 <- cdc_obj3_gmts %>%
+cdc_obj3_gmts_infected <- cdc_obj3_hi_infected %>%
+  group_by(timepoint, virus_full, years_from_infection) %>%
+  summarise(summarise_logmean(titre, out = "tibble"), .groups = "drop")
+
+cdc_obj3_gmts_noninfected_plot1 <- cdc_obj3_gmts_noninfected %>%
   plot_obj2_gmts(timepoint, "Timepoint") +
   facet_wrap(
     ~study_year,
@@ -995,11 +1009,32 @@ cdc_obj3_gmts_plot1 <- cdc_obj3_gmts %>%
   )
 
 save_plot(
-  cdc_obj3_gmts_plot1, "cdc-obj3-gmts-1",
+  cdc_obj3_gmts_noninfected_plot1, "cdc-obj3-gmts-noninfected-1",
   width = 20, height = 18
 )
 
-cdc_obj3_gmts_plot2 <- cdc_obj3_gmts %>%
+cdc_obj3_gmts_infected_plot1 <- cdc_obj3_gmts_infected %>%
+  plot_obj2_gmts(timepoint, "Timepoint") +
+  facet_wrap(
+    ~years_from_infection,
+    ncol = 1, strip.position = "right",
+    labeller = function(labels) {
+      mutate(
+        labels,
+        years_from_infection = if_else(
+          years_from_infection == 0, "Infection year",
+          paste0("Post-infection year ", years_from_infection)
+        )
+      )
+    }
+  )
+
+save_plot(
+  cdc_obj3_gmts_infected_plot1, "cdc-obj3-gmts-infected-1",
+  width = 20, height = 18
+)
+
+cdc_obj3_gmts_noninfected_plot2 <- cdc_obj3_gmts_noninfected %>%
   plot_obj2_gmts(as.factor(study_year), "Study year") +
   facet_wrap(
     ~timepoint,
@@ -1007,45 +1042,25 @@ cdc_obj3_gmts_plot2 <- cdc_obj3_gmts %>%
   )
 
 save_plot(
-  cdc_obj3_gmts_plot2, "cdc-obj3-gmts-2",
+  cdc_obj3_gmts_noninfected_plot2, "cdc-obj3-gmts-noninfected-2",
+  width = 20, height = 18
+)
+
+cdc_obj3_gmts_infected_plot2 <- cdc_obj3_gmts_infected %>%
+  plot_obj2_gmts(as.factor(years_from_infection), "Years from infection") +
+  facet_wrap(
+    ~timepoint,
+    ncol = 1, strip.position = "right",
+  )
+
+save_plot(
+  cdc_obj3_gmts_infected_plot2, "cdc-obj3-gmts-infected-2",
   width = 20, height = 18
 )
 
 # General infection info
 cdc_obj3_infections %>%
   count(infection_year)
-
-# Infected GMTs the (supposed) year of infection
-
-cdc_obj3_infected_gmts <- cdc_obj3_hi %>%
-  inner_join(cdc_obj3_infections, "pid") %>%
-  filter(study_year == infection_year) %>%
-  group_by(virus_full, timepoint) %>%
-  summarise(summarise_logmean(titre, out = "tibble"), .groups = "drop") %>%
-  ggplot(aes(virus_full, mn, color = timepoint, shape = timepoint)) +
-  ggdark::dark_theme_bw(verbose = FALSE) +
-  theme(
-    legend.position = "bottom",
-    legend.box.spacing = unit(0, "null"),
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    plot.margin = margin(10, 10, 10, 20)
-  ) +
-  scale_y_log10("Titre", breaks = 5 * 2^(0:15)) +
-  scale_x_discrete("Virus", labels = virus_labeller) +
-  geom_vline(
-    aes(xintercept = virus_full),
-    data = cdc_vaccine %>% filter(study_year %in% cdc_obj3_infections$infection_year),
-    size = 6, alpha = 0.2
-  ) +
-  geom_pointrange(
-    aes(ymin = low, ymax = high),
-    position = position_dodge(width = 0.5)
-  )
-
-save_plot(
-  cdc_obj3_infected_gmts, "cdc-obj3-infected-gmts",
-  width = 18, height = 12
-)
 
 # Circulating strains I guess
 cdc_obj3_hi_circulating <- cdc_obj3_hi %>%
