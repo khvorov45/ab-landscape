@@ -438,12 +438,18 @@ infected_pids_between_years <- infected_between_years %>%
 infected_pids <- c(infected_pids_within_years, infected_pids_between_years) %>%
   unique()
 
-cdc_obj2_hi <- cdc_obj2_hi_all %>% filter(!pid %in% infected_pids)
+pids_to_keep <- c("HIA1344", "HIB0217", "HIB0704", "HPA1280")
 
-# Plot infected pids
-cdc_obj2_hi_infected <- cdc_obj2_hi_recent %>% filter(pid %in% infected_pids)
+pids_to_exclude <- infected_pids[!infected_pids %in% pids_to_keep]
 
-cdc_obj2_hi_infected_plot <- cdc_obj2_hi_infected %>%
+length(infected_pids) - length(pids_to_keep) == length(pids_to_exclude)
+
+cdc_obj2_hi <- cdc_obj2_hi_all %>% filter(!pid %in% pids_to_exclude)
+
+# Plot excluded pids
+cdc_obj2_hi_excluded <- cdc_obj2_hi_recent %>% filter(pid %in% pids_to_exclude)
+
+cdc_obj2_hi_excluded_plot <- cdc_obj2_hi_excluded %>%
   mutate(global_timepoint = (study_year - 1) * 3 + as.integer(timepoint)) %>%
   ggplot(aes(global_timepoint, titre, group = virus_full, col = virus_full)) +
   ggdark::dark_theme_bw(verbose = FALSE) +
@@ -463,6 +469,7 @@ cdc_obj2_hi_infected_plot <- cdc_obj2_hi_infected %>%
   scale_color_discrete("Virus", labels = virus_labeller) +
   geom_line(
     data = infected_within_years %>%
+      filter(pid %in% pids_to_exclude) %>%
       mutate(global_timepoint = (study_year - 1) * 3 + if_else(timepoint == "Post-vax", 2, 3)),
     col = "red",
     size = 3,
@@ -470,6 +477,7 @@ cdc_obj2_hi_infected_plot <- cdc_obj2_hi_infected %>%
   ) +
   geom_line(
     data = infected_between_years %>%
+      filter(pid %in% pids_to_exclude) %>%
       mutate(global_timepoint = (study_year - 1) * 3 + if_else(timepoint == "Pre-vax", 1, 3)),
     col = "darkorange",
     size = 3,
@@ -479,12 +487,12 @@ cdc_obj2_hi_infected_plot <- cdc_obj2_hi_infected %>%
   geom_point()
 
 save_plot(
-  cdc_obj2_hi_infected_plot, "cdc-obj2-hi-infected",
-  width = 20, height = 25
+  cdc_obj2_hi_excluded_plot, "cdc-obj2-hi-excluded",
+  width = 20, height = 20
 )
 
 cdc_obj2_participants <- cdc_obj2_participants_all %>%
-  filter(!pid %in% infected_pids)
+  filter(!pid %in% pids_to_exclude)
 
 summarise_baseline(
   cdc_obj2_participants, prior_vacs, site
