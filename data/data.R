@@ -321,6 +321,47 @@ cdc_obj1_dates <- cdc_obj1_dates1 %>%
   bind_rows(cdc_obj1_dates2 %>% filter(sample_id %in% dates_comp_result$in2)) %>%
   filter(complete.cases(.))
 
+cdc_obj1_vacc_dates1 <- cdc_obj1_dates_raw1 %>%
+  select(pid = PID, matches("Vacc_\\d{4}_dt")) %>%
+  pivot_longer(-pid, names_to = "year", values_to = "vac_date") %>%
+  mutate(
+    year = year %>% str_replace("Vacc_", "") %>% str_replace("_dt", "") %>% as.integer(),
+    vac_date = parse_access_date(vac_date, "20")
+  ) %>%
+  filter(!is.na(vac_date))
+
+cdc_obj1_vacc_dates2 <- cdc_obj1_dates_raw2 %>%
+  select(pid = study_id, matches("Vacc_\\d{4}_dt")) %>%
+  pivot_longer(-pid, names_to = "year", values_to = "vac_date") %>%
+  mutate(
+    year = year %>% str_replace("Vacc_", "") %>% str_replace("_dt", "") %>% as.integer(),
+    vac_date = parse_access_date(vac_date, "20")
+  ) %>%
+  filter(!is.na(vac_date))
+
+# 2 is a subset of 1
+compare_vectors(
+  paste0(cdc_obj1_vacc_dates1$pid, cdc_obj1_vacc_dates1$year),
+  paste0(cdc_obj1_vacc_dates2$pid, cdc_obj1_vacc_dates2$year)
+)
+
+cdc_obj1_vacc_dates <- cdc_obj1_vacc_dates1 %>%
+  bind_rows(cdc_obj1_vacc_dates2) %>%
+  # There are multiple records for vaccination date for the same year
+  # depending on timepoint in at least one of the tables sometimes
+  # which is presumably there because recording the same piece of information
+  # in 6 places always leads to problems like this
+  count(pid, year, vac_date) %>%
+  group_by(pid, year) %>%
+  filter(n == max(n)) %>%
+  ungroup() %>%
+  select(-n)
+
+cdc_obj1_vacc_dates %>%
+  group_by(pid, year) %>%
+  filter(n() > 1) %>%
+  arrange(pid, year)
+
 # Now add the required columns to the various tables -------------
 
 # HI needs bleed dates
@@ -369,26 +410,31 @@ cdc_obj1_prior_vacs <- cdc_obj1_vax_hist %>%
   summarise(prior_vacs = sum(status), .groups = "drop")
 
 # Time difference b/w prevax postvax postseason
-cdc_obj1_pre_postvax_time <- cdc_obj1_dates %>%
+cdc_obj1_time_periods <- cdc_obj1_dates %>%
   select(-sample_id) %>%
   # There are duplicate rows
   distinct() %>%
   pivot_wider(names_from = "timepoint", values_from = "bleed_date") %>%
+  inner_join(
+    cdc_obj1_vacc_dates %>%
+      mutate(study_year = year - 2015), c("pid", "study_year")
+  ) %>%
   mutate(
+    pre_vax_vax_days = (vac_date - `Pre-vax`) / lubridate::ddays(1),
+    vax_post_vax_days = (`Post-vax` - vac_date) / lubridate::ddays(1),
     pre_post_vax_days = (`Post-vax` - `Pre-vax`) / lubridate::ddays(1),
     post_vax_post_season_days =
       (`Post-season` - `Post-vax`) / lubridate::ddays(1),
   ) %>%
-  select(pid, pre_post_vax_days, post_vax_post_season_days)
+  select(pid, study_year, pre_vax_vax_days, pre_post_vax_days, vax_post_vax_days, post_vax_post_season_days)
 
-cdc_obj1_pre_postvax_time %>%
+cdc_obj1_time_periods %>%
   count(pid) %>%
   filter(n > 1)
 
 cdc_obj1_participants_extra <- cdc_obj1_participants %>%
   inner_join(cdc_obj1_prior_vacs, "pid") %>%
   inner_join(cdc_obj1_first_bleeds, "pid") %>%
-  inner_join(cdc_obj1_pre_postvax_time, "pid") %>%
   mutate(age_first_bleed = (first_bleed - dob) / lubridate::dyears(1)) %>%
   select(-first_bleed)
 
@@ -405,6 +451,8 @@ cdc_obj1_participants_extra %>%
 save_data(cdc_obj1_participants_extra, "cdc-obj1-participant")
 save_data(cdc_obj1_hi_extra, "cdc-obj1-hi")
 save_data(cdc_obj1_vax_hist, "cdc-obj1-vax-hist")
+save_data(cdc_obj1_vacc_dates, "cdc-obj1-vax-dates")
+save_data(cdc_obj1_time_periods, "cdc-obj1-time-periods")
 
 # Participants for objective 2 -----------------------------------------
 
@@ -475,6 +523,20 @@ cdc_obj2_dates %>%
   count(sample_id) %>%
   filter(n > 1)
 
+cdc_obj2_vac_dates <- cdc_obj2_dates_raw %>%
+  select(pid = study_id, matches("Vacc_\\d{4}_dt")) %>%
+  pivot_longer(-pid, names_to = "year", values_to = "vac_date") %>%
+  mutate(
+    year = year %>% str_replace("Vacc_", "") %>% str_replace("_dt", "") %>% as.integer(),
+    vac_date = parse_access_date(vac_date, "20")
+  ) %>%
+  filter(!is.na(vac_date)) %>%
+  count(pid, year, vac_date) %>%
+  group_by(pid, year) %>%
+  filter(n == max(n)) %>%
+  ungroup() %>%
+  select(-n)
+
 # Everyone should have been first bled in study year 1 (2016)
 cdc_obj2_dates %>%
   group_by(pid) %>%
@@ -483,13 +545,36 @@ cdc_obj2_dates %>%
 
 compare_vectors(cdc_obj2_participants$pid, cdc_obj2_dates$pid)
 
-# @FOLLOWUP
-# Specimen id in hi data does not match to dates
 cdc_obj2_hi_no_dates <- compare_vectors(
   cdc_obj2_hi$sample_id, cdc_obj2_dates$sample_id, "hi", "dates"
 ) %>%
   select(hi) %>%
   filter(!is.na(hi))
+
+# Time difference b/w prevax postvax postseason
+cdc_obj2_time_periods <- cdc_obj2_dates %>%
+  select(-sample_id) %>%
+  # There are duplicate rows
+  distinct() %>%
+  pivot_wider(names_from = "timepoint", values_from = "bleed_date") %>%
+  inner_join(
+    cdc_obj2_vac_dates %>%
+      mutate(study_year = year - 2015), c("pid", "study_year")
+  ) %>%
+  mutate(
+    pre_vax_vax_days = (vac_date - `Pre-vax`) / lubridate::ddays(1),
+    vax_post_vax_days = (`Post-vax` - vac_date) / lubridate::ddays(1),
+    pre_post_vax_days = (`Post-vax` - `Pre-vax`) / lubridate::ddays(1),
+    post_vax_post_season_days =
+      (`Post-season` - `Post-vax`) / lubridate::ddays(1),
+  ) %>%
+  select(pid, study_year, pre_vax_vax_days, pre_post_vax_days, vax_post_vax_days, post_vax_post_season_days)
+
+cdc_obj2_time_periods %>%
+  group_by(pid, study_year) %>%
+  filter(n() > 1)
+
+compare_vectors(cdc_obj2_time_periods$pid, cdc_obj2_participants$pid)
 
 # Add required columns ----------------------------
 
@@ -542,6 +627,8 @@ cdc_obj2_hi_extra %>%
 save_data(cdc_obj2_participants_extra, "cdc-obj2-participant")
 save_data(cdc_obj2_hi_extra, "cdc-obj2-hi")
 save_data(cdc_obj2_vax_hist, "cdc-obj2-vax-hist")
+save_data(cdc_obj2_vac_dates, "cdc-obj2-vax-dates")
+save_data(cdc_obj2_time_periods, "cdc-obj2-time-periods")
 
 # Objective 3 ----------------------------
 

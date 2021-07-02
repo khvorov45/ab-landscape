@@ -172,6 +172,41 @@ summarise_baseline(
   str_replace("Overall1", "Overall") %>%
   save_table("cdc-participant-summary-obj1")
 
+cdc_obj1_time_periods <- read_data("cdc-obj1-time-periods") %>%
+  inner_join(cdc_obj1_participant %>% select(pid, site), "pid")
+
+cdc_obj1_time_periods %>%
+  group_by(site, study_year) %>%
+  summarise(.groups = "drop", across(contains("days"), summarise_numeric)) %>%
+  mutate(study_year = as.character(study_year)) %>%
+  bind_rows(
+    cdc_obj1_time_periods %>%
+      group_by(site) %>%
+      summarise(.groups = "drop", across(contains("days"), summarise_numeric)) %>%
+      mutate(study_year = "Overall")
+  ) %>%
+  arrange(site, study_year) %>%
+  bind_rows(
+    cdc_obj1_time_periods %>%
+      summarise(.groups = "drop", across(contains("days"), summarise_numeric)) %>%
+      mutate(study_year = "Overall1", site = "Overall")
+  ) %>%
+  save_data("cdc-obj1-time-period-summary") %>%
+  kbl(
+    format = "latex",
+    caption = "Objective 1 time periods.
+      Format: count (percentage); mean (sd)",
+    booktabs = TRUE,
+    col.names = c("Site", "Study year", "Pre-vax to vax", "Pre-vax to post-vax", "Vax to post-vax", "Post-vax to post-season"),
+    label = "cdc-obj1-time-period-summary"
+  ) %>%
+  column_spec(3:6, width = "2.2cm", latex_valign = "m") %>%
+  collapse_rows(
+    columns = 1:2, latex_hline = "custom", custom_latex_hline = 1
+  ) %>%
+  str_replace("Overall1", "Overall") %>%
+  save_table("cdc-obj1-time-period-summary")
+
 cdc_viruses <- read_data("cdc-virus")
 cdc_vaccine <- read_data("cdc-vaccine")
 
@@ -476,7 +511,40 @@ summarise_baseline(
   ) %>%
   save_table("cdc-participant-summary-obj2")
 
+cdc_obj2_time_periods <- read_data("cdc-obj2-time-periods") %>%
+  inner_join(cdc_obj2_participants %>% select(pid, site), "pid")
 
+cdc_obj2_time_periods %>%
+  group_by(site, study_year) %>%
+  summarise(.groups = "drop", across(contains("days"), summarise_numeric)) %>%
+  mutate(study_year = as.character(study_year)) %>%
+  bind_rows(
+    cdc_obj2_time_periods %>%
+      group_by(site) %>%
+      summarise(.groups = "drop", across(contains("days"), summarise_numeric)) %>%
+      mutate(study_year = "Overall")
+  ) %>%
+  arrange(site, study_year) %>%
+  bind_rows(
+    cdc_obj2_time_periods %>%
+      summarise(.groups = "drop", across(contains("days"), summarise_numeric)) %>%
+      mutate(study_year = "Overall1", site = "Overall")
+  ) %>%
+  save_data("cdc-obj2-time-period-summary") %>%
+  kbl(
+    format = "latex",
+    caption = "Objective 2 time periods.
+      Format: count (percentage); mean (sd)",
+    booktabs = TRUE,
+    col.names = c("Site", "Study year", "Pre-vax to vax", "Pre-vax to post-vax", "Vax to post-vax", "Post-vax to post-season"),
+    label = "cdc-obj2-time-period-summary"
+  ) %>%
+  column_spec(3:6, width = "2.2cm", latex_valign = "m") %>%
+  collapse_rows(
+    columns = 1:2, latex_hline = "custom", custom_latex_hline = 1
+  ) %>%
+  str_replace("Overall1", "Overall") %>%
+  save_table("cdc-obj2-time-period-summary")
 
 # Titre summaries
 cdc_obj2_gmts <- cdc_obj2_hi %>%
@@ -623,7 +691,23 @@ cdc_obj1_year_breaks <- tribble(
 ) %>%
   mutate(end = lubridate::ymd(end), mid = lubridate::ymd(mid))
 
+cdc_obj1_vax_dates <- read_data("cdc-obj1-vax-dates")
+
 cdc_obj1_bleed_dates <- cdc_obj1_hi %>%
+  select(pid, site, study_year, timepoint, bleed_date) %>%
+  bind_rows(
+    cdc_obj1_vax_dates %>%
+      filter(pid %in% cdc_obj1_hi$pid) %>%
+      inner_join(cdc_obj1_participant %>% select(pid, site), "pid") %>%
+      mutate(
+        bleed_date = vac_date, study_year = year - 2015,
+        timepoint = "Vax"
+      ) %>%
+      select(-year, -vac_date)
+  ) %>%
+  mutate(
+    timepoint = factor(timepoint, c("Pre-vax", "Vax", "Post-vax", "Post-season"))
+  ) %>%
   ggplot(aes(bleed_date, pid, color = timepoint)) +
   ggdark::dark_theme_bw(verbose = FALSE) +
   theme(
@@ -785,8 +869,24 @@ save_plot(
   width = 15, height = 15
 )
 
+cdc_obj2_vax_dates <- read_data("cdc-obj2-vax-dates")
+
 # See what the seasons were in objective 2
 cdc_obj2_bleed_dates_plot <- cdc_obj2_hi %>%
+  select(pid, site, study_year, timepoint, bleed_date) %>%
+  bind_rows(
+    cdc_obj2_vax_dates %>%
+      filter(pid %in% cdc_obj2_hi$pid) %>%
+      inner_join(cdc_obj2_participants %>% select(pid, site), "pid") %>%
+      mutate(
+        bleed_date = vac_date, study_year = year - 2015,
+        timepoint = "Vax"
+      ) %>%
+      select(-year, -vac_date)
+  ) %>%
+  mutate(
+    timepoint = factor(timepoint, c("Pre-vax", "Vax", "Post-vax", "Post-season"))
+  ) %>%
   ggplot(aes(bleed_date, pid, color = timepoint)) +
   theme_bw() +
   theme(
@@ -804,7 +904,8 @@ cdc_obj2_bleed_dates_plot <- cdc_obj2_hi %>%
   geom_point() +
   geom_vline(
     aes(xintercept = end),
-    data = cdc_obj1_year_breaks
+    data = cdc_obj1_year_breaks,
+    col = "black"
   ) +
   geom_text(
     aes(
@@ -1062,6 +1163,9 @@ cdc_obj3_hi <- read_data("cdc-obj3-hi") %>%
     virus_short = fct_reorder(virus_short, virus_year),
     circulating_year = cdc_circulating_year(study_year, site)
   )
+
+# dates of vaccinations
+# summary table - vax - post (or pre - post for obj 1 & 2)
 
 cdc_obj3_hi_noninfected <- cdc_obj3_hi %>%
   filter(!pid %in% cdc_obj3_infections$pid)
