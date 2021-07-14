@@ -215,26 +215,43 @@ nextrain_freqs <- nextrain_freqs_raw %>%
   mutate(
     clade = standardise_clades(clade),
     name = tolower(name)
-  )
+  ) %>%
+  # There seem to be duplicate viruses (a/westernsepik/20/2009 only)
+  group_by(name, year) %>%
+  slice(1) %>%
+  ungroup()
 
 # We have a lot of viruses that are not in that table
 setdiff(cdc_viruses_obj1$virus_full, nextrain_freqs$name)
 
-clade_frequencies <- nextrain_freqs %>%
-  filter(clade != "unassigned", year >= 2016, year < 2020) %>%
-  group_by(year, clade) %>%
-  summarise(freq = sum(freq), .groups = "drop") %>%
-  mutate(
-    # Got this by looking through viruses and checking our clade and
-    # Nextstrain's
-    clade = recode(clade, "a1" = "3c2a1", "a2/re" = "3c2a2", "3c" = "3c1") %>%
-      str_replace("^a1b/", "3c2a1b+")
-  )
+calc_clade_frequencies <- function(freqs) {
+  freqs %>%
+    filter(clade != "unassigned", year >= 2016, year < 2020) %>%
+    group_by(year, clade) %>%
+    summarise(freq = sum(freq), .groups = "drop") %>%
+    mutate(
+      # Got this by looking through viruses and checking our clade and
+      # Nextstrain's
+      clade = recode(clade, "a1" = "3c2a1", "a2/re" = "3c2a2", "3c" = "3c1") %>%
+        str_replace("^a1b/", "3c2a1b+"),
+    )
+}
+
+clade_frequencies_global <- calc_clade_frequencies(nextrain_freqs)
+clade_frequencies_peru <- nextrain_freqs %>%
+  filter(str_detect(name, "peru")) %>%
+  calc_clade_frequencies()
+clade_frequencies_global <- calc_clade_frequencies(nextrain_freqs)
+
+clade_frequencies_global %>%
+  mutate(year = as.character(year)) %>%
+  pull(year) %>%
+  unique()
 
 # Clades 1 and 2 correspond to 'unassigned'
-compare_vectors(cdc_viruses_obj1$clade, clade_frequencies$clade)
+compare_vectors(cdc_viruses_obj1$clade, clade_frequencies_global$clade)
 
-save_data(clade_frequencies, "cdc-clade-frequencies")
+save_data(clade_frequencies_global, "cdc-clade-frequencies")
 
 # Participants for objective 1 -------------------
 

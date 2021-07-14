@@ -70,8 +70,7 @@ summarise_logmean <- function(titres, out = "string") {
       "({format_decimal(low)}, ",
       "{format_decimal(high)})",
     )
-  }
-  else {
+  } else {
     tibble(logmn, logse, loglow, loghigh, mn, low, high)
   }
 }
@@ -230,12 +229,12 @@ cdc_viruses %>%
 
 cdc_circulating_year <- function(study_year, site) {
   case_when(
-    study_year == 1 & site == "Peru" ~ 2016.75,
-    study_year == 1 & site == "Israel" ~ 2017.25,
-    study_year == 2 & site == "Peru" ~ 2017.75,
-    study_year == 2 & site == "Israel" ~ 2018.25,
-    study_year == 3 & site == "Peru" ~ 2018.75,
-    study_year == 3 & site == "Israel" ~ 2019.25,
+    study_year == 1 & site == "Peru" ~ 2016.5833,
+    study_year == 1 & site == "Israel" ~ 2017.0833,
+    study_year == 2 & site == "Peru" ~ 2017.5833,
+    study_year == 2 & site == "Israel" ~ 2018.0833,
+    study_year == 3 & site == "Peru" ~ 2018.5833,
+    study_year == 3 & site == "Israel" ~ 2019.0833,
     TRUE ~ NA_real_
   )
 }
@@ -392,6 +391,8 @@ cdc_obj2_hi_all <- read_data("cdc-obj2-hi") %>%
 
 cdc_obj2_hi_recent <- cdc_obj2_hi_all %>% filter(virus_year >= 2013)
 
+require_rise_against <- 3
+
 # Infected in years 1 and 2
 infected_within_years <- cdc_obj2_hi_recent %>%
   filter(
@@ -400,6 +401,9 @@ infected_within_years <- cdc_obj2_hi_recent %>%
   select(-bleed_date) %>%
   pivot_wider(names_from = "timepoint", values_from = "titre") %>%
   filter(`Post-season` / `Post-vax` >= 4) %>%
+  group_by(pid) %>%
+  filter(sum(`Post-season` / `Post-vax` >= 4) >= require_rise_against) %>%
+  ungroup() %>%
   pivot_longer(c(`Post-season`, `Post-vax`), names_to = "timepoint", values_to = "titre") %>%
   select(pid, study_year, timepoint, virus_full, titre)
 
@@ -420,6 +424,9 @@ infected_between_years <- cdc_obj2_hi_recent %>%
   select(pid, titre, bwyear_period, timepoint, virus_full) %>%
   pivot_wider(names_from = "timepoint", values_from = "titre") %>%
   filter(`Pre-vax` / `Post-season` >= 4) %>%
+  group_by(pid) %>%
+  filter(sum(`Pre-vax` / `Post-season` >= 4) >= require_rise_against) %>%
+  ungroup() %>%
   pivot_longer(c(`Post-season`, `Pre-vax`), names_to = "timepoint", values_to = "titre") %>%
   mutate(
     study_year = case_when(
@@ -438,11 +445,14 @@ infected_pids_between_years <- infected_between_years %>%
 infected_pids <- c(infected_pids_within_years, infected_pids_between_years) %>%
   unique()
 
-pids_to_keep <- c("HIA1344", "HIB0217", "HIB0704", "HPA1280")
+pids_to_exclude_always <- c("HIA0876")
 
-pids_to_exclude <- infected_pids[!infected_pids %in% pids_to_keep]
+pids_to_exclude <- c(
+  infected_pids,
+  pids_to_exclude_always
+)
 
-length(infected_pids) - length(pids_to_keep) == length(pids_to_exclude)
+length(pids_to_exclude)
 
 cdc_obj2_hi <- cdc_obj2_hi_all %>% filter(!pid %in% pids_to_exclude)
 
@@ -683,7 +693,7 @@ cdc_clade_frequencies <- read_data("cdc-clade-frequencies")
 label_years <- function(year) {
   year <- as.numeric(year)
   glue::glue(
-    "{floor(year)} ({ifelse(year %% 1 == 0.25, '1st', '2nd')} half)"
+    "{floor(year)} ({ifelse(year %% 1 < 0.5, '1st', '2nd')} half)"
   )
 }
 
