@@ -1,0 +1,98 @@
+\documentclass[12pt]{article}
+
+\usepackage{float}
+
+\usepackage{standalone}
+
+%\usepackage[utf8x]{inputenc}
+
+%%% PAGE DIMENSIONS
+\usepackage{geometry}
+\geometry{a4paper}
+\geometry{margin=2.54cm} % for example, change the margins to 2 inches all round
+
+\usepackage{graphicx} % support the \includegraphics command and options
+
+\usepackage[parfill]{parskip} % Activate to begin paragraphs with an empty line rather than an indent
+
+%%% PACKAGES
+\usepackage{booktabs} % for much better looking tables
+\usepackage{array} % for better arrays (e.g., matrices) in maths
+\usepackage{paralist} % very flexible & customisable lists (e.g., enumerate/itemise, etc.)
+\usepackage{verbatim} % adds environment for commenting out blocks of text & for better verbatim
+\usepackage{subfig} % make it possible to include more than one captioned figure/table in a single float
+% These packages are all incorporated in the memoir class to one degree or another...
+
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{amsmath}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+
+% Sans-serif font
+\renewcommand{\familydefault}{\sfdefault}
+
+\usepackage{makecell}
+
+\renewcommand{\arraystretch}{1.1}
+
+%%% HEADERS & FOOTERS
+\usepackage{fancyhdr} % This should be set AFTER setting up the page geometry
+\pagestyle{fancy} % options: empty , plain , fancy
+\fancyhead[L]{\leftmark}
+\fancyhead[C]{}
+\fancyhead[R]{\rightmark}
+\fancyfoot[L]{}
+\fancyfoot[C]{}
+\fancyfoot[R]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{52pt}
+
+\fancypagestyle{plain}{
+	\fancyhf{} % clear all header and footer fields
+	\fancyfoot[R]{\thepage} % except the center
+	\renewcommand{\headrulewidth}{0pt}
+	\renewcommand{\footrulewidth}{0pt}
+}
+
+%%% BIBLIOGRAPHY
+\usepackage[numbers]{natbib}
+\bibliographystyle{vancouver}
+
+%%% SECTION TITLE APPEARANCE
+\usepackage{sectsty}
+\allsectionsfont{\sffamily\mdseries\upshape}
+
+%%% ToC (table of contents) APPEARANCE
+%\usepackage[nottoc,notlof,notlot]{tocbibind} % Put the bibliography in the ToC
+%\usepackage[titles,subfigure]{tocloft} % Alter the style of the Table of Contents
+%\renewcommand{\cftsecfont}{\rmfamily\mdseries\upshape}
+%\renewcommand{\cftsecpagefont}{\rmfamily\mdseries\upshape} % No bold!
+
+\usepackage[bookmarks,bookmarksnumbered,bookmarksopen,hidelinks]{hyperref}
+
+\usepackage{bookmark}
+
+% TITLE
+\title{CDC prior vaccinations}
+\author{Arseniy Khvorov}
+\begin{document}
+
+\maketitle
+
+\section{Objective 1 2016}
+
+I limited objective 1 data to year 2016. The patterns of prior vaccination are in Table \ref{tab:cdc-obj1-prior-vax-patterns}. The titre plots are in Figure \ref{tab:cdc-obj1-prior-vax-patterns}.
+
+\input{../prior-vac-groups/cdc-obj1-prior-vax-patterns.tex}
+
+\begin{figure}
+    \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../prior-vac-groups/cdc-obj1-prior-vac-hi.pdf}
+    \caption{GMTs for the different patterns of prior vaccinations.}
+    \label{fig:cdc-clade-freq}
+\end{figure}
+
+\end{document}
